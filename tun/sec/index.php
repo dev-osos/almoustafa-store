@@ -482,9 +482,9 @@ function growthBadge(pct) {
 
 function deviceBadge(device) {
   const map = {
-    mobile:  ['smartphone','جوال',       'device-mobile'],
+    mobile:  ['smartphone','هاتف',       'device-mobile'],
     tablet:  ['tablet',    'تابلت',      'device-tablet'],
-    desktop: ['computer',  'سطح المكتب', 'device-desktop'],
+    desktop: ['computer',  'كمبيوتر', 'device-desktop'],
   };
   const [icon, label, cls] = map[device] ?? ['device_unknown','—','device-unknown'];
   return `<span class="device-badge ${cls}"><span class="ms">${icon}</span>${label}</span>`;
@@ -575,7 +575,7 @@ async function loadDonut() {
   if (donutChart) donutChart.destroy();
   donutChart = new Chart($id('donutChart'), {
     type: 'doughnut',
-    data: { labels:['جوال','تابلت','سطح المكتب'], datasets:[{ data:[d.mobile,d.tablet,d.desktop], backgroundColor:['#1a56d6','#7c0099','#735c00'], borderWidth:2, borderColor:'#fff' }] },
+    data: { labels:['هاتف','تابلت','كمبيوتر'], datasets:[{ data:[d.mobile,d.tablet,d.desktop], backgroundColor:['#1a56d6','#7c0099','#735c00'], borderWidth:2, borderColor:'#fff' }] },
     options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{font:{family:'Manrope',size:12},padding:14,usePointStyle:true} } }, cutout:'62%' }
   });
 }
