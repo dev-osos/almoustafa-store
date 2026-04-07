@@ -16,9 +16,9 @@ header('Content-Type: application/json; charset=utf-8');
 
 // ── Role-based permissions ────────────────────────────────────────────────────
 const ROLE_PERMS = [
-    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users', 'geo'],
-    'admin'       => ['stats', 'chart', 'devices', 'visitors', 'geo'],
-    'support'     => ['visitors', 'geo'],
+    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users', 'geo', 'customer_stats', 'customers'],
+    'admin'       => ['stats', 'chart', 'devices', 'visitors', 'geo', 'customer_stats', 'customers'],
+    'support'     => ['visitors', 'geo', 'customer_stats', 'customers'],
 ];
 
 function hasPermission(string $role, string $perm): bool
@@ -287,6 +287,103 @@ try {
         unset($r);
 
         echo json_encode($rows);
+
+    // ── CUSTOMER STATS — single scan with conditional aggregation ────────────
+    } elseif ($type === 'customer_stats') {
+
+        try {
+            $row = $pdo->query("
+                SELECT
+                    COUNT(*)                                                              AS total,
+                    SUM(created_at >= CURDATE())                                          AS today,
+                    SUM(created_at >= CURDATE() - INTERVAL 1 DAY
+                        AND created_at < CURDATE())                                       AS yesterday,
+                    SUM(created_at >= NOW()     - INTERVAL 7 DAY)                         AS this_week,
+                    SUM(created_at >= NOW()     - INTERVAL 14 DAY
+                        AND created_at < NOW()  - INTERVAL 7 DAY)                        AS last_week,
+                    SUM(profile_complete = 1)                                             AS complete,
+                    SUM(profile_complete = 0)                                             AS incomplete,
+                    SUM(segment IN ('wholesale','corporate'))                             AS wholesale
+                FROM customers
+            ")->fetch();
+        } catch (Throwable) {
+            // Table may not exist yet
+            $row = ['total'=>0,'today'=>0,'yesterday'=>0,'this_week'=>0,'last_week'=>0,'complete'=>0,'incomplete'=>0,'wholesale'=>0];
+        }
+
+        $today    = (int) $row['today'];
+        $yest     = (int) $row['yesterday'];
+        $thisWeek = (int) $row['this_week'];
+        $lastWeek = (int) $row['last_week'];
+
+        echo json_encode([
+            'total'        => (int) $row['total'],
+            'today'        => $today,
+            'this_week'    => $thisWeek,
+            'complete'     => (int) $row['complete'],
+            'incomplete'   => (int) $row['incomplete'],
+            'wholesale'    => (int) $row['wholesale'],
+            'growth_today' => $yest     > 0 ? round(($today    - $yest)     / $yest     * 100, 1) : null,
+            'growth_week'  => $lastWeek > 0 ? round(($thisWeek - $lastWeek) / $lastWeek * 100, 1) : null,
+        ]);
+
+    // ── CUSTOMERS — paginated list ────────────────────────────────────────────
+    } elseif ($type === 'customers') {
+
+        $page    = max(1, (int)($_GET['page']  ?? 1));
+        $limit   = min(100, max(10, (int)($_GET['limit'] ?? 25)));
+        $offset  = ($page - 1) * $limit;
+        $search  = trim($_GET['search']  ?? '');
+        $segment = trim($_GET['segment'] ?? '');
+        $profile = $_GET['profile'] ?? '';
+
+        $conds  = [];
+        $params = [];
+
+        if ($search !== '') {
+            $conds[]      = '(name LIKE :s OR phone LIKE :s)';
+            $params[':s'] = '%' . $search . '%';
+        }
+        if (in_array($segment, ['consumer','wholesale','corporate'], true)) {
+            $conds[]          = 'segment = :seg';
+            $params[':seg']   = $segment;
+        }
+        if ($profile === '1' || $profile === '0') {
+            $conds[]           = 'profile_complete = :pc';
+            $params[':pc']     = (int) $profile;
+        }
+
+        $where = $conds ? 'WHERE ' . implode(' AND ', $conds) : '';
+
+        try {
+            $countStmt = $pdo->prepare("SELECT COUNT(*) FROM customers $where");
+            $countStmt->execute($params);
+            $totalCount = (int) $countStmt->fetchColumn();
+
+            $dataStmt = $pdo->prepare("
+                SELECT id, name, phone, segment, governorate, city,
+                       profile_complete, created_at
+                FROM   customers
+                $where
+                ORDER  BY created_at DESC
+                LIMIT  :lim OFFSET :off
+            ");
+            $dataStmt->bindValue(':lim', $limit,  PDO::PARAM_INT);
+            $dataStmt->bindValue(':off', $offset, PDO::PARAM_INT);
+            foreach ($params as $k => $v) $dataStmt->bindValue($k, $v);
+            $dataStmt->execute();
+            $rows = $dataStmt->fetchAll();
+        } catch (Throwable) {
+            $rows = []; $totalCount = 0;
+        }
+
+        echo json_encode([
+            'customers' => $rows,
+            'total'     => $totalCount,
+            'page'      => $page,
+            'limit'     => $limit,
+            'pages'     => (int) ceil($totalCount / max(1, $limit)),
+        ]);
 
     // ── GEO — server-side IP lookup proxy (avoids browser CORS block) ────────
     } elseif ($type === 'geo') {

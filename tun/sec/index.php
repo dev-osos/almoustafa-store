@@ -45,9 +45,9 @@ function roleBadgeCss(string $role): string
 }
 
 const ROLE_PERMS = [
-    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users'],
-    'admin'       => ['stats', 'chart', 'devices', 'visitors'],
-    'support'     => ['visitors'],
+    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users', 'customers'],
+    'admin'       => ['stats', 'chart', 'devices', 'visitors', 'customers'],
+    'support'     => ['visitors', 'customers'],
 ];
 function can(string $role, string $perm): bool
 {
@@ -296,6 +296,9 @@ const ADMIN = {
       <div class="nav-item active" id="nav-visitors" onclick="showSection('visitors')">
         <span class="ms">group</span> إحصائيات الزوار
       </div>
+      <div class="nav-item" id="nav-customers" onclick="showSection('customers')">
+        <span class="ms">storefront</span> عملاؤنا
+      </div>
       <?php if (can($adminRole, 'users')): ?>
       <div class="nav-item" id="nav-users" onclick="showSection('users')">
         <span class="ms">manage_accounts</span> إدارة المستخدمين
@@ -452,6 +455,82 @@ const ADMIN = {
       </div>
       <?php endif; ?>
 
+      <!-- ── CUSTOMERS SECTION ─────────────────────────── -->
+      <div class="section" id="customersSection">
+
+        <!-- Customer Stats -->
+        <div class="stats-grid" id="custStatsGrid">
+          <?php
+          $custCards = [
+            ['icon'=>'people_alt',   'label'=>'إجمالي العملاء',       'id'=>'csTotal',    'cls'=>''],
+            ['icon'=>'person_add',   'label'=>'مسجّلون اليوم',         'id'=>'csToday',    'cls'=>'',     'g'=>'cgToday'],
+            ['icon'=>'date_range',   'label'=>'هذا الأسبوع',          'id'=>'csWeek',     'cls'=>'gold', 'g'=>'cgWeek'],
+            ['icon'=>'task_alt',     'label'=>'ملفات مكتملة',          'id'=>'csComplete', 'cls'=>'green'],
+            ['icon'=>'person_off',   'label'=>'ملفات غير مكتملة',      'id'=>'csInc',      'cls'=>''],
+            ['icon'=>'storefront',   'label'=>'جملة / جملة الجملة',    'id'=>'csWholesale','cls'=>'gold'],
+          ];
+          foreach ($custCards as $c): ?>
+          <div class="stat-card <?= $c['cls'] ?>">
+            <div class="stat-label"><span class="ms"><?= $c['icon'] ?></span><?= $c['label'] ?></div>
+            <div class="stat-value skeleton skel-val" id="<?= $c['id'] ?>">—</div>
+            <?php if (!empty($c['g'])): ?>
+            <div id="<?= $c['g'] ?>" style="margin-top:.4rem;display:none"></div>
+            <?php endif; ?>
+          </div>
+          <?php endforeach; ?>
+        </div>
+
+        <!-- Customers Table -->
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title"><span class="ms">people_alt</span> سجل العملاء</div>
+            <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;flex:1;justify-content:flex-end;">
+              <select class="chart-select" id="custSegmentFilter" onchange="loadCustomers(1)">
+                <option value="">كل الشرائح</option>
+                <option value="consumer">مستهلك</option>
+                <option value="wholesale">جملة</option>
+                <option value="corporate">جملة الجملة</option>
+              </select>
+              <select class="chart-select" id="custProfileFilter" onchange="loadCustomers(1)">
+                <option value="">كل الملفات</option>
+                <option value="1">مكتمل</option>
+                <option value="0">غير مكتمل</option>
+              </select>
+              <div class="search-wrap" style="max-width:240px">
+                <span class="ms">search</span>
+                <input class="search-input" id="custSearch" placeholder="بحث باسم أو هاتف..." type="search">
+              </div>
+              <button class="primary-btn" onclick="loadCustomers(1)">
+                <span class="ms">refresh</span> تحديث
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>الاسم</th>
+                  <th>رقم الهاتف</th>
+                  <th>الشريحة</th>
+                  <th>المحافظة / المدينة</th>
+                  <th>الملف</th>
+                  <th>تاريخ التسجيل</th>
+                </tr>
+              </thead>
+              <tbody id="custBody">
+                <tr><td colspan="7" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <div class="page-info" id="custPageInfo">—</div>
+            <div class="page-btns" id="custPageBtns"></div>
+          </div>
+        </div>
+
+      </div><!-- /customersSection -->
+
     </div><!-- /content -->
   </main>
 </div>
@@ -500,7 +579,7 @@ function roleBadgeHtml(role, label) {
 }
 
 // ── Section switching ─────────────────────────────────────────────────────────
-const SECTION_TITLES = { visitors: 'إحصائيات الزوار', users: 'إدارة المستخدمين' };
+const SECTION_TITLES = { visitors: 'إحصائيات الزوار', customers: 'عملاؤنا', users: 'إدارة المستخدمين' };
 
 function showSection(name) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -510,7 +589,8 @@ function showSection(name) {
   const nav = $id('nav-' + name);
   if (nav) nav.classList.add('active');
   $id('topbarTitle').textContent = SECTION_TITLES[name] ?? '';
-  if (name === 'users') loadUsers();
+  if (name === 'users')      loadUsers();
+  if (name === 'customers')  { loadCustomerStats(); loadCustomers(1); }
 }
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
@@ -801,6 +881,127 @@ $id('searchInput').addEventListener('input', () => {
   ]);
   setInterval(loadStats, 60_000);
 })();
+
+// ── Customers ─────────────────────────────────────────────────────────────────
+const SEGMENT_MAP = {
+  consumer:  { label:'مستهلك',       style:'background:#e8f0fe;color:#1a56d6;border:1px solid #b6ccf7' },
+  wholesale: { label:'جملة',         style:'background:#fdf6e0;color:#735c00;border:1px solid #e8d48a' },
+  corporate: { label:'جملة الجملة',  style:'background:#fdecea;color:#3c0004;border:1px solid #f5b8b8' },
+};
+
+async function loadCustomerStats() {
+  const res = await fetch('data.php?type=customer_stats');
+  if (!res.ok) return;
+  const d = await res.json();
+
+  ['csTotal','csToday','csWeek','csComplete','csInc','csWholesale'].forEach(id => {
+    const el = $id(id);
+    if (el) { el.classList.remove('skeleton','skel-val'); }
+  });
+
+  $id('csTotal').textContent    = fmt(d.total);
+  $id('csToday').textContent    = fmt(d.today);
+  $id('csWeek').textContent     = fmt(d.this_week);
+  $id('csComplete').textContent = fmt(d.complete);
+  $id('csInc').textContent      = fmt(d.incomplete);
+  $id('csWholesale').textContent= fmt(d.wholesale);
+
+  const cgToday = $id('cgToday');
+  if (cgToday && d.growth_today !== null) {
+    cgToday.style.display = '';
+    cgToday.innerHTML = growthBadge(d.growth_today) + ' <span style="font-size:.72rem;color:var(--on-surface-dim)">مقارنة بالأمس</span>';
+  }
+  const cgWeek = $id('cgWeek');
+  if (cgWeek && d.growth_week !== null) {
+    cgWeek.style.display = '';
+    cgWeek.innerHTML = growthBadge(d.growth_week) + ' <span style="font-size:.72rem;color:var(--on-surface-dim)">مقارنة بالأسبوع السابق</span>';
+  }
+}
+
+let custCurrentPage = 1;
+
+async function loadCustomers(page = 1) {
+  custCurrentPage = page;
+  const search  = $id('custSearch').value.trim();
+  const segment = $id('custSegmentFilter').value;
+  const profile = $id('custProfileFilter').value;
+
+  const params = new URLSearchParams({ type:'customers', page, limit:25 });
+  if (search)  params.set('search', search);
+  if (segment) params.set('segment', segment);
+  if (profile !== '') params.set('profile', profile);
+
+  const res  = await fetch('data.php?' + params);
+  if (!res.ok) return;
+  const data = await res.json();
+
+  const tbody = $id('custBody');
+  tbody.innerHTML = '';
+  const offset = (page - 1) * 25;
+
+  if (!data.customers.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><span class="ms">person_search</span>لا توجد نتائج</div></td></tr>';
+  } else {
+    data.customers.forEach((c, i) => {
+      const seg   = SEGMENT_MAP[c.segment] ?? { label: c.segment, style: '' };
+      const loc   = [c.governorate, c.city].filter(Boolean).join(' / ') || '—';
+      const done  = c.profile_complete == 1;
+      const tr    = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="color:var(--on-surface-dim);font-size:.78rem">${offset + i + 1}</td>
+        <td style="font-weight:600">${escHtml(c.name || '—')}</td>
+        <td><span class="ip-text" style="font-size:.82rem">${escHtml(c.phone)}</span></td>
+        <td><span class="role-badge" style="${seg.style}">${seg.label}</span></td>
+        <td style="font-size:.8rem;color:var(--on-surface-dim)">${escHtml(loc)}</td>
+        <td>
+          <span style="font-size:.75rem;font-weight:700;padding:.2rem .6rem;border-radius:999px;
+            ${done ? 'background:var(--green-bg);color:var(--green)' : 'background:#f0f0f0;color:#888'}">
+            ${done ? 'مكتمل' : 'غير مكتمل'}
+          </span>
+        </td>
+        <td><div class="date-text">${fmtDate(c.created_at)}</div></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  const start = (page - 1) * 25 + 1;
+  const end   = Math.min(page * 25, data.total);
+  $id('custPageInfo').textContent = `عرض ${fmt(start)}–${fmt(end)} من ${fmt(data.total)} عميل`;
+  renderCustPagination(page, data.pages);
+}
+
+function renderCustPagination(current, total) {
+  const wrap = $id('custPageBtns');
+  wrap.innerHTML = '';
+  const btn = (label, page, disabled=false, active=false) => {
+    const b = document.createElement('button');
+    b.className = 'page-btn' + (active?' active':'');
+    b.innerHTML = label; b.disabled = disabled;
+    if (!disabled) b.onclick = () => loadCustomers(page);
+    wrap.appendChild(b);
+  };
+  btn('<span class="ms" style="font-size:.9rem">chevron_right</span>', current-1, current<=1);
+  const pages = [];
+  if (total<=7) { for(let i=1;i<=total;i++) pages.push(i); }
+  else {
+    pages.push(1);
+    if(current>3) pages.push('…');
+    for(let i=Math.max(2,current-1);i<=Math.min(total-1,current+1);i++) pages.push(i);
+    if(current<total-2) pages.push('…');
+    pages.push(total);
+  }
+  pages.forEach(p => {
+    if(p==='…'){const s=document.createElement('span');s.textContent='…';s.style.cssText='padding:0 .4rem;line-height:34px;color:var(--on-surface-dim)';wrap.appendChild(s);}
+    else btn(p,p,false,p===current);
+  });
+  btn('<span class="ms" style="font-size:.9rem">chevron_left</span>', current+1, current>=total);
+}
+
+let custSearchTimer;
+$id('custSearch').addEventListener('input', () => {
+  clearTimeout(custSearchTimer);
+  custSearchTimer = setTimeout(() => loadCustomers(1), 400);
+});
 </script>
 </body>
 </html>
