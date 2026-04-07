@@ -2988,7 +2988,8 @@
             ) || 'لم يتم تحديد العنوان بعد';
             const segmentLabels = { 'مستهلك': 'مستهلك', 'جملة': 'جملة', 'corporate': 'جملة الجملة', 'consumer': 'مستهلك', 'wholesale': 'جملة' };
             const currentSegment = segmentLabels[session?.segment] || session?.segment || 'لم يتم تحديد الشريحة بعد';
-            document.getElementById('pdd-address').textContent = currentAddress;
+            const addrEl = document.getElementById('pdd-address-short') || document.getElementById('pdd-address');
+            if (addrEl) addrEl.textContent = currentAddress;
             document.getElementById('pdd-segment').textContent = currentSegment;
             const balance = session?.wallet ?? 0;
             document.getElementById('pdd-wallet').textContent = Number(balance).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م';
