@@ -16,9 +16,9 @@ header('Content-Type: application/json; charset=utf-8');
 
 // ── Role-based permissions ────────────────────────────────────────────────────
 const ROLE_PERMS = [
-    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users'],
-    'admin'       => ['stats', 'chart', 'devices', 'visitors'],
-    'support'     => ['visitors'],
+    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users', 'geo'],
+    'admin'       => ['stats', 'chart', 'devices', 'visitors', 'geo'],
+    'support'     => ['visitors', 'geo'],
 ];
 
 function hasPermission(string $role, string $perm): bool
