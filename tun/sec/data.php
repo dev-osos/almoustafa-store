@@ -288,6 +288,62 @@ try {
 
         echo json_encode($rows);
 
+    // ── GEO — server-side IP lookup proxy (avoids browser CORS block) ────────
+    } elseif ($type === 'geo') {
+
+        $raw = trim($_GET['ips'] ?? '');
+        if ($raw === '') {
+            echo json_encode([]);
+            exit;
+        }
+
+        // Sanitize: keep only valid-looking IPs, max 50
+        $ips = array_slice(
+            array_filter(
+                array_map('trim', explode(',', $raw)),
+                fn($ip) => filter_var($ip, FILTER_VALIDATE_IP) !== false
+            ),
+            0,
+            50
+        );
+
+        if (empty($ips)) {
+            echo json_encode([]);
+            exit;
+        }
+
+        $payload = json_encode(array_map(fn($ip) => ['query' => $ip], $ips));
+        $ctx     = stream_context_create([
+            'http' => [
+                'method'  => 'POST',
+                'header'  => "Content-Type: application/json\r\nUser-Agent: PHP/GeoProxy\r\n",
+                'content' => $payload,
+                'timeout' => 5,
+            ],
+        ]);
+
+        $raw = @file_get_contents(
+            'http://ip-api.com/batch?fields=query,country,city,status',
+            false,
+            $ctx
+        );
+
+        if ($raw === false) {
+            echo json_encode([]);
+            exit;
+        }
+
+        $results = json_decode($raw, true) ?? [];
+        $map     = [];
+        foreach ($results as $r) {
+            if (($r['status'] ?? '') === 'success') {
+                $map[$r['query']] = ['country' => $r['country'], 'city' => $r['city']];
+            } else {
+                $map[$r['query']] = null;
+            }
+        }
+        echo json_encode($map);
+
     } else {
         http_response_code(400);
         echo json_encode(['error' => 'Unknown type']);

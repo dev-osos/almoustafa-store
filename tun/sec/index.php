@@ -580,19 +580,15 @@ async function loadDonut() {
   });
 }
 
-// ── Geo cache ─────────────────────────────────────────────────────────────────
+// ── Geo cache — routed through PHP proxy to avoid browser CORS block ──────────
 const geoCache = {};
 async function geoLookup(ips) {
-  const missing = ips.filter(ip => ip && !geoCache[ip] && !ip.startsWith('127') && !ip.startsWith('::'));
+  const missing = ips.filter(ip => ip && !geoCache[ip] && !ip.startsWith('127') && !ip.startsWith('::1'));
   if (!missing.length) return;
   try {
-    const res = await fetch('http://ip-api.com/batch?fields=query,country,city,status', {
-      method:'POST',
-      body: JSON.stringify(missing.slice(0,100).map(ip => ({query:ip}))),
-      headers: {'Content-Type':'application/json'}
-    });
-    const arr = await res.json();
-    arr.forEach(r => { geoCache[r.query] = r.status === 'success' ? {country:r.country, city:r.city} : null; });
+    const res = await fetch('data.php?type=geo&ips=' + encodeURIComponent(missing.slice(0, 50).join(',')));
+    const map = await res.json();
+    Object.assign(geoCache, map);
   } catch {}
 }
 function locationHtml(ip) {
