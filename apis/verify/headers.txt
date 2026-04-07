@@ -1,0 +1,4 @@
+curl -X POST "https://wasenderapi.com/api/send-message" \
+  -H "Authorization: Bearer a930f737979da9d40dbbf40bc9d67254153210924e6050e8bbf2870c59c4d923" \
+  -H "Content-Type: application/json" \
+  -d '{"to": "$phone_number", "text": "$text"}'
