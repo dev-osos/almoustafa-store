@@ -9,7 +9,7 @@ api_require_method(['POST']);
 // ── Config ────────────────────────────────────────────────────────────────────
 const WASENDER_URL   = 'https://wasenderapi.com/api/send-message';
 const WASENDER_TOKEN = 'a930f737979da9d40dbbf40bc9d67254153210924e6050e8bbf2870c59c4d923';
-const STORE_NAME     = 'المصطفى للعسل';
+const STORE_NAME     = 'متجر المصطفى للعسل';
 const CODE_TTL       = 600; // 10 minutes
 
 // ── Rate limit via session (no DB needed for OTP) ─────────────────────────────

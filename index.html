@@ -3564,17 +3564,39 @@
         });
 
         // --- Register Step 1 — send OTP ---
-        document.getElementById('btn-send-otp').addEventListener('click', () => {
-            const phone = document.getElementById('reg-phone').value.trim();
-            const masked = phone.length >= 4
-                ? phone.slice(0, 3) + 'XX XXX X' + phone.slice(-2)
-                : phone;
-            document.getElementById('otp-phone-display').textContent = masked;
-            document.querySelectorAll('.otp-box').forEach(box => { box.value = ''; });
-            startOtpTimer();
-            document.getElementById('btn-verify-otp').disabled = false;
-            showPanel('register-2');
-            document.querySelectorAll('.otp-box')[0].focus();
+        document.getElementById('btn-send-otp').addEventListener('click', async () => {
+            const name     = document.getElementById('reg-name').value.trim();
+            const phone    = document.getElementById('reg-phone').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const btn      = document.getElementById('btn-send-otp');
+
+            if (!phone) { alert('يرجى إدخال رقم الهاتف'); return; }
+            if (!password || password.length < 6) { alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل'); return; }
+
+            btn.disabled = true;
+            btn.textContent = 'جارٍ الإرسال...';
+            try {
+                const res  = await fetch('apis/verify/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone }),
+                });
+                const data = await res.json();
+                if (!res.ok) { alert(data.error || 'تعذّر إرسال الكود'); return; }
+
+                const masked = phone.slice(0, Math.min(4, phone.length)) + 'XXXXXX' + phone.slice(-2);
+                document.getElementById('otp-phone-display').textContent = masked;
+                document.querySelectorAll('#otp-row .otp-box').forEach(b => { b.value = ''; });
+                startOtpTimer();
+                document.getElementById('btn-verify-otp').disabled = false;
+                showPanel('register-2');
+                document.querySelectorAll('#otp-row .otp-box')[0].focus();
+            } catch {
+                alert('خطأ في الاتصال. يرجى المحاولة مجدداً.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'إرسال كود التأكيد';
+            }
         });
 
         // --- OTP inputs ---
@@ -3622,24 +3644,77 @@
         }
 
         // --- Resend OTP ---
-        document.getElementById('btn-resend-otp').addEventListener('click', () => {
-            otpBoxes.forEach(box => { box.value = ''; });
-            startOtpTimer();
-            document.getElementById('btn-verify-otp').disabled = false;
-            otpBoxes[0].focus();
+        document.getElementById('btn-resend-otp').addEventListener('click', async () => {
+            const phone = document.getElementById('reg-phone').value.trim();
+            const btn   = document.getElementById('btn-resend-otp');
+            btn.disabled = true;
+            btn.textContent = 'جارٍ إعادة الإرسال...';
+            try {
+                const res  = await fetch('apis/verify/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone }),
+                });
+                const data = await res.json();
+                if (!res.ok) { alert(data.error || 'تعذّر إعادة الإرسال'); return; }
+                otpBoxes.forEach(b => { b.value = ''; });
+                startOtpTimer();
+                document.getElementById('btn-verify-otp').disabled = false;
+                otpBoxes[0].focus();
+            } catch {
+                alert('خطأ في الاتصال. يرجى المحاولة مجدداً.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'إعادة إرسال الكود';
+            }
         });
 
-        // --- Verify OTP ---
-        document.getElementById('btn-verify-otp').addEventListener('click', () => {
-            const code = otpBoxes.map(b => b.value).join('');
-            if (code.length < 4) return;
-            clearInterval(otpInterval);
-            const name = document.getElementById('reg-name').value.trim();
-            const phone = document.getElementById('reg-phone').value.trim();
-            setSession({ name: name || null, phone: phone, loggedAt: new Date().toISOString() });
-            updateAccountIcon();
-            // Redirect to onboarding to complete profile
-            window.location.href = 'onboarding.html';
+        // --- Verify OTP + Register ---
+        document.getElementById('btn-verify-otp').addEventListener('click', async () => {
+            const code     = otpBoxes.map(b => b.value).join('');
+            if (code.length < 4) { alert('يرجى إدخال الكود المكوّن من 4 أرقام'); return; }
+
+            const name     = document.getElementById('reg-name').value.trim();
+            const phone    = document.getElementById('reg-phone').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const btn      = document.getElementById('btn-verify-otp');
+
+            btn.disabled = true;
+            btn.textContent = 'جارٍ التحقق...';
+            try {
+                // Step 1: verify OTP
+                const vRes  = await fetch('apis/verify/check.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, code }),
+                });
+                const vData = await vRes.json();
+                if (!vRes.ok) { alert(vData.error || 'الكود غير صحيح'); return; }
+
+                // Step 2: create account
+                const rRes  = await fetch('apis/users/register.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone, password }),
+                });
+                const rData = await rRes.json();
+                if (!rRes.ok) { alert(rData.error || 'تعذّر إنشاء الحساب'); return; }
+
+                clearInterval(otpInterval);
+                setSession({
+                    customer_id: rData.customer_id,
+                    name:        rData.name || name || null,
+                    phone:       phone,
+                    loggedAt:    new Date().toISOString(),
+                });
+                updateAccountIcon();
+                window.location.href = 'onboarding.html';
+            } catch {
+                alert('خطأ في الاتصال. يرجى المحاولة مجدداً.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'تأكيد الكود';
+            }
         });
 
         // --- Back to register step 1 ---

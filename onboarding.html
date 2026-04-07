@@ -1076,39 +1076,74 @@ body {
   document.addEventListener('click', (e) => { if (!cityWrap.contains(e.target)) cityClose(); });
 
   // ── Submit ─────────────────────────────────────────
-  document.getElementById('btn-submit').addEventListener('click', () => {
+  document.getElementById('btn-submit').addEventListener('click', async () => {
     const name    = document.getElementById('full-name').value.trim();
     const phone   = document.getElementById('full-phone').value.trim();
     const segment = document.querySelector('input[name="customer-segment"]:checked')?.value || 'consumer';
-    const city    = document.getElementById('address-city').value.trim();
     const area    = document.getElementById('address-area').value.trim();
     const address = document.getElementById('address-detail').value.trim();
+    const btn     = document.getElementById('btn-submit');
 
-    // Update session with profile data
+    // ── Save to localStorage ──────────────────────────
     try {
       const s = JSON.parse(localStorage.getItem('alm_session')) || {};
-      s.name        = name || s.name;
-      s.phone       = phone || s.phone;
-      s.segment     = segment;
-      s.governorate   = acSelected ? acSelected.name : city;
-      s.governorateId = acSelected ? acSelected.id : null;
+      s.name          = name || s.name;
+      s.phone         = phone || s.phone;
+      s.segment       = segment;
+      s.governorate   = acSelected ? acSelected.name : document.getElementById('address-city').value.trim();
+      s.governorateId = acSelected ? acSelected.id   : null;
       s.city          = citySelected ? citySelected.name : area;
-      s.cityId        = citySelected ? citySelected.id : null;
+      s.cityId        = citySelected ? citySelected.id   : null;
       s.area          = area;
-      s.address     = address;
-      s.coords      = userCoords;
-      s.profileDone = true;
+      s.address       = address;
+      s.coords        = userCoords;
+      s.profileDone   = true;
       localStorage.setItem('alm_session', JSON.stringify(s));
     } catch {}
 
-    // Show success — isolated from localStorage errors above
+    // ── Send to API ───────────────────────────────────
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span> جارٍ الحفظ...';
+    try {
+      const payload = {
+        name,
+        phone:          phone || null,
+        segment,
+        governorate:    acSelected    ? acSelected.name    : document.getElementById('address-city').value.trim(),
+        governorate_id: acSelected    ? acSelected.id      : null,
+        city:           citySelected  ? citySelected.name  : area,
+        city_id:        citySelected  ? citySelected.id    : null,
+        address_detail: address,
+        lat:            userCoords ? userCoords.lat : null,
+        lng:            userCoords ? userCoords.lng : null,
+      };
+
+      const res  = await fetch('apis/users/profile.php', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Non-blocking: show overlay anyway (offline or session expired)
+        console.warn('Profile API error:', data.error);
+      }
+    } catch (err) {
+      console.warn('Profile save failed (offline?):', err);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> إتمام التسجيل والتسوق';
+    }
+
+    // ── Show success overlay ──────────────────────────
     try {
       const overlay = document.getElementById('success-overlay');
       const title   = document.getElementById('success-title');
       if (name) title.textContent = 'أهلاً ' + name + '!';
       window.scrollTo({ top: 0, behavior: 'instant' });
       overlay.classList.add('show');
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow    = 'hidden';
       document.body.style.touchAction = 'none';
     } catch (e) { console.error('overlay error:', e); }
   });
