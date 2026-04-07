@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تواصل معنا - المصطفى</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            min-height: 100vh;
+            direction: rtl;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .header { text-align: center; margin-bottom: 3rem; }
+        .title { font-family: 'Amiri', serif; font-size: 3rem; color: #fed65b; margin-bottom: 1rem; }
+        .subtitle { font-size: 1.2rem; color: rgba(255,255,255,0.7); }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .contact-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s ease;
+        }
+        .contact-card:hover { transform: translateY(-5px); }
+
+        .contact-icon {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: rgba(254,214,91,0.1);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .contact-icon .material-symbols-outlined { font-size: 30px; color: #fed65b; }
+        .contact-title { font-size: 1.5rem; margin-bottom: 0.5rem; color: #fed65b; }
+        .contact-info { font-size: 1rem; color: rgba(255,255,255,0.8); line-height: 1.6; }
+
+        /* =============================================
+           FLOATING CONTACT BUTTON — NEW DESIGN
+           ============================================= */
+
+        /* Wrapper — anchors everything to bottom-left */
+        #contact-fab {
+            position: fixed;
+            bottom: 36px;
+            left: 36px;
+            z-index: 9999;
+            direction: ltr;
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+
+        /* ---- pill link ---- */
+        #contact-fab a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            height: 56px;
+            border-radius: 28px;
+            padding: 0 20px 0 16px;
+            text-decoration: none;
+            color: #fff;
+            font-family: 'Amiri', serif;
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+            /* shape/color transition */
+            transition: background 0.5s ease, box-shadow 0.5s ease, transform 0.2s ease;
+        }
+
+        #contact-fab a:hover  { transform: scale(1.06); }
+        #contact-fab a:active { transform: scale(0.97); }
+
+        /* WhatsApp state */
+        #contact-fab a.wa {
+            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+            box-shadow: 0 6px 28px rgba(37,211,102,0.45);
+        }
+
+        /* Phone state */
+        #contact-fab a.ph {
+            background: linear-gradient(135deg, #42a5f5 0%, #1565c0 100%);
+            box-shadow: 0 6px 28px rgba(66,165,245,0.45);
+        }
+
+        /* ripple on click */
+        #contact-fab a::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: rgba(255,255,255,0.18);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        #contact-fab a:active::after { opacity: 1; }
+
+        /* ---- pulse ring ---- */
+        #contact-fab .pulse {
+            position: absolute;
+            inset: 0;
+            border-radius: 28px;
+            pointer-events: none;
+            animation: pillPulse 2.8s ease-out infinite;
+        }
+        #contact-fab a.wa + .pulse { background: #25d366; }
+        #contact-fab a.ph + .pulse { background: #42a5f5; }
+
+        @keyframes pillPulse {
+            0%   { transform: scale(1);    opacity: 0.45; }
+            70%  { transform: scale(1.25); opacity: 0;    }
+            100% { transform: scale(1.25); opacity: 0;    }
+        }
+
+        /* ---- icon wrapper ---- */
+        #contact-fab .fab-icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            /* flip animation when switching */
+            transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease;
+        }
+        #contact-fab .fab-icon.flip {
+            transform: rotateY(90deg);
+            opacity: 0;
+        }
+
+        #contact-fab .fab-icon svg,
+        #contact-fab .fab-icon .material-symbols-outlined {
+            display: block;
+            color: white;
+            font-size: 26px;
+        }
+
+        /* ---- label that slides in from left ---- */
+        #contact-fab .fab-text {
+            overflow: hidden;
+            max-width: 0;
+            opacity: 0;
+            transition: max-width 0.5s cubic-bezier(0.4,0,0.2,1),
+                        opacity 0.3s ease;
+        }
+        #contact-fab .fab-text.open {
+            max-width: 160px;
+            opacity: 1;
+        }
+
+        /* ---- mode badge (small pill above) ---- */
+        #contact-fab .mode-badge {
+            position: absolute;
+            top: -9px;
+            left: 10px;
+            font-family: 'Manrope', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(4px);
+            color: #fff;
+            letter-spacing: 0.5px;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        @media (max-width: 600px) {
+            #contact-fab { bottom: 24px; left: 24px; }
+            #contact-fab a { height: 50px; border-radius: 25px; font-size: 14px; }
+            #contact-fab .pulse { border-radius: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1 class="title">تواصل معنا</h1>
+        <p class="subtitle">نحن هنا لمساعدتك على مدار الساعة</p>
+    </div>
+
+    <div class="contact-grid">
+        <div class="contact-card">
+            <div class="contact-icon">
+                <span class="material-symbols-outlined">phone</span>
+            </div>
+            <h2 class="contact-title">الهاتف</h2>
+            <p class="contact-info">01234567890<br>متاح من 9 صباحاً حتى 9 مساءً</p>
+        </div>
+        <div class="contact-card">
+            <div class="contact-icon">
+                <span class="material-symbols-outlined">chat</span>
+            </div>
+            <h2 class="contact-title">واتساب</h2>
+            <p class="contact-info">01234567890<br>متاح على مدار 24 ساعة</p>
+        </div>
+        <div class="contact-card">
+            <div class="contact-icon">
+                <span class="material-symbols-outlined">email</span>
+            </div>
+            <h2 class="contact-title">البريد الإلكتروني</h2>
+            <p class="contact-info">info@almustafa.com<br>نرد خلال 24 ساعة</p>
+        </div>
+    </div>
+</div>
+
+<!-- ===== NEW FLOATING CONTACT BUTTON ===== -->
+<div id="contact-fab">
+    <a id="fab-anchor" class="wa" href="#" target="_blank" rel="noopener" aria-label="تواصل معنا">
+
+        <!-- mode badge -->
+        <span class="mode-badge" id="fab-badge">واتساب</span>
+
+        <!-- icon -->
+        <span class="fab-icon" id="fab-icon">
+            <!-- WhatsApp SVG -->
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="white" aria-hidden="true">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+            </svg>
+        </span>
+
+        <!-- label -->
+        <span class="fab-text" id="fab-text">تواصل معنا</span>
+    </a>
+    <span class="pulse" id="fab-pulse"></span>
+</div>
+
+<script>
+(function () {
+    var WA_HREF  = 'https://wa.me/201234567890?text=' +
+                   encodeURIComponent('مرحباً، أود الاستفسار عن منتجاتكم');
+    var PH_HREF  = 'tel:01234567890';
+
+    var anchor  = document.getElementById('fab-anchor');
+    var iconBox = document.getElementById('fab-icon');
+    var text    = document.getElementById('fab-text');
+    var badge   = document.getElementById('fab-badge');
+    var pulse   = document.getElementById('fab-pulse');
+
+    var WA_ICON = '<svg viewBox="0 0 24 24" width="26" height="26" fill="white" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+    var PH_ICON  = '<span class="material-symbols-outlined" style="color:white;font-size:26px">call</span>';
+
+    var isWA = true;
+
+    function switchMode() {
+        /* 1 — flip icon out */
+        iconBox.classList.add('flip');
+
+        setTimeout(function () {
+            isWA = !isWA;
+
+            if (isWA) {
+                anchor.className  = 'wa';
+                anchor.href       = WA_HREF;
+                anchor.target     = '_blank';
+                iconBox.innerHTML = WA_ICON;
+                badge.textContent = 'واتساب';
+                pulse.style.background = '';          /* reset to CSS rule */
+            } else {
+                anchor.className  = 'ph';
+                anchor.href       = PH_HREF;
+                anchor.target     = '_self';
+                iconBox.innerHTML = PH_ICON;
+                badge.textContent = 'اتصال';
+                pulse.style.background = '#42a5f5';
+            }
+
+            /* 2 — flip icon back in */
+            iconBox.classList.remove('flip');
+        }, 200);
+    }
+
+    /* toggle every 4 s */
+    setInterval(switchMode, 4000);
+
+    /* label: slide in on load, then slide out */
+    setTimeout(function () {
+        text.classList.add('open');
+        setTimeout(function () { text.classList.remove('open'); }, 3500);
+    }, 600);
+
+    /* label: show on hover */
+    anchor.addEventListener('mouseenter', function () { text.classList.add('open'); });
+    anchor.addEventListener('mouseleave', function () { text.classList.remove('open'); });
+
+    /* set correct initial href */
+    anchor.href = WA_HREF;
+}());
+</script>
+<script src="js/v_id_bootstrap.js"></script>
+<script>if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); }); }</script>
+</body>
+</html>

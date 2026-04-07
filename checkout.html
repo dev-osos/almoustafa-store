@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>المصطفى | تأكيد الطلب</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Manrope:wght@200..800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="icons/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      colors: {
+        "secondary":"#735c00","on-surface":"#1c1c17","surface-container-high":"#ece8df",
+        "on-background":"#1c1c17","primary-container":"#5d0e12","surface":"#fdf9f0",
+        "on-primary":"#ffffff","on-secondary":"#ffffff","on-surface-variant":"#564241",
+        "background":"#fdf9f0","secondary-container":"#fed65b","primary":"#3c0004",
+        "outline":"#897270","outline-variant":"#dcc0be","surface-container-low":"#f7f3ea",
+        "surface-container":"#f1eee5",
+      },
+      fontFamily: { "headline":["Amiri","serif"], "body":["Manrope","sans-serif"] },
+    }}
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24 }
+
+  body { background: #f1eee5; min-height: 100vh; }
+
+  /* Page fade-in */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+  .fade-up { animation: fadeUp 0.6s cubic-bezier(0.4,0,0.2,1) both; }
+  .fade-up-2 { animation: fadeUp 0.6s cubic-bezier(0.4,0,0.2,1) 0.12s both; }
+  .fade-up-3 { animation: fadeUp 0.6s cubic-bezier(0.4,0,0.2,1) 0.24s both; }
+  .fade-up-4 { animation: fadeUp 0.6s cubic-bezier(0.4,0,0.2,1) 0.36s both; }
+
+  /* Card */
+  .invoice-card {
+    background: #fff; border-radius: 20px;
+    border: 1px solid rgba(60,0,4,0.07);
+    box-shadow: 0 4px 24px rgba(60,0,4,0.06);
+    overflow: hidden;
+  }
+
+  /* Section header inside card */
+  .card-section-title {
+    font-family: 'Amiri', serif; font-size: 0.78rem; font-weight: 700;
+    color: rgba(60,0,4,0.45); letter-spacing: 0.1em;
+    padding: 16px 20px 10px; border-bottom: 1px solid rgba(60,0,4,0.06);
+    display: flex; align-items: center; gap: 7px;
+    text-transform: uppercase;
+  }
+
+  /* Order item row */
+  .order-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px; border-bottom: 1px solid rgba(60,0,4,0.05);
+  }
+  .order-row:last-child { border-bottom: none; }
+  .order-row-img { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; flex-shrink:0; border: 1px solid rgba(60,0,4,0.08); }
+  .order-row-name { font-family:'Amiri',serif; font-size:0.95rem; font-weight:700; color:#3c0004; }
+  .order-row-qty  { font-size:0.75rem; color:rgba(60,0,4,0.45); margin-top:2px; }
+  .order-row-price{ font-family:'Manrope',sans-serif; font-size:0.88rem; font-weight:700; color:#735c00; margin-right:auto; flex-shrink:0; }
+
+  /* Info row */
+  .info-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px; border-bottom: 1px solid rgba(60,0,4,0.05);
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-row-icon { width: 36px; height: 36px; border-radius: 10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .info-row-label { font-size:0.7rem; color:rgba(60,0,4,0.4); font-weight:600; letter-spacing:0.04em; }
+  .info-row-value { font-family:'Amiri',serif; font-size:0.95rem; font-weight:700; color:#3c0004; }
+
+  /* Total rows */
+  .total-row { display:flex; justify-content:space-between; padding: 10px 20px; }
+  .total-row.grand { border-top: 2px solid rgba(60,0,4,0.1); margin-top:4px; padding-top:14px; }
+
+  /* Delivery badge */
+  .delivery-badge {
+    background: linear-gradient(135deg, rgba(60,0,4,0.05), rgba(115,92,0,0.08));
+    border: 1px solid rgba(115,92,0,0.2); border-radius: 14px;
+    padding: 16px 20px; display: flex; align-items: center; gap: 14px;
+  }
+  .delivery-icon-wrap {
+    width: 48px; height: 48px; border-radius: 12px; flex-shrink:0;
+    background: rgba(115,92,0,0.1); display:flex; align-items:center; justify-content:center;
+  }
+
+  /* Confirm button */
+  .confirm-btn {
+    width:100%; padding:15px;
+    background: linear-gradient(135deg, #3c0004, #5d0e12);
+    color:#fff; border:none; border-radius:14px;
+    font-family:'Amiri',serif; font-size:1.1rem; font-weight:700;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+    box-shadow: 0 8px 28px rgba(60,0,4,0.28);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .confirm-btn:hover { transform:translateY(-2px); box-shadow:0 12px 36px rgba(60,0,4,0.4); }
+
+  /* Success overlay */
+  #success-overlay {
+    position: fixed; inset:0; background: rgba(253,249,240,0.97);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    z-index: 999; opacity:0; pointer-events:none;
+    transition: opacity 0.4s ease;
+    text-align:center; padding:24px;
+  }
+  #success-overlay.show { opacity:1; pointer-events:auto; }
+  @keyframes scaleIn { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+  .success-icon-wrap {
+    width:88px; height:88px; border-radius:50%;
+    background: rgba(60,0,4,0.07); border: 3px solid rgba(60,0,4,0.15);
+    display:flex; align-items:center; justify-content:center; margin-bottom:20px;
+    animation: scaleIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.1s both;
+  }
+
+  /* Order ID */
+  .order-id-badge {
+    background: rgba(254,214,91,0.18); border:1px solid rgba(115,92,0,0.25);
+    border-radius:30px; padding:6px 18px;
+    font-family:'Manrope',sans-serif; font-size:0.8rem; font-weight:700; color:#735c00;
+    letter-spacing: 0.06em;
+  }
+</style>
+</head>
+<body>
+
+<!-- Success overlay -->
+<div id="success-overlay">
+  <div class="success-icon-wrap">
+    <span class="material-symbols-outlined text-primary" style="font-size:44px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">check_circle</span>
+  </div>
+  <h2 class="font-headline text-4xl text-primary font-bold mb-3">تم تأكيد طلبك!</h2>
+  <p class="text-on-surface-variant text-sm mb-6">سنتواصل معك قريباً لتأكيد التوصيل</p>
+  <div class="order-id-badge mb-8" id="success-order-id"></div>
+  <a href="products.html" class="confirm-btn" style="max-width:280px;text-decoration:none">
+    <span class="material-symbols-outlined" style="font-size:18px">storefront</span>
+    متابعة التسوق
+  </a>
+</div>
+
+<!-- Nav -->
+<nav class="w-full bg-[#fdf9f0]/95 backdrop-blur-md shadow-sm border-b border-primary/5 flex justify-between items-center px-12 py-6 sticky top-0 z-50">
+  <div class="flex items-center gap-4">
+    <img alt="Al Moustafa Logo" class="h-12 w-auto drop-shadow-md" src="logo.png"/>
+    <div class="flex flex-col">
+      <span class="text-2xl font-bold font-headline text-[#3c0004] uppercase tracking-[0.2em] leading-none">متجر المصطفى</span>
+    </div>
+  </div>
+  <a href="products.html" class="flex items-center gap-2 text-[#3c0004]/60 font-headline text-sm hover:text-[#3c0004] transition-colors">
+    <i class="bi bi-arrow-right"></i> العودة للمتجر
+  </a>
+</nav>
+
+<div class="container mx-auto px-4 md:px-12 py-12 max-w-4xl">
+
+  <!-- Page title -->
+  <div class="mb-8 fade-up">
+    <div class="flex items-center gap-3 mb-2">
+      <span class="material-symbols-outlined text-secondary" style="font-size:20px">receipt_long</span>
+      <span class="font-headline text-secondary text-sm font-bold tracking-widest">مراجعة الطلب</span>
+    </div>
+    <h1 class="font-headline text-5xl text-primary">تفاصيل الفاتورة</h1>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+
+    <!-- Left column: order items + totals -->
+    <div class="md:col-span-3 flex flex-col gap-5">
+
+      <!-- Order ID + date -->
+      <div class="flex items-center justify-between fade-up">
+        <div class="order-id-badge" id="order-id-display"></div>
+        <span class="text-on-surface-variant text-xs font-body" id="order-date"></span>
+      </div>
+
+      <!-- Items -->
+      <div class="invoice-card fade-up-2">
+        <div class="card-section-title">
+          <i class="bi bi-bag-check"></i> المنتجات المطلوبة
+        </div>
+        <div id="order-items-list"></div>
+
+        <!-- Totals -->
+        <div style="background:rgba(60,0,4,0.02); border-top:1px solid rgba(60,0,4,0.06); padding-bottom:4px;">
+          <div class="total-row">
+            <span class="text-on-surface-variant text-sm font-body">المجموع الفرعي</span>
+            <span class="font-body text-sm font-bold text-on-surface" id="subtotal-val"></span>
+          </div>
+          <div class="total-row">
+            <span class="text-on-surface-variant text-sm font-body">رسوم الشحن</span>
+            <span class="font-body text-sm font-bold text-secondary" id="shipping-val"></span>
+          </div>
+          <div class="total-row grand">
+            <span class="font-headline text-lg text-primary font-bold">الإجمالي</span>
+            <span class="font-headline text-xl text-primary font-bold" id="total-val"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivery estimate -->
+      <div class="invoice-card fade-up-3 p-4">
+        <div class="delivery-badge">
+          <div class="delivery-icon-wrap">
+            <span class="material-symbols-outlined text-secondary" style="font-size:24px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">local_shipping</span>
+          </div>
+          <div>
+            <div class="font-headline text-sm text-on-surface-variant mb-1 font-bold">الوقت المقدر للوصول</div>
+            <div class="font-headline text-xl text-primary font-bold" id="delivery-date"></div>
+            <div class="text-on-surface-variant text-xs mt-1" id="delivery-range"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right column: user info + confirm -->
+    <div class="md:col-span-2 flex flex-col gap-5">
+
+      <!-- User info -->
+      <div class="invoice-card fade-up-2">
+        <div class="card-section-title">
+          <i class="bi bi-person-circle"></i> بيانات المستلم
+        </div>
+
+        <div class="info-row">
+          <div class="info-row-icon" style="background:rgba(60,0,4,0.06)">
+            <span class="material-symbols-outlined text-primary" style="font-size:18px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">person</span>
+          </div>
+          <div>
+            <div class="info-row-label">الاسم</div>
+            <div class="info-row-value" id="user-name">—</div>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-row-icon" style="background:rgba(60,0,4,0.06)">
+            <span class="material-symbols-outlined text-primary" style="font-size:18px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">phone_iphone</span>
+          </div>
+          <div>
+            <div class="info-row-label">رقم الهاتف</div>
+            <div class="info-row-value" id="user-phone" style="direction:ltr;text-align:right">—</div>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-row-icon" style="background:rgba(60,0,4,0.06)">
+            <span class="material-symbols-outlined text-primary" style="font-size:18px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">location_on</span>
+          </div>
+          <div>
+            <div class="info-row-label">عنوان التوصيل</div>
+            <div class="info-row-value" id="user-address">—</div>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-row-icon" style="background:rgba(115,92,0,0.1)">
+            <span class="material-symbols-outlined text-secondary" style="font-size:18px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">account_balance_wallet</span>
+          </div>
+          <div>
+            <div class="info-row-label">رصيد المحفظة</div>
+            <div class="info-row-value" id="user-wallet" style="color:#735c00">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Note -->
+      <div class="invoice-card fade-up-3 p-4">
+        <div class="card-section-title" style="padding:0 0 10px;border-bottom:none">
+          <i class="bi bi-chat-square-text"></i> ملاحظة للطلب
+        </div>
+        <textarea id="order-note" rows="3" placeholder="أي تعليمات خاصة للتوصيل..." style="width:100%;padding:10px 12px;border:1.5px solid rgba(60,0,4,0.12);border-radius:10px;font-family:'Manrope',sans-serif;font-size:0.82rem;color:#1c1c17;outline:none;resize:none;background:#fdf9f0" onfocus="this.style.borderColor='rgba(60,0,4,0.4)'" onblur="this.style.borderColor='rgba(60,0,4,0.12)'"></textarea>
+      </div>
+
+      <!-- Confirm button -->
+      <div class="fade-up-4">
+        <button class="confirm-btn" id="btn-place-order">
+          <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">verified</span>
+          تأكيد و إتمام الطلب
+        </button>
+        <p class="text-center text-on-surface-variant text-xs mt-3 font-body">
+          <i class="bi bi-shield-check text-secondary"></i>
+          جميع المعاملات آمنة ومشفرة
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const arabicNums = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+  function toAr(n) { return String(n).split('').map(d => arabicNums[+d] ?? d).join(''); }
+  function fmtPrice(n) { return n.toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' ج.م'; }
+
+  // --- Load cart ---
+  let cart = [];
+  try { cart = JSON.parse(localStorage.getItem('alm_cart')) || []; } catch {}
+
+  if (!cart.length) { window.location.href = 'products.html'; return; }
+
+  // --- Load session ---
+  let session = {};
+  try { session = JSON.parse(localStorage.getItem('alm_session')) || {}; } catch {}
+
+  // --- Order ID & date ---
+  const orderId = 'ALM-' + Date.now().toString(36).toUpperCase().slice(-6);
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ar-EG', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('order-id-display').textContent = orderId;
+  document.getElementById('success-order-id').textContent = orderId;
+  document.getElementById('order-date').textContent = dateStr;
+
+  // --- Delivery estimate (3-5 days) ---
+  const deliveryDays = Math.floor(Math.random() * 3) + 3; // 3-5
+  const deliveryDate = new Date(now);
+  deliveryDate.setDate(deliveryDate.getDate() + deliveryDays);
+  const deliveryStr = deliveryDate.toLocaleDateString('ar-EG', { weekday:'long', month:'long', day:'numeric' });
+  document.getElementById('delivery-date').textContent = deliveryStr;
+  document.getElementById('delivery-range').textContent = 'خلال ' + toAr(deliveryDays) + ' أيام عمل من الآن';
+
+  // --- Fill user info ---
+  document.getElementById('user-name').textContent    = session.name    || 'غير محدد';
+  document.getElementById('user-phone').textContent   = session.phone   || 'غير محدد';
+  document.getElementById('user-address').textContent = session.address || 'لم يتم تحديد العنوان';
+  const balance = session.wallet ?? 0;
+  document.getElementById('user-wallet').textContent = Number(balance).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' ج.م';
+
+  // --- Render order items ---
+  const list = document.getElementById('order-items-list');
+  let subtotal = 0;
+
+  cart.forEach(item => {
+    subtotal += item.price * item.qty;
+    const row = document.createElement('div');
+    row.className = 'order-row';
+
+    const img = document.createElement('img');
+    img.className = 'order-row-img'; img.src = item.img; img.alt = item.name;
+
+    const info = document.createElement('div');
+    info.style.flex = '1';
+    const nameEl = document.createElement('div'); nameEl.className = 'order-row-name'; nameEl.textContent = item.name;
+    const qtyEl  = document.createElement('div'); qtyEl.className  = 'order-row-qty';
+    qtyEl.textContent = 'الكمية: ' + toAr(item.qty) + ' × ' + fmtPrice(item.price);
+    info.append(nameEl, qtyEl);
+
+    const priceEl = document.createElement('div');
+    priceEl.className = 'order-row-price';
+    priceEl.textContent = fmtPrice(item.price * item.qty);
+
+    row.append(img, info, priceEl);
+    list.appendChild(row);
+  });
+
+  const shipping = subtotal >= 500 ? 0 : 50;
+  const total = subtotal + shipping;
+
+  document.getElementById('subtotal-val').textContent = fmtPrice(subtotal);
+  document.getElementById('shipping-val').textContent = shipping === 0 ? 'مجاني' : fmtPrice(shipping);
+  document.getElementById('total-val').textContent    = fmtPrice(total);
+
+  // --- Place order ---
+  document.getElementById('btn-place-order').addEventListener('click', () => {
+    localStorage.removeItem('alm_cart');
+    document.getElementById('success-overlay').classList.add('show');
+  });
+
+})();
+</script>
+<style>.dev-badge{display:inline-flex;align-items:center;gap:.75rem;padding:.55rem 1.25rem .55rem 1rem;background:rgba(60,0,4,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:9999px;border:1px solid rgba(254,214,91,.25);box-shadow:0 4px 24px rgba(60,0,4,.35),inset 0 1px 0 rgba(254,214,91,.15);white-space:nowrap;text-decoration:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease,border-color .3s ease}.dev-badge:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 8px 32px rgba(60,0,4,.5),inset 0 1px 0 rgba(254,214,91,.3);border-color:rgba(254,214,91,.5)}.dev-badge:hover .badge-icon{animation:spark .5s ease forwards}@keyframes spark{0%{transform:rotate(0) scale(1)}30%{transform:rotate(-15deg) scale(1.2)}60%{transform:rotate(10deg) scale(.95)}100%{transform:rotate(0) scale(1)}}.badge-icon{width:1.75rem;height:1.75rem;background:linear-gradient(135deg,#fed65b,#b88a00);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}.badge-icon i{font-size:.8rem;color:#3c0004;line-height:1}.badge-text{display:flex;flex-direction:column;gap:.05rem;line-height:1}.badge-label{font-family:'Manrope',sans-serif;font-size:.6rem;font-weight:300;color:rgba(254,214,91,.55);letter-spacing:.08em;text-transform:uppercase}.badge-name{font-family:'Amiri',serif;font-size:.95rem;font-weight:700;color:#fed65b;letter-spacing:.02em}.dev-badge::before{content:'';position:absolute;inset:0;border-radius:9999px;padding:1px;background:linear-gradient(90deg,transparent,rgba(254,214,91,.4),transparent);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}.dev-badge-wrap{display:flex;justify-content:center;padding:2.5rem 0 3rem;}</style>
+<!-- Bottom bar -->
+<div class="border-t border-[#fdf9f0]/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+  <p class="font-headline text-xs text-[#fdf9f0]/25 tracking-widest">© ٢٠١٨ المصطفى — جميع الحقوق محفوظة.</p>
+  <a class="dev-badge" href="#">
+    <span class="badge-icon"><i class="bi bi-lightning-charge-fill"></i></span>
+    <span class="badge-text">
+      <span class="badge-label">Developed &amp; Powered by</span>
+      <span class="badge-name">Osama Saied</span>
+    </span>
+  </a>
+  <div class="flex items-center gap-2">
+    <span class="material-symbols-outlined text-[#fed65b]/40" style="font-size:16px;">verified</span>
+    <span class="text-xs text-[#fdf9f0]/25 font-headline">منتجات طبيعية ١٠٠٪ مضمونة</span>
+  </div>
+</div>
+<style>
+  #contact-fab {
+    position: fixed;
+    bottom: 36px;
+    left: 36px;
+    z-index: 9999;
+    direction: ltr;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  #contact-fab::before {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--fab-color, #25d366);
+    opacity: 0;
+    animation: fabPulse 2.8s ease-out infinite;
+    pointer-events: none;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  @keyframes fabPulse {
+    0% { transform: translateY(-50%) scale(1); opacity: 0.6; }
+    70% { transform: translateY(-50%) scale(2); opacity: 0; }
+    100% { transform: translateY(-50%) scale(2); opacity: 0; }
+  }
+  #contact-fab a.fab-link {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--fab-color, #25d366);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 0 2px rgba(254,214,91,0.25);
+    transition: background 0.5s ease, box-shadow 0.4s ease, transform 0.2s ease;
+    text-decoration: none;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  #contact-fab a.fab-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(254,214,91,0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  #contact-fab a.fab-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: rgba(255,255,255,0.2);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  #contact-fab a.fab-link:active::after { opacity: 1; }
+  #contact-fab a.fab-link:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 28px rgba(0,0,0,0.5), 0 0 0 2.5px rgba(254,214,91,0.5);
+  }
+  #contact-fab .fab-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease;
+  }
+  #contact-fab .fab-icon.flip { transform: rotateY(90deg); opacity: 0; }
+  #contact-fab .fab-icon svg { display: block; }
+  #contact-fab .fab-text {
+    overflow: hidden;
+    max-width: 0;
+    opacity: 0;
+    font-family: 'Amiri', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fed65b;
+    white-space: nowrap;
+    margin-left: 10px;
+    padding: 7px 18px;
+    border-radius: 22px;
+    border: 1.5px solid rgba(254,214,91,0.5);
+    background: rgba(60,0,4,0.85);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 16px rgba(60,0,4,0.5), inset 0 1px 0 rgba(254,214,91,0.15);
+    transition: max-width 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+    pointer-events: none;
+    letter-spacing: 0.02em;
+  }
+  #contact-fab .fab-text.open { max-width: 180px; opacity: 1; }
+  @media (max-width: 768px) {
+    #contact-fab {
+      bottom: 20px;
+      left: 20px;
+    }
+    #contact-fab a.fab-link {
+      width: 52px;
+      height: 52px;
+    }
+    #contact-fab .fab-text { font-size: 13px; }
+  }
+</style>
+<div id="contact-fab">
+  <a class="fab-link" id="fab-anchor" href="#" aria-label="تواصل معنا" rel="noopener">
+    <span class="fab-icon" id="fab-icon"></span>
+  </a>
+  <span class="fab-text" id="fab-text">تواصل معنا</span>
+</div>
+<script>
+  (function () {
+    var WA_HREF = 'https://wa.me/201234567890?text=' + encodeURIComponent('مرحباً، أود الاستفسار عن منتجاتكم');
+    var PH_HREF = 'tel:01234567890';
+    var WA_COLOR = '#25d366';
+    var PH_COLOR = '#6b0008';
+    var WA_ICON = '<svg viewBox="0 0 24 24" width="26" height="26" fill="white" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+    var PH_ICON = '<svg viewBox="0 0 24 24" width="26" height="26" fill="white" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.3 21 3 13.7 3 4a1 1 0 011-1h3.49a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.24 1.01z"/></svg>';
+
+    function init() {
+      var fab = document.getElementById('contact-fab');
+      var link = document.getElementById('fab-anchor');
+      var iconBox = document.getElementById('fab-icon');
+      var text = document.getElementById('fab-text');
+      if (!fab || !link || !iconBox || !text) return;
+
+      var isWA = true;
+      var labelVisible = false;
+
+      function applyMode() {
+        fab.style.setProperty('--fab-color', isWA ? WA_COLOR : PH_COLOR);
+        link.href = isWA ? WA_HREF : PH_HREF;
+        link.target = isWA ? '_blank' : '_self';
+        link.setAttribute('aria-label', isWA ? 'تواصل عبر واتساب' : 'اتصل بنا');
+        iconBox.innerHTML = isWA ? WA_ICON : PH_ICON;
+      }
+
+      function switchMode() {
+        iconBox.classList.add('flip');
+        setTimeout(function () {
+          isWA = !isWA;
+          applyMode();
+          iconBox.classList.remove('flip');
+        }, 200);
+      }
+
+      function toggleLabel() {
+        labelVisible = !labelVisible;
+        text.classList.toggle('open', labelVisible);
+      }
+
+      setTimeout(function () {
+        text.classList.add('open');
+        labelVisible = true;
+      }, 800);
+
+      setInterval(toggleLabel, 3500);
+      setInterval(switchMode, 4000);
+
+      link.addEventListener('mouseenter', function () {
+        text.classList.add('open');
+        labelVisible = true;
+      });
+
+      applyMode();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  }());
+</script>
+<script src="js/v_id_bootstrap.js"></script>
+<script>if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); }); }</script>
+</body>
+</html>

@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+4<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Manrope:wght@200..800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="icons/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "on-secondary-fixed-variant": "#574500",
+          "surface-dim": "#dddad1",
+          "on-error": "#ffffff",
+          "surface-bright": "#fdf9f0",
+          "on-tertiary": "#ffffff",
+          "surface-container": "#f1eee5",
+          "inverse-primary": "#ffb3af",
+          "inverse-surface": "#31312b",
+          "inverse-on-surface": "#f4f0e7",
+          "secondary": "#735c00",
+          "on-primary-container": "#e37470",
+          "outline-variant": "#dcc0be",
+          "error": "#ba1a1a",
+          "on-tertiary-container": "#bd8e00",
+          "on-surface": "#1c1c17",
+          "surface-container-high": "#ece8df",
+          "on-background": "#1c1c17",
+          "on-primary-fixed": "#410005",
+          "primary-container": "#5d0e12",
+          "surface": "#fdf9f0",
+          "primary-fixed-dim": "#ffb3af",
+          "on-tertiary-fixed-variant": "#5b4300",
+          "surface-container-highest": "#e6e2d9",
+          "on-primary": "#ffffff",
+          "on-tertiary-fixed": "#261a00",
+          "on-secondary-fixed": "#241a00",
+          "surface-container-lowest": "#ffffff",
+          "tertiary": "#221700",
+          "on-secondary-container": "#745c00",
+          "on-secondary": "#ffffff",
+          "tertiary-container": "#3c2b00",
+          "error-container": "#ffdad6",
+          "tertiary-fixed": "#ffdf9e",
+          "primary": "#3c0004",
+          "primary-fixed": "#ffdad7",
+          "outline": "#897270",
+          "secondary-fixed-dim": "#e9c349",
+          "tertiary-fixed-dim": "#fabd00",
+          "on-error-container": "#93000a",
+          "secondary-fixed": "#ffe088",
+          "surface-tint": "#9f3f3e",
+          "surface-variant": "#e6e2d9",
+          "surface-container-low": "#f7f3ea",
+          "on-surface-variant": "#564241",
+          "on-primary-fixed-variant": "#802828",
+          "background": "#fdf9f0",
+          "secondary-container": "#fed65b"
+        },
+        fontFamily: {
+          "headline": ["Amiri", "serif"],
+          "body": ["Manrope", "sans-serif"],
+          "label": ["Manrope", "sans-serif"]
+        },
+        borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  }
+
+  /* Skeleton */
+  .skeleton {
+    background-color: #e2e8f0;
+    background-image: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+  }
+  .skeleton-dark {
+    background-color: #374151;
+    background-image: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+  }
+  @keyframes skeleton-loading {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .sk-d1 { animation-delay: 0.1s; }
+  .sk-d2 { animation-delay: 0.2s; }
+  .sk-d3 { animation-delay: 0.3s; }
+
+  .content-hidden  { opacity: 0; pointer-events: none; }
+  .content-visible { opacity: 1; transition: opacity 0.8s ease-out; }
+
+  /* Panel expand on hover */
+  .collection-panel {
+    flex: 1;
+    transition: flex 0.7s cubic-bezier(0.4, 0, 0.2, 1), filter 0.5s ease;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+  }
+  .collection-panel:hover { flex: 1.9; }
+  .panels-container:hover .collection-panel:not(:hover) {
+    flex: 0.7;
+    filter: brightness(0.75) saturate(0.8);
+  }
+
+  /* Panel background images */
+  .panel-honey {
+    background:
+      linear-gradient(160deg, rgba(60,0,4,0.55) 0%, rgba(115,92,0,0.35) 60%, rgba(60,0,4,0.7) 100%),
+      url('pics/collections/honey.jpg') center/cover no-repeat;
+  }
+  .panel-derivatives {
+    background:
+      linear-gradient(160deg, rgba(34,23,0,0.6) 0%, rgba(60,43,0,0.4) 60%, rgba(34,23,0,0.75) 100%),
+      url('pics/collections/derivatives.jpg') center/cover no-repeat;
+  }
+  .panel-beauty {
+    background:
+      linear-gradient(160deg, rgba(60,0,4,0.5) 0%, rgba(146,72,72,0.3) 50%, rgba(60,0,4,0.7) 100%),
+      url('pics/collections/beauty.jpg') center/cover no-repeat;
+  }
+  .panel-dates {
+    background:
+      linear-gradient(160deg, rgba(50,25,0,0.65) 0%, rgba(100,55,10,0.35) 55%, rgba(50,25,0,0.8) 100%),
+      url('pics/collections/dates.jpg') center/cover no-repeat;
+  }
+  .panel-nuts {
+    background:
+      linear-gradient(160deg, rgba(30,20,5,0.65) 0%, rgba(80,60,20,0.35) 55%, rgba(30,20,5,0.8) 100%),
+      url('pics/collections/nuts.jpg') center/cover no-repeat;
+  }
+
+  /* Hover image zoom */
+  .panel-bg-zoom {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .collection-panel:hover .panel-bg-zoom { transform: scale(1.08); }
+
+  /* Text reveal */
+  .panel-desc {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.6s ease, opacity 0.5s ease 0.15s;
+  }
+  .collection-panel:hover .panel-desc {
+    max-height: 120px;
+    opacity: 1;
+  }
+
+  /* Number label */
+  .panel-number {
+    font-family: 'Amiri', serif;
+    font-size: 8rem;
+    line-height: 1;
+    color: rgba(255,255,255,0.07);
+    position: absolute;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: color 0.5s ease;
+    pointer-events: none;
+    user-select: none;
+  }
+  .collection-panel:hover .panel-number { color: rgba(254,214,91,0.13); }
+
+  /* Gold divider line */
+  .panel-line {
+    width: 0;
+    height: 2px;
+    background: #fed65b;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
+  }
+  .collection-panel:hover .panel-line { width: 3rem; }
+
+  /* Arrow */
+  .panel-arrow {
+    transform: translateX(8px);
+    opacity: 0;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+  .collection-panel:hover .panel-arrow {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  /* Entrance animation */
+  @keyframes panelRise {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .panel-1 { animation: panelRise 0.9s cubic-bezier(0.4,0,0.2,1) 0.2s both; }
+  .panel-2 { animation: panelRise 0.9s cubic-bezier(0.4,0,0.2,1) 0.35s both; }
+  .panel-3 { animation: panelRise 0.9s cubic-bezier(0.4,0,0.2,1) 0.5s both; }
+  .panel-4 { animation: panelRise 0.9s cubic-bezier(0.4,0,0.2,1) 0.65s both; }
+  .panel-5 { animation: panelRise 0.9s cubic-bezier(0.4,0,0.2,1) 0.8s both; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .animate-fade-in { animation: fadeIn 1s ease both; }
+
+  /* Breadcrumb trail */
+  .breadcrumb-dot {
+    width: 6px; height: 6px;
+    border-radius: 9999px;
+    background: #735c00;
+    display: inline-block;
+  }
+  #cart-dropdown{position:absolute;top:calc(100% + 10px);left:0;width:320px;background:#fdf9f0;border:1px solid rgba(60,0,4,0.1);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,0.15);z-index:300;direction:rtl;overflow:hidden;opacity:0;pointer-events:none;transform:translateY(-8px);transition:opacity 0.2s ease,transform 0.2s ease}
+  #cart-dropdown.open{opacity:1;pointer-events:auto;transform:translateY(0)}
+  .cart-dd-header{padding:14px 18px 10px;border-bottom:1px solid rgba(60,0,4,0.07);font-family:'Amiri',serif;font-size:1rem;font-weight:700;color:#3c0004;display:flex;align-items:center;gap:6px}
+  .cart-dd-list{max-height:260px;overflow-y:auto;padding:8px 16px}
+  .cart-dd-list::-webkit-scrollbar{width:3px}
+  .cart-dd-list::-webkit-scrollbar-thumb{background:rgba(60,0,4,0.15);border-radius:3px}
+  .cart-dd-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(60,0,4,0.05)}
+  .cart-dd-row:last-child{border-bottom:none}
+  .cart-dd-img{width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1px solid rgba(60,0,4,0.08)}
+  .cart-dd-name{font-family:'Amiri',serif;font-size:0.88rem;font-weight:700;color:#3c0004}
+  .cart-dd-price{font-family:'Manrope',sans-serif;font-size:0.75rem;color:#735c00;font-weight:700}
+  .cart-dd-qty{font-family:'Manrope',sans-serif;font-size:0.72rem;color:rgba(60,0,4,0.45);margin-top:2px}
+  .cart-dd-footer-inner{padding:12px 16px 14px;border-top:1px solid rgba(60,0,4,0.07)}
+  .cart-dd-total{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .cart-dd-total-label{font-family:'Amiri',serif;font-size:0.82rem;color:rgba(60,0,4,0.5)}
+  .cart-dd-total-value{font-family:'Amiri',serif;font-size:1.1rem;font-weight:700;color:#3c0004}
+  .cart-dd-checkout-btn{width:100%;padding:11px;background:linear-gradient(135deg,#3c0004,#5d0e12);color:#fff;border:none;border-radius:10px;font-family:'Amiri',serif;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(60,0,4,0.2);transition:transform 0.15s,box-shadow 0.15s}
+  .cart-dd-checkout-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(60,0,4,0.3)}
+  .cart-dd-empty{text-align:center;padding:28px 16px 24px}
+  .cart-dd-empty-icon{font-size:40px;display:block;margin-bottom:8px;color:rgba(60,0,4,0.2)}
+  .cart-dd-empty-text{font-family:'Amiri',serif;font-size:0.95rem;color:rgba(60,0,4,0.4);margin-bottom:14px}
+  .cart-dd-shop-btn{display:inline-block;padding:9px 22px;border:1.5px solid rgba(60,0,4,0.2);border-radius:30px;font-family:'Amiri',serif;font-size:0.88rem;font-weight:700;color:#3c0004;text-decoration:none;transition:background 0.2s,border-color 0.2s}
+  .cart-dd-shop-btn:hover{background:rgba(60,0,4,0.05);border-color:rgba(60,0,4,0.4)}
+</style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-secondary-container selection:text-on-secondary-container overflow-x-hidden">
+
+<!-- Skeleton overlay -->
+<div class="fixed inset-0 z-[100] bg-background flex flex-col overflow-hidden pointer-events-none transition-opacity duration-700" id="loading-overlay">
+  <div class="h-24 w-full skeleton flex-shrink-0"></div>
+  <div class="flex flex-1 gap-3 p-6">
+    <div class="flex-1 rounded-2xl skeleton-dark sk-d1"></div>
+    <div class="flex-1 rounded-2xl skeleton-dark sk-d2"></div>
+    <div class="flex-1 rounded-2xl skeleton-dark sk-d3"></div>
+    <div class="flex-1 rounded-2xl skeleton-dark sk-d1"></div>
+    <div class="flex-1 rounded-2xl skeleton-dark sk-d2"></div>
+  </div>
+</div>
+
+<!-- Main content -->
+<div class="content-hidden flex flex-col min-h-screen" id="main-content">
+
+  <!-- Nav — identical to index.html -->
+  <nav class="fixed top-0 w-full z-50 bg-[#fdf9f0]/95 dark:bg-[#1c1c17]/95 backdrop-blur-md shadow-lg border-b border-primary/5 flex justify-between items-center px-12 py-8 max-w-full">
+    <div class="flex items-center gap-4">
+      <a href="index.html">
+        <img alt="Al Moustafa Logo" class="h-14 w-auto drop-shadow-md" src="logo.png"/>
+      </a>
+      <div class="flex flex-col">
+        <span class="text-xl md:text-3xl font-bold font-headline text-[#3c0004] dark:text-[#fed65b] uppercase tracking-[0.2em] leading-none">متجر المصطفى</span>
+        <span class="text-[11px] md:text-[15px] tracking-[0.3em] font-body text-secondary mt-1 uppercase">إسم يعني الثقه</span>
+      </div>
+    </div>
+    <div class="hidden md:flex items-center gap-12">
+      <a class="flex items-center gap-2 text-[#3c0004]/70 dark:text-[#fdf9f0]/70 font-headline font-semibold text-base tracking-wide hover:text-[#735c00] transition-colors duration-300" href="index.html">
+        <i class="bi bi-house-door text-sm"></i> تراثنا
+      </a>
+      <a class="flex items-center gap-2 text-[#3c0004] dark:text-[#fed65b] border-b-2 border-[#3c0004] dark:border-[#fed65b] pb-1 font-headline font-semibold text-base tracking-wide transition-all duration-300" href="#">
+        <i class="bi bi-shop text-sm"></i> منتجاتنا
+      </a>
+      <a class="flex items-center gap-2 text-[#3c0004]/70 dark:text-[#fdf9f0]/70 font-headline font-semibold text-base tracking-wide hover:text-[#735c00] transition-colors duration-300" href="reviews.html">
+        <i class="bi bi-star text-sm"></i> آراء العملاء
+      </a>
+      <button id="btn-contact" class="flex items-center gap-2 text-[#3c0004]/70 dark:text-[#fdf9f0]/70 font-headline font-semibold text-base tracking-wide hover:text-[#735c00] transition-colors duration-300">
+        <i class="bi bi-envelope text-sm"></i> تواصل معنا
+      </button>
+    </div>
+    <div class="flex items-center gap-8">
+      <div class="relative" id="cart-icon-wrapper">
+        <button id="btn-cart" aria-expanded="false" class="text-primary hover:text-secondary transition-all scale-110 relative">
+          <span class="material-symbols-outlined">shopping_bag</span>
+          <span id="cart-badge" style="display:none" class="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-red-600 text-white text-[10px] font-bold items-center justify-center font-body"></span>
+        </button>
+        <div id="cart-dropdown" aria-hidden="true"><div id="cart-dd-body"></div></div>
+      </div>
+      <button class="text-primary hover:text-secondary transition-all scale-110"><span class="material-symbols-outlined">person</span></button>
+      <button class="md:hidden text-primary"><span class="material-symbols-outlined">menu</span></button>
+    </div>
+  </nav>
+
+  <!-- Page header -->
+  <div class="pt-32 pb-10 px-12 container mx-auto animate-fade-in">
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-3 mb-8 text-on-surface-variant font-body text-sm">
+      <a href="index.html" class="hover:text-secondary transition-colors">الرئيسية</a>
+      <span class="breadcrumb-dot"></span>
+      <span class="text-primary font-semibold">منتجاتنا</span>
+    </div>
+    <div class="flex flex-col md:flex-row justify-between items-end gap-6">
+      <div>
+        <p class="font-headline text-secondary tracking-[0.25em] text-sm md:text-base font-bold mb-3">اختر وجهتك</p>
+        <h1 class="font-headline text-4xl md:text-7xl text-primary leading-tight">
+          عالم <span class="italic">المصطفى</span>
+        </h1>
+      </div>
+      <p class="font-headline text-base md:text-xl text-on-surface-variant max-w-sm text-left leading-relaxed">
+        خمسة أقسام، كل منها يحمل خلاصة خبرتنا وشغفنا بأجود المنتجات الطبيعية.
+      </p>
+    </div>
+  </div>
+
+  <!-- Horizontal rule -->
+  <div class="mx-12 h-px bg-outline/15 mb-0"></div>
+
+  <!-- Three panels — main content -->
+  <div class="flex flex-col md:flex-row flex-1 panels-container" style="min-height: calc(100vh - 220px);">
+
+    <!-- Panel 1: منتجات العسل -->
+    <a href="products.html#honey" class="collection-panel panel-1 panel-honey flex flex-col justify-end panel-mobile-size p-6 md:p-12 no-underline">
+      <div class="panel-bg-zoom panel-honey" style="z-index:0;"></div>
+      <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(60,0,4,0.92) 0%, rgba(60,0,4,0.4) 50%, transparent 100%); z-index:1;"></div>
+      <span class="panel-number hidden md:block" style="z-index:2;">١</span>
+      <div class="relative z-10 flex flex-col md:flex-col flex-row items-center md:items-start gap-4 md:gap-5">
+        <div class="w-12 h-12 md:w-16 md:h-16 rounded-full flex-shrink-0 flex items-center justify-center" style="background: rgba(254,214,91,0.15); border: 1px solid rgba(254,214,91,0.3);">
+          <i class="bi bi-droplet-fill text-2xl md:text-3xl" style="color: #fed65b;"></i>
+        </div>
+        <div class="flex flex-col gap-2 md:gap-5 flex-1">
+          <div class="panel-line hidden md:block"></div>
+          <h2 class="font-headline text-2xl md:text-6xl text-white leading-tight">
+            منتجات <span style="color:#fed65b;">العسل</span>
+          </h2>
+          <div class="panel-desc hidden md:block">
+            <p class="font-headline text-white/75 text-xl leading-relaxed">
+              سدر ملكي، زهور برية، برسيم نقي — كل صنف يروي قصة أرضه وزهرته.
+            </p>
+          </div>
+          <div class="flex items-center gap-2 md:gap-3">
+            <span class="font-headline text-sm md:text-base font-bold tracking-widest" style="color:#fed65b;">استكشف القسم</span>
+            <span class="panel-arrow material-symbols-outlined" style="color:#fed65b; font-size:1.1rem;">arrow_back</span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <!-- Horizontal divider (mobile) / Vertical divider (desktop) -->
+    <div class="md:w-px h-px md:h-auto flex-shrink-0" style="background: rgba(255,255,255,0.08);"></div>
+
+    <!-- Panel 2: المشتقات -->
+    <a href="products.html#derivatives" class="collection-panel panel-2 panel-derivatives flex flex-col justify-end panel-mobile-size p-6 md:p-12 no-underline">
+      <div class="panel-bg-zoom panel-derivatives" style="z-index:0;"></div>
+      <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(34,23,0,0.93) 0%, rgba(34,23,0,0.45) 50%, transparent 100%); z-index:1;"></div>
+      <span class="panel-number hidden md:block" style="z-index:2;">٢</span>
+      <div class="relative z-10 flex flex-col md:flex-col flex-row items-center md:items-start gap-4 md:gap-5">
+        <div class="w-12 h-12 md:w-16 md:h-16 rounded-full flex-shrink-0 flex items-center justify-center" style="background: rgba(254,214,91,0.12); border: 1px solid rgba(254,214,91,0.25);">
+          <i class="bi bi-hexagon-fill text-2xl md:text-3xl" style="color: #fabd00;"></i>
+        </div>
+        <div class="flex flex-col gap-2 md:gap-5 flex-1">
+          <div class="panel-line hidden md:block"></div>
+          <h2 class="font-headline text-2xl md:text-6xl text-white leading-tight">
+            المشتقات <span style="color:#fabd00;">الطبيعية</span>
+          </h2>
+          <div class="panel-desc hidden md:block">
+            <p class="font-headline text-white/75 text-xl leading-relaxed">
+              شمع النحل، غذاء ملكي، حبوب اللقاح — كنوز الخلية في أنقى صورها.
+            </p>
+          </div>
+          <div class="flex items-center gap-2 md:gap-3">
+            <span class="font-headline text-sm md:text-base font-bold tracking-widest" style="color:#fabd00;">استكشف القسم</span>
+            <span class="panel-arrow material-symbols-outlined" style="color:#fabd00; font-size:1.1rem;">arrow_back</span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <div class="md:w-px h-px md:h-auto flex-shrink-0" style="background: rgba(255,255,255,0.08);"></div>
+
+    <!-- Panel 3: مستحضرات التجميل -->
+    <a href="products.html#beauty" class="collection-panel panel-3 panel-beauty flex flex-col justify-end panel-mobile-size p-6 md:p-12 no-underline">
+      <div class="panel-bg-zoom panel-beauty" style="z-index:0;"></div>
+      <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(60,0,4,0.93) 0%, rgba(80,20,20,0.4) 50%, transparent 100%); z-index:1;"></div>
+      <span class="panel-number hidden md:block" style="z-index:2;">٣</span>
+      <div class="relative z-10 flex flex-col md:flex-col flex-row items-center md:items-start gap-4 md:gap-5">
+        <div class="w-12 h-12 md:w-16 md:h-16 rounded-full flex-shrink-0 flex items-center justify-center" style="background: rgba(254,214,91,0.12); border: 1px solid rgba(254,214,91,0.25);">
+          <i class="bi bi-flower1 text-2xl md:text-3xl" style="color: #ffb3af;"></i>
+        </div>
+        <div class="flex flex-col gap-2 md:gap-5 flex-1">
+          <div class="panel-line hidden md:block" style="background:#ffb3af;"></div>
+          <h2 class="font-headline text-2xl md:text-6xl text-white leading-tight">
+            مستحضرات <span style="color:#ffb3af;">التجميل</span>
+          </h2>
+          <div class="panel-desc hidden md:block">
+            <p class="font-headline text-white/75 text-xl leading-relaxed">
+              أسرار الجمال الطبيعي — كريمات، ماسكات وزيوت مستخلصة من عطاء الطبيعه.
+            </p>
+          </div>
+          <div class="flex items-center gap-2 md:gap-3">
+            <span class="font-headline text-sm md:text-base font-bold tracking-widest" style="color:#ffb3af;">استكشف القسم</span>
+            <span class="panel-arrow material-symbols-outlined" style="color:#ffb3af; font-size:1.1rem;">arrow_back</span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <div class="md:w-px h-px md:h-auto flex-shrink-0" style="background: rgba(255,255,255,0.08);"></div>
+
+    <!-- Panel 4: التمور -->
+    <a href="products.html#dates" class="collection-panel panel-4 panel-dates flex flex-col justify-end panel-mobile-size p-6 md:p-12 no-underline">
+      <div class="panel-bg-zoom panel-dates" style="z-index:0;"></div>
+      <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(50,25,0,0.94) 0%, rgba(80,45,5,0.4) 50%, transparent 100%); z-index:1;"></div>
+      <span class="panel-number hidden md:block" style="z-index:2;">٤</span>
+      <div class="relative z-10 flex flex-col md:flex-col flex-row items-center md:items-start gap-4 md:gap-5">
+        <div class="w-12 h-12 md:w-16 md:h-16 rounded-full flex-shrink-0 flex items-center justify-center" style="background: rgba(250,189,0,0.12); border: 1px solid rgba(250,189,0,0.25);">
+          <i class="bi bi-tree-fill text-2xl md:text-3xl" style="color: #fabd00;"></i>
+        </div>
+        <div class="flex flex-col gap-2 md:gap-5 flex-1">
+          <div class="panel-line hidden md:block" style="background:#fabd00;"></div>
+          <h2 class="font-headline text-2xl md:text-6xl text-white leading-tight">
+            التمور <span style="color:#fabd00;">الفاخرة</span>
+          </h2>
+          <div class="panel-desc hidden md:block">
+            <p class="font-headline text-white/75 text-xl leading-relaxed">
+              عجوة المدينة، مجدول فلسطين، سكري القصيم — تمور منتقاة من أعرق البساتين.
+            </p>
+          </div>
+          <div class="flex items-center gap-2 md:gap-3">
+            <span class="font-headline text-sm md:text-base font-bold tracking-widest" style="color:#fabd00;">استكشف القسم</span>
+            <span class="panel-arrow material-symbols-outlined" style="color:#fabd00; font-size:1.1rem;">arrow_back</span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <div class="md:w-px h-px md:h-auto flex-shrink-0" style="background: rgba(255,255,255,0.08);"></div>
+
+    <!-- Panel 5: المكسرات -->
+    <a href="products.html#nuts" class="collection-panel panel-5 panel-nuts flex flex-col justify-end panel-mobile-size p-6 md:p-12 no-underline">
+      <div class="panel-bg-zoom panel-nuts" style="z-index:0;"></div>
+      <div class="absolute inset-0" style="background: linear-gradient(to top, rgba(30,20,5,0.94) 0%, rgba(60,45,10,0.4) 50%, transparent 100%); z-index:1;"></div>
+      <span class="panel-number hidden md:block" style="z-index:2;">٥</span>
+      <div class="relative z-10 flex flex-col md:flex-col flex-row items-center md:items-start gap-4 md:gap-5">
+        <div class="w-12 h-12 md:w-16 md:h-16 rounded-full flex-shrink-0 flex items-center justify-center" style="background: rgba(233,195,73,0.12); border: 1px solid rgba(233,195,73,0.25);">
+          <i class="bi bi-basket2-fill text-2xl md:text-3xl" style="color: #e9c349;"></i>
+        </div>
+        <div class="flex flex-col gap-2 md:gap-5 flex-1">
+          <div class="panel-line hidden md:block" style="background:#e9c349;"></div>
+          <h2 class="font-headline text-2xl md:text-6xl text-white leading-tight">
+            المكسرات <span style="color:#e9c349;">الطازجة</span>
+          </h2>
+          <div class="panel-desc hidden md:block">
+            <p class="font-headline text-white/75 text-xl leading-relaxed">
+              لوز، جوز، فستق وكاجو — مختارة بعناية، محمّصة بحرفية، مقدّمة بأناقة.
+            </p>
+          </div>
+          <div class="flex items-center gap-2 md:gap-3">
+            <span class="font-headline text-sm md:text-base font-bold tracking-widest" style="color:#e9c349;">استكشف القسم</span>
+            <span class="panel-arrow material-symbols-outlined" style="color:#e9c349; font-size:1.1rem;">arrow_back</span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Bottom hint -->
+  <div class="py-6 flex justify-center items-center gap-3 animate-fade-in" style="animation-delay:0.8s;">
+    <span class="font-headline text-sm text-on-surface-variant tracking-[0.2em]">مرر فوق كل قسم للاستكشاف</span>
+    <span class="material-symbols-outlined text-secondary text-base" style="animation: bounce 2s infinite;">touch_app</span>
+  </div>
+
+</div>
+
+<style>
+  @media (max-width: 767px) {
+    .panel-mobile-size { min-height: 120px !important; }
+    .panels-container { min-height: unset !important; }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  /* ========== CONTACT MODAL ========== */
+  #contact-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(28,28,23,0.75);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  #contact-backdrop.open { opacity: 1; pointer-events: auto; }
+  #contact-modal {
+      position: relative; width: 100%; max-width: 480px;
+      background: rgba(22,10,3,0.97);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-radius: 28px; border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 40px 100px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.08);
+      padding: 40px 36px 36px; direction: rtl; overflow: hidden;
+      transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  #contact-backdrop.open #contact-modal { transform: scale(1); }
+  #contact-modal::before {
+      content: ''; position: absolute; top: -80px; left: 50%;
+      transform: translateX(-50%); width: 320px; height: 220px;
+      background: radial-gradient(ellipse, rgba(254,214,91,0.14) 0%, transparent 68%);
+      pointer-events: none;
+  }
+  .contact-close-btn {
+      position: absolute; top: 16px; left: 16px; width: 34px; height: 34px;
+      border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.06);
+      border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.5); transition: background 0.2s; z-index: 2;
+  }
+  .contact-close-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+  .contact-modal-title { font-family: 'Amiri', serif; font-size: 1.4rem; font-weight: 700; color: #fff; margin-bottom: 4px; position: relative; z-index: 1; }
+  .contact-modal-sub { font-size: 0.78rem; color: rgba(255,255,255,0.35); margin-bottom: 28px; position: relative; z-index: 1; }
+  .contact-divider-gold { width: 40px; height: 2px; background: linear-gradient(90deg, #fed65b, transparent); border-radius: 2px; margin-bottom: 24px; }
+  .contact-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px; margin-bottom: 10px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px; position: relative; z-index: 1;
+  }
+  .contact-item-icon { width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .contact-item-body { flex: 1; min-width: 0; }
+  .contact-item-label { font-size: 0.68rem; color: rgba(255,255,255,0.35); margin-bottom: 2px; font-weight: 600; letter-spacing: 0.04em; }
+  .contact-item-value { font-size: 0.88rem; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .contact-item-btn { padding: 7px 14px; border-radius: 8px; border: none; cursor: pointer; font-family: 'Amiri', serif; font-size: 0.78rem; font-weight: 700; transition: opacity 0.2s, transform 0.15s; flex-shrink: 0; text-decoration: none; display: inline-block; }
+  .contact-item-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+  .cta-whatsapp { background: #25d366; color: #fff; }
+  .cta-call     { background: rgba(254,214,91,0.18); color: #fed65b; border: 1px solid rgba(254,214,91,0.25) !important; }
+  .cta-email    { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.12) !important; }
+  .cta-map      { background: rgba(66,133,244,0.15); color: #7ab3ff; border: 1px solid rgba(66,133,244,0.2) !important; }
+  .cta-instagram{ background: rgba(225,48,108,0.15); color: #f472b6; border: 1px solid rgba(225,48,108,0.2) !important; }
+</style>
+
+<!-- ========== CONTACT MODAL ========== -->
+<div id="contact-backdrop">
+  <div id="contact-modal">
+    <button class="contact-close-btn" id="btn-contact-close">
+      <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+    </button>
+    <div style="position:relative;z-index:1;">
+      <div class="contact-modal-title">تواصل معنا</div>
+      <div class="contact-modal-sub">نحن هنا للمساعدة — اختر وسيلة التواصل المناسبة</div>
+      <div class="contact-divider-gold"></div>
+    </div>
+    <div class="contact-item">
+      <div class="contact-item-icon" style="background:rgba(37,211,102,0.12);color:#25d366;"><i class="bi bi-whatsapp"></i></div>
+      <div class="contact-item-body"><div class="contact-item-label">واتساب</div><div class="contact-item-value">01XXXXXXXXX+</div></div>
+      <a href="https://wa.me/201000000000" target="_blank" class="contact-item-btn cta-whatsapp">ابدأ محادثة</a>
+    </div>
+    <div class="contact-item">
+      <div class="contact-item-icon" style="background:rgba(254,214,91,0.1);color:#fed65b;"><i class="bi bi-telephone"></i></div>
+      <div class="contact-item-body"><div class="contact-item-label">الهاتف</div><div class="contact-item-value" style="direction:ltr;">01XXXXXXXXX+</div></div>
+      <a href="tel:+201000000000" class="contact-item-btn cta-call">اتصل الآن</a>
+    </div>
+    <div class="contact-item">
+      <div class="contact-item-icon" style="background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6);"><i class="bi bi-envelope"></i></div>
+      <div class="contact-item-body"><div class="contact-item-label">البريد الإلكتروني</div><div class="contact-item-value" style="direction:ltr;font-size:0.8rem;">info@almoustafa.com</div></div>
+      <a href="mailto:info@almoustafa.com" class="contact-item-btn cta-email">راسلنا</a>
+    </div>
+    <div class="contact-item">
+      <div class="contact-item-icon" style="background:rgba(66,133,244,0.1);color:#7ab3ff;"><i class="bi bi-geo-alt"></i></div>
+      <div class="contact-item-body"><div class="contact-item-label">العنوان</div><div class="contact-item-value">القاهرة، مصر</div></div>
+      <a href="https://maps.google.com" target="_blank" class="contact-item-btn cta-map">خريطة</a>
+    </div>
+    <div class="contact-item">
+      <div class="contact-item-icon" style="background:rgba(225,48,108,0.1);color:#f472b6;"><i class="bi bi-instagram"></i></div>
+      <div class="contact-item-body"><div class="contact-item-label">إنستغرام</div><div class="contact-item-value" style="direction:ltr;">@almoustafa.honey</div></div>
+      <a href="#" target="_blank" class="contact-item-btn cta-instagram">تابعنا</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('loading-overlay');
+    const main    = document.getElementById('main-content');
+
+    setTimeout(() => {
+      overlay.style.opacity = '0';
+      main.classList.remove('content-hidden');
+      main.classList.add('content-visible');
+      setTimeout(() => { overlay.style.display = 'none'; }, 700);
+    }, 1200);
+
+    const contactBackdrop = document.getElementById('contact-backdrop');
+    document.getElementById('btn-contact').addEventListener('click', () => {
+      contactBackdrop.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    });
+    document.getElementById('btn-contact-close').addEventListener('click', () => {
+      contactBackdrop.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+    contactBackdrop.addEventListener('click', (e) => {
+      if (e.target === contactBackdrop) {
+        contactBackdrop.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+  });
+</script>
+<script>
+(function(){function readCart(){try{return JSON.parse(localStorage.getItem('alm_cart'))||[];}catch{return[];}}
+function toArabicPrice(n){if(isNaN(n))return'\u2014';return n.toLocaleString('ar-EG')+' \u062c.\u0645';}
+function safeSrc(u){return(typeof u==='string'&&u.startsWith('https://'))?u:'';}
+function buildRow(item){var r=document.createElement('div');r.className='cart-dd-row';var img=document.createElement('img');img.className='cart-dd-img';img.src=safeSrc(item.img);img.alt='';var info=document.createElement('div');info.style.cssText='flex:1;min-width:0';var n=document.createElement('div');n.className='cart-dd-name';n.textContent=item.name;var p=document.createElement('div');p.className='cart-dd-price';p.textContent=toArabicPrice(item.price);var q=document.createElement('div');q.className='cart-dd-qty';q.textContent='\u00d7 '+item.qty;info.append(n,p,q);r.append(img,info);return r;}
+function render(){var items=readCart();var body=document.getElementById('cart-dd-body');var badge=document.getElementById('cart-badge');var total=items.reduce(function(s,i){return s+i.qty;},0);badge.textContent=total>9?'9+':String(total);badge.style.display=total>0?'flex':'none';body.textContent='';
+if(!items.length){var e=document.createElement('div');e.className='cart-dd-empty';var ic=document.createElement('span');ic.className='cart-dd-empty-icon material-symbols-outlined';ic.textContent='shopping_bag';var m=document.createElement('p');m.className='cart-dd-empty-text';m.textContent='\u0627\u0644\u0633\u0644\u0629 \u0641\u0627\u0631\u063a\u0629';var a=document.createElement('a');a.className='cart-dd-shop-btn';a.href='products.html';a.textContent='\u0627\u0644\u0630\u0647\u0627\u0628 \u0644\u0644\u062a\u0633\u0648\u0642';e.append(ic,m,a);body.appendChild(e);return;}
+var h=document.createElement('div');h.className='cart-dd-header';var hi=document.createElement('span');hi.className='material-symbols-outlined';hi.style.fontSize='18px';hi.textContent='shopping_bag';var ht=document.createElement('span');ht.textContent='\u0633\u0644\u0629 \u0627\u0644\u062a\u0633\u0648\u0642';h.append(hi,ht);
+var l=document.createElement('div');l.className='cart-dd-list';items.forEach(function(i){l.appendChild(buildRow(i));});
+var f=document.createElement('div');f.className='cart-dd-footer-inner';var tr=document.createElement('div');tr.className='cart-dd-total';var tl=document.createElement('span');tl.className='cart-dd-total-label';tl.textContent='\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a';var tv=document.createElement('span');tv.className='cart-dd-total-value';tv.textContent=toArabicPrice(items.reduce(function(s,i){return s+i.price*i.qty;},0));tr.append(tl,tv);var cb=document.createElement('button');cb.className='cart-dd-checkout-btn';cb.textContent='\u0625\u062a\u0645\u0627\u0645 \u0627\u0644\u0637\u0644\u0628';cb.addEventListener('click',function(){window.location.href='checkout.html';});f.append(tr,cb);body.append(h,l,f);}
+function close(){dd.classList.remove('open');dd.setAttribute('aria-hidden','true');btn.setAttribute('aria-expanded','false');}
+var btn=document.getElementById('btn-cart');var dd=document.getElementById('cart-dropdown');var w=document.getElementById('cart-icon-wrapper');
+btn.addEventListener('click',function(e){e.stopPropagation();var o=dd.classList.contains('open');if(!o)render();dd.classList.toggle('open');dd.setAttribute('aria-hidden',String(o));btn.setAttribute('aria-expanded',String(!o));});
+document.addEventListener('click',function(e){if(!w.contains(e.target))close();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&dd.classList.contains('open'))close();});
+render();})();
+</script>
+<style>.dev-badge{display:inline-flex;align-items:center;gap:.75rem;padding:.55rem 1.25rem .55rem 1rem;background:rgba(60,0,4,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:9999px;border:1px solid rgba(254,214,91,.25);box-shadow:0 4px 24px rgba(60,0,4,.35),inset 0 1px 0 rgba(254,214,91,.15);white-space:nowrap;text-decoration:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease,border-color .3s ease}.dev-badge:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 8px 32px rgba(60,0,4,.5),inset 0 1px 0 rgba(254,214,91,.3);border-color:rgba(254,214,91,.5)}.dev-badge:hover .badge-icon{animation:spark .5s ease forwards}@keyframes spark{0%{transform:rotate(0) scale(1)}30%{transform:rotate(-15deg) scale(1.2)}60%{transform:rotate(10deg) scale(.95)}100%{transform:rotate(0) scale(1)}}.badge-icon{width:1.75rem;height:1.75rem;background:linear-gradient(135deg,#fed65b,#b88a00);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}.badge-icon i{font-size:.8rem;color:#3c0004;line-height:1}.badge-text{display:flex;flex-direction:column;gap:.05rem;line-height:1}.badge-label{font-family:'Manrope',sans-serif;font-size:.6rem;font-weight:300;color:rgba(254,214,91,.55);letter-spacing:.08em;text-transform:uppercase}.badge-name{font-family:'Amiri',serif;font-size:.95rem;font-weight:700;color:#fed65b;letter-spacing:.02em}.dev-badge::before{content:'';position:absolute;inset:0;border-radius:9999px;padding:1px;background:linear-gradient(90deg,transparent,rgba(254,214,91,.4),transparent);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}.dev-badge-wrap{display:flex;justify-content:center;padding:2.5rem 0 3rem;}</style>
+
+<!-- Footer -->
+<footer class="bg-[#3c0004] w-full pt-20 pb-10 px-12 text-[#fdf9f0] reveal-on-scroll">
+  <div class="container mx-auto max-w-6xl">
+
+    <!-- Main grid -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
+
+      <!-- Brand / About column -->
+      <div class="md:col-span-5 flex flex-col gap-5">
+        <div class="flex items-center gap-4">
+          <img alt="Al Moustafa Logo" class="h-14 w-auto drop-shadow-lg" src="https://lh3.googleusercontent.com/aida/ADBb0uizSWOC5dO7JPu0qOgcoJ9ZKB23Xl2dS_VdD3ppNMwsSYmWklfqXSzJlhBqsHkCArodz3NSLoUFTYTJ8GrYDvwWQTM_SkeedskIQyPkQGig6r5OgG5q_7sb9DmVlnxULPn-6QXfcnAxrGbpMwYgA9jKssJg26DIAHjc_uer4KgctBKVMz5Clkxu07bpNCXlyXGMHS1KTnDkQZTTyMVFpuwJfFF55MKla2QQFlt65sR2mwkPo5yFEZEQSwEV4fWfzKAkXE5vLrD4Pls"/>
+          <div>
+            <div class="font-headline text-2xl text-[#fed65b]">المصطفى</div>
+            <div class="font-headline italic text-[#fed65b]/60 text-sm">خبراء العسل الصافي</div>
+          </div>
+        </div>
+        <p class="text-[#fdf9f0]/55 text-sm leading-relaxed">
+          منذ عام ٢٠١٨، نختار بعناية أجود أنواع العسل الطبيعي من مناحل موثوقة في قلب الطبيعة. نلتزم بأعلى معايير الجودة لنقدم لكم عسلاً نقياً كما أرادت له الطبيعة، بلا إضافات ولا معالجة حرارية.
+        </p>
+        <!-- Social -->
+        <div class="flex gap-5 mt-1">
+          <a href="#" class="w-9 h-9 rounded-full border border-[#fdf9f0]/15 flex items-center justify-center text-[#fdf9f0]/50 hover:border-[#fed65b]/50 hover:text-[#fed65b] transition-all hover:scale-110"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="w-9 h-9 rounded-full border border-[#fdf9f0]/15 flex items-center justify-center text-[#fdf9f0]/50 hover:border-[#fed65b]/50 hover:text-[#fed65b] transition-all hover:scale-110"><i class="bi bi-facebook"></i></a>
+          <a href="#" class="w-9 h-9 rounded-full border border-[#fdf9f0]/15 flex items-center justify-center text-[#fdf9f0]/50 hover:border-[#fed65b]/50 hover:text-[#fed65b] transition-all hover:scale-110"><i class="bi bi-twitter-x"></i></a>
+          <a href="#" class="w-9 h-9 rounded-full border border-[#fdf9f0]/15 flex items-center justify-center text-[#fdf9f0]/50 hover:border-[#fed65b]/50 hover:text-[#fed65b] transition-all hover:scale-110"><i class="bi bi-tiktok"></i></a>
+        </div>
+      </div>
+
+      <!-- Spacer -->
+      <div class="md:col-span-1"></div>
+
+      <!-- Links columns -->
+      <div class="md:col-span-6 grid grid-cols-3 gap-8">
+
+        <!-- Col 1 -->
+        <div class="flex flex-col gap-3">
+          <div class="font-headline text-[#fed65b] text-sm font-bold mb-2">المتجر</div>
+          <a href="products.html" class="flex items-center gap-2 text-[#fdf9f0]/55 text-sm hover:text-[#fed65b] transition-colors"><i class="bi bi-grid-3x3-gap"></i>جميع المنتجات</a>
+          <a href="products.html#offers" class="flex items-center gap-2 text-[#fdf9f0]/55 text-sm hover:text-[#fed65b] transition-colors"><i class="bi bi-tags"></i>العروض</a>
+          <a href="#" class="flex items-center gap-2 text-[#fdf9f0]/55 text-sm hover:text-[#fed65b] transition-colors"><i class="bi bi-boxes"></i>بالجملة</a>
+        </div>
+
+        <!-- Col 2 -->
+        <div class="flex flex-col gap-3">
+          <div class="font-headline text-[#fed65b] text-sm font-bold mb-2">الشركة</div>
+          <a href="#" class="flex items-center gap-2 text-[#fdf9f0]/55 text-sm hover:text-[#fed65b] transition-colors"><i class="bi bi-book"></i>قصتنا</a>
+          <a href="#" class="flex items-center gap-2 text-[#fdf9f0]/55 text-sm hover:text-[#fed65b] transition-colors"><i class="bi bi-patch-check"></i>معايير الجودة</a>
+          <button onclick="document.getElementById('contact-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-2 text-[#fdf9f0]/55 text-sm hover:text-[#fed65b] transition-colors"><i class="bi bi-chat-dots"></i>تواصل معنا</button>
+        </div>
+
+        <!-- Col 3 -->
+        <div class="flex flex-col gap-3">
+          <div class="font-headline text-[#fed65b] text-sm font-bold mb-2">المساعدة</div>
+          <a href="#" class="flex items-center gap-2 text-[#fdf9f0]/55 text-sm hover:text-[#fed65b] transition-colors"><i class="bi bi-truck"></i>معلومات الشحن</a>
+          <a href="#" class="flex items-center gap-2 text-[#fdf9f0]/55 text-sm hover:text-[#fed65b] transition-colors"><i class="bi bi-arrow-counterclockwise"></i>سياسة الإرجاع</a>
+          <a href="#" class="flex items-center gap-2 text-[#fdf9f0]/55 text-sm hover:text-[#fed65b] transition-colors"><i class="bi bi-question-circle"></i>الأسئلة الشائعة</a>
+          <a href="#" class="flex items-center gap-2 text-[#fdf9f0]/55 text-sm hover:text-[#fed65b] transition-colors"><i class="bi bi-shield-check"></i>سياسة الخصوصية</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="border-t border-[#fdf9f0]/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <p class="font-headline text-xs text-[#fdf9f0]/25 tracking-widest">© ٢٠١٨ المصطفى — جميع الحقوق محفوظة.</p>
+      <a class="dev-badge" href="#">
+        <span class="badge-icon"><i class="bi bi-lightning-charge-fill"></i></span>
+        <span class="badge-text">
+          <span class="badge-label">Developed &amp; Powered by</span>
+          <span class="badge-name">Osama Saied</span>
+        </span>
+      </a>
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[#fed65b]/40" style="font-size:16px;">verified</span>
+        <span class="text-xs text-[#fdf9f0]/25 font-headline">منتجات طبيعية ١٠٠٪ مضمونة</span>
+      </div>
+    </div>
+
+  </div>
+</footer>
+</div> <!-- End Main Content -->
+<style>
+  #contact-fab {
+    position: fixed;
+    bottom: 36px;
+    left: 36px;
+    z-index: 9999;
+    direction: ltr;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  #contact-fab::before {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--fab-color, #25d366);
+    opacity: 0;
+    animation: fabPulse 2.8s ease-out infinite;
+    pointer-events: none;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  @keyframes fabPulse {
+    0% { transform: translateY(-50%) scale(1); opacity: 0.6; }
+    70% { transform: translateY(-50%) scale(2); opacity: 0; }
+    100% { transform: translateY(-50%) scale(2); opacity: 0; }
+  }
+  #contact-fab a.fab-link {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--fab-color, #25d366);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 0 2px rgba(254,214,91,0.25);
+    transition: background 0.5s ease, box-shadow 0.4s ease, transform 0.2s ease;
+    text-decoration: none;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  #contact-fab a.fab-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(254,214,91,0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  #contact-fab a.fab-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: rgba(255,255,255,0.2);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  #contact-fab a.fab-link:active::after { opacity: 1; }
+  #contact-fab a.fab-link:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 28px rgba(0,0,0,0.5), 0 0 0 2.5px rgba(254,214,91,0.5);
+  }
+  #contact-fab .fab-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease;
+  }
+  #contact-fab .fab-icon.flip { transform: rotateY(90deg); opacity: 0; }
+  #contact-fab .fab-icon svg { display: block; }
+  #contact-fab .fab-text {
+    overflow: hidden;
+    max-width: 0;
+    opacity: 0;
+    font-family: 'Amiri', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fed65b;
+    white-space: nowrap;
+    margin-left: 10px;
+    padding: 7px 18px;
+    border-radius: 22px;
+    border: 1.5px solid rgba(254,214,91,0.5);
+    background: rgba(60,0,4,0.85);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 16px rgba(60,0,4,0.5), inset 0 1px 0 rgba(254,214,91,0.15);
+    transition: max-width 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+    pointer-events: none;
+    letter-spacing: 0.02em;
+  }
+  #contact-fab .fab-text.open { max-width: 180px; opacity: 1; }
+  @media (max-width: 768px) {
+    #contact-fab {
+      bottom: 20px;
+      left: 20px;
+    }
+    #contact-fab a.fab-link {
+      width: 52px;
+      height: 52px;
+    }
+    #contact-fab .fab-text { font-size: 13px; }
+  }
+</style>
+<div id="contact-fab">
+  <a class="fab-link" id="fab-anchor" href="#" aria-label="تواصل معنا" rel="noopener">
+    <span class="fab-icon" id="fab-icon"></span>
+  </a>
+  <span class="fab-text" id="fab-text">تواصل معنا</span>
+</div>
+<script>
+  (function () {
+    var WA_HREF = 'https://wa.me/201234567890?text=' + encodeURIComponent('مرحباً، أود الاستفسار عن منتجاتكم');
+    var PH_HREF = 'tel:01234567890';
+    var WA_COLOR = '#25d366';
+    var PH_COLOR = '#6b0008';
+    var WA_ICON = '<svg viewBox="0 0 24 24" width="26" height="26" fill="white" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+    var PH_ICON = '<svg viewBox="0 0 24 24" width="26" height="26" fill="white" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.3 21 3 13.7 3 4a1 1 0 011-1h3.49a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.24 1.01z"/></svg>';
+
+    function init() {
+      var fab = document.getElementById('contact-fab');
+      var link = document.getElementById('fab-anchor');
+      var iconBox = document.getElementById('fab-icon');
+      var text = document.getElementById('fab-text');
+      if (!fab || !link || !iconBox || !text) return;
+
+      var isWA = true;
+      var labelVisible = false;
+
+      function applyMode() {
+        fab.style.setProperty('--fab-color', isWA ? WA_COLOR : PH_COLOR);
+        link.href = isWA ? WA_HREF : PH_HREF;
+        link.target = isWA ? '_blank' : '_self';
+        link.setAttribute('aria-label', isWA ? 'تواصل عبر واتساب' : 'اتصل بنا');
+        iconBox.innerHTML = isWA ? WA_ICON : PH_ICON;
+      }
+
+      function switchMode() {
+        iconBox.classList.add('flip');
+        setTimeout(function () {
+          isWA = !isWA;
+          applyMode();
+          iconBox.classList.remove('flip');
+        }, 200);
+      }
+
+      function toggleLabel() {
+        labelVisible = !labelVisible;
+        text.classList.toggle('open', labelVisible);
+      }
+
+      setTimeout(function () {
+        text.classList.add('open');
+        labelVisible = true;
+      }, 800);
+
+      setInterval(toggleLabel, 3500);
+      setInterval(switchMode, 4000);
+
+      link.addEventListener('mouseenter', function () {
+        text.classList.add('open');
+        labelVisible = true;
+      });
+
+      applyMode();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  }());
+</script>
+<script src="js/v_id_bootstrap.js"></script>
+<script>if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); }); }</script>
+</body>
+</html>

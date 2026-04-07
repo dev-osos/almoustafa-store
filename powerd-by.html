@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Developer Badge — Osama Saied</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Manrope:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <link href="icons/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --primary: #3c0004;
+      --primary-container: #5d0e12;
+      --secondary: #735c00;
+      --secondary-container: #fed65b;
+      --background: #fdf9f0;
+      --surface: #fdf9f0;
+      --on-surface: #1c1c17;
+      --outline: #897270;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Manrope', sans-serif;
+      background: var(--background);
+      color: var(--on-surface);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 3rem;
+      padding: 4rem 2rem;
+    }
+
+    h2 {
+      font-family: 'Amiri', serif;
+      font-size: 1.5rem;
+      color: var(--outline);
+      opacity: 0.6;
+      font-weight: 400;
+      text-align: center;
+    }
+
+    /* ─────────────────────────────────────────────
+       THE BADGE — copy everything between the
+       <!-- BADGE START --> and <!-- BADGE END -->
+       comments into each page's <body>
+    ───────────────────────────────────────────── */
+
+    .dev-badge {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.55rem 1.25rem 0.55rem 1rem;
+      background: rgba(60, 0, 4, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 9999px;
+      border: 1px solid rgba(254, 214, 91, 0.25);
+      box-shadow:
+        0 4px 24px rgba(60, 0, 4, 0.35),
+        inset 0 1px 0 rgba(254, 214, 91, 0.15);
+      cursor: default;
+      user-select: none;
+      white-space: nowrap;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  box-shadow 0.3s ease,
+                  border-color 0.3s ease;
+      text-decoration: none;
+    }
+
+    .dev-badge:hover {
+      transform: translateX(-50%) translateY(-3px) scale(1.03);
+      box-shadow:
+        0 8px 32px rgba(60, 0, 4, 0.5),
+        inset 0 1px 0 rgba(254, 214, 91, 0.3);
+      border-color: rgba(254, 214, 91, 0.5);
+    }
+
+    .dev-badge:hover .badge-icon {
+      animation: spark 0.5s ease forwards;
+    }
+
+    @keyframes spark {
+      0%   { transform: rotate(0deg) scale(1); }
+      30%  { transform: rotate(-15deg) scale(1.2); }
+      60%  { transform: rotate(10deg) scale(0.95); }
+      100% { transform: rotate(0deg) scale(1); }
+    }
+
+    .badge-icon {
+      width: 1.75rem;
+      height: 1.75rem;
+      background: linear-gradient(135deg, #fed65b, #b88a00);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+    }
+
+    .badge-icon i {
+      font-size: 0.8rem;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .badge-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.05rem;
+      line-height: 1;
+    }
+
+    .badge-label {
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 300;
+      color: rgba(254, 214, 91, 0.55);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .badge-name {
+      font-family: 'Amiri', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fed65b;
+      letter-spacing: 0.02em;
+    }
+
+    /* golden line accent */
+    .dev-badge::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
+      padding: 1px;
+      background: linear-gradient(90deg, transparent, rgba(254, 214, 91, 0.4), transparent);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* ── Preview Section ── */
+    .preview-box {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      height: 220px;
+      background: linear-gradient(135deg, #1a0002 0%, #3c0004 50%, #221700 100%);
+      border-radius: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .preview-box::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      left: -40%;
+      width: 80%;
+      height: 80%;
+      background: radial-gradient(circle, rgba(254,214,91,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .preview-label {
+      font-size: 0.72rem;
+      color: var(--outline);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 400;
+      text-align: center;
+    }
+
+    .code-box {
+      width: 100%;
+      max-width: 600px;
+      background: #1c1c17;
+      border-radius: 1rem;
+      overflow: hidden;
+      border: 1px solid rgba(137, 114, 112, 0.2);
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: rgba(137, 114, 112, 0.1);
+      border-bottom: 1px solid rgba(137, 114, 112, 0.1);
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #febc2e; }
+    .dot-g { background: #28c840; }
+
+    .code-body {
+      padding: 1.25rem 1.25rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      line-height: 1.8;
+      color: #e6e2d9;
+      overflow-x: auto;
+    }
+
+    .code-body .c-tag { color: #ffb3af; }
+    .code-body .c-attr { color: #fed65b; }
+    .code-body .c-val { color: #a8d8a8; }
+    .code-body .c-comment { color: #564241; font-style: italic; }
+  </style>
+</head>
+<body>
+
+  <h2>معاينة البصمة</h2>
+
+  <!-- Preview container -->
+  <div class="preview-box">
+    <!-- BADGE START — انسخ هذا الكود في كل صفحة داخل <body> -->
+    <a class="dev-badge" href="#" onclick="return false;">
+      <span class="badge-icon">
+        <i class="bi bi-lightning-charge-fill"></i>
+      </span>
+      <span class="badge-text">
+        <span class="badge-label">Developed &amp; Powered by</span>
+        <span class="badge-name">Osama Saied</span>
+      </span>
+    </a>
+    <!-- BADGE END -->
+  </div>
+
+  <p class="preview-label">مرر على البصمة لرؤية التأثير</p>
+
+  <!-- Code snippet reference -->
+  <div class="code-box">
+    <div class="code-header">
+      <span class="dot dot-r"></span>
+      <span class="dot dot-y"></span>
+      <span class="dot dot-g"></span>
+    </div>
+    <div class="code-body">
+      <span class="c-comment">&lt;!-- انسخ هذا الكود قبل &lt;/body&gt; في كل صفحة --&gt;</span><br/>
+      <span class="c-tag">&lt;a</span> <span class="c-attr">class</span>=<span class="c-val">"dev-badge"</span> <span class="c-attr">href</span>=<span class="c-val">"#"</span><span class="c-tag">&gt;</span><br/>
+      &nbsp;&nbsp;<span class="c-tag">&lt;span</span> <span class="c-attr">class</span>=<span class="c-val">"badge-icon"</span><span class="c-tag">&gt;</span><br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-tag">&lt;i</span> <span class="c-attr">class</span>=<span class="c-val">"bi bi-lightning-charge-fill"</span><span class="c-tag">&gt;&lt;/i&gt;</span><br/>
+      &nbsp;&nbsp;<span class="c-tag">&lt;/span&gt;</span><br/>
+      &nbsp;&nbsp;<span class="c-tag">&lt;span</span> <span class="c-attr">class</span>=<span class="c-val">"badge-text"</span><span class="c-tag">&gt;</span><br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-tag">&lt;span</span> <span class="c-attr">class</span>=<span class="c-val">"badge-label"</span><span class="c-tag">&gt;</span>Developed &amp; Powered by<span class="c-tag">&lt;/span&gt;</span><br/>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-tag">&lt;span</span> <span class="c-attr">class</span>=<span class="c-val">"badge-name"</span><span class="c-tag">&gt;</span>Osama Saied<span class="c-tag">&lt;/span&gt;</span><br/>
+      &nbsp;&nbsp;<span class="c-tag">&lt;/span&gt;</span><br/>
+      <span class="c-tag">&lt;/a&gt;</span>
+    </div>
+  </div>
+
+<style>
+  #contact-fab {
+    position: fixed;
+    bottom: 36px;
+    left: 36px;
+    z-index: 9999;
+    direction: ltr;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  #contact-fab::before {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--fab-color, #25d366);
+    opacity: 0;
+    animation: fabPulse 2.8s ease-out infinite;
+    pointer-events: none;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  @keyframes fabPulse {
+    0% { transform: translateY(-50%) scale(1); opacity: 0.6; }
+    70% { transform: translateY(-50%) scale(2); opacity: 0; }
+    100% { transform: translateY(-50%) scale(2); opacity: 0; }
+  }
+  #contact-fab a.fab-link {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--fab-color, #25d366);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 0 2px rgba(254,214,91,0.25);
+    transition: background 0.5s ease, box-shadow 0.4s ease, transform 0.2s ease;
+    text-decoration: none;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  #contact-fab a.fab-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(254,214,91,0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  #contact-fab a.fab-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: rgba(255,255,255,0.2);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  #contact-fab a.fab-link:active::after { opacity: 1; }
+  #contact-fab a.fab-link:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 28px rgba(0,0,0,0.5), 0 0 0 2.5px rgba(254,214,91,0.5);
+  }
+  #contact-fab .fab-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease;
+  }
+  #contact-fab .fab-icon.flip { transform: rotateY(90deg); opacity: 0; }
+  #contact-fab .fab-icon svg { display: block; }
+  #contact-fab .fab-text {
+    overflow: hidden;
+    max-width: 0;
+    opacity: 0;
+    font-family: 'Amiri', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fed65b;
+    white-space: nowrap;
+    margin-left: 10px;
+    padding: 7px 18px;
+    border-radius: 22px;
+    border: 1.5px solid rgba(254,214,91,0.5);
+    background: rgba(60,0,4,0.85);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 16px rgba(60,0,4,0.5), inset 0 1px 0 rgba(254,214,91,0.15);
+    transition: max-width 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+    pointer-events: none;
+    letter-spacing: 0.02em;
+  }
+  #contact-fab .fab-text.open { max-width: 180px; opacity: 1; }
+  @media (max-width: 768px) {
+    #contact-fab {
+      bottom: 20px;
+      left: 20px;
+    }
+    #contact-fab a.fab-link {
+      width: 52px;
+      height: 52px;
+    }
+    #contact-fab .fab-text { font-size: 13px; }
+  }
+</style>
+<div id="contact-fab">
+  <a class="fab-link" id="fab-anchor" href="#" aria-label="تواصل معنا" rel="noopener">
+    <span class="fab-icon" id="fab-icon"></span>
+  </a>
+  <span class="fab-text" id="fab-text">تواصل معنا</span>
+</div>
+<script>
+  (function () {
+    var WA_HREF = 'https://wa.me/201234567890?text=' + encodeURIComponent('مرحباً، أود الاستفسار عن منتجاتكم');
+    var PH_HREF = 'tel:01234567890';
+    var WA_COLOR = '#25d366';
+    var PH_COLOR = '#6b0008';
+    var WA_ICON = '<svg viewBox="0 0 24 24" width="26" height="26" fill="white" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+    var PH_ICON = '<svg viewBox="0 0 24 24" width="26" height="26" fill="white" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.3 21 3 13.7 3 4a1 1 0 011-1h3.49a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.24 1.01z"/></svg>';
+
+    function init() {
+      var fab = document.getElementById('contact-fab');
+      var link = document.getElementById('fab-anchor');
+      var iconBox = document.getElementById('fab-icon');
+      var text = document.getElementById('fab-text');
+      if (!fab || !link || !iconBox || !text) return;
+
+      var isWA = true;
+      var labelVisible = false;
+
+      function applyMode() {
+        fab.style.setProperty('--fab-color', isWA ? WA_COLOR : PH_COLOR);
+        link.href = isWA ? WA_HREF : PH_HREF;
+        link.target = isWA ? '_blank' : '_self';
+        link.setAttribute('aria-label', isWA ? 'تواصل عبر واتساب' : 'اتصل بنا');
+        iconBox.innerHTML = isWA ? WA_ICON : PH_ICON;
+      }
+
+      function switchMode() {
+        iconBox.classList.add('flip');
+        setTimeout(function () {
+          isWA = !isWA;
+          applyMode();
+          iconBox.classList.remove('flip');
+        }, 200);
+      }
+
+      function toggleLabel() {
+        labelVisible = !labelVisible;
+        text.classList.toggle('open', labelVisible);
+      }
+
+      setTimeout(function () {
+        text.classList.add('open');
+        labelVisible = true;
+      }, 800);
+
+      setInterval(toggleLabel, 3500);
+      setInterval(switchMode, 4000);
+
+      link.addEventListener('mouseenter', function () {
+        text.classList.add('open');
+        labelVisible = true;
+      });
+
+      applyMode();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  }());
+</script>
+<script src="js/v_id_bootstrap.js"></script>
+<script>if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); }); }</script>
+</body>
+</html>
