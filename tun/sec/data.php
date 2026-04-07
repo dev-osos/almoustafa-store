@@ -14,8 +14,29 @@ require_once __DIR__ . '/../../apis/db.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
-$type = $_GET['type'] ?? '';
+// ── Role-based permissions ────────────────────────────────────────────────────
+const ROLE_PERMS = [
+    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users'],
+    'admin'       => ['stats', 'chart', 'devices', 'visitors'],
+    'support'     => ['visitors'],
+];
 
+function hasPermission(string $role, string $perm): bool
+{
+    return in_array($perm, ROLE_PERMS[$role] ?? [], true);
+}
+
+function roleLabelAr(string $role): string
+{
+    return match ($role) {
+        'super_admin' => 'سوبر ادمن',
+        'admin'       => 'مشرف',
+        'support'     => 'دعم فني',
+        default       => $role,
+    };
+}
+
+// ── Single-pass UA parser ─────────────────────────────────────────────────────
 function parseDevice(string $ua): array
 {
     $device = 'desktop';
@@ -26,37 +47,132 @@ function parseDevice(string $ua): array
     }
 
     $browser = 'غير معروف';
-    if (preg_match('/Edg\//i', $ua))                                    $browser = 'Edge';
-    elseif (preg_match('/OPR\//i', $ua))                                $browser = 'Opera';
-    elseif (preg_match('/Chrome\/[\d.]+/i', $ua) && !preg_match('/Chromium/i', $ua)) $browser = 'Chrome';
-    elseif (preg_match('/Firefox\/[\d.]+/i', $ua))                      $browser = 'Firefox';
-    elseif (preg_match('/Safari\/[\d.]+/i', $ua) && !preg_match('/Chrome/i', $ua))  $browser = 'Safari';
-    elseif (preg_match('/MSIE|Trident/i', $ua))                         $browser = 'IE';
+    if      (preg_match('/Edg\//i', $ua))                                             $browser = 'Edge';
+    elseif  (preg_match('/OPR\//i', $ua))                                             $browser = 'Opera';
+    elseif  (preg_match('/Chrome\/[\d.]+/i', $ua) && !preg_match('/Chromium/i', $ua)) $browser = 'Chrome';
+    elseif  (preg_match('/Firefox\/[\d.]+/i', $ua))                                   $browser = 'Firefox';
+    elseif  (preg_match('/Safari\/[\d.]+/i', $ua) && !preg_match('/Chrome/i', $ua))  $browser = 'Safari';
+    elseif  (preg_match('/MSIE|Trident/i', $ua))                                      $browser = 'IE';
 
     $os = 'غير معروف';
-    if (preg_match('/Windows NT/i', $ua))      $os = 'Windows';
-    elseif (preg_match('/CrOS/i', $ua))        $os = 'ChromeOS';
-    elseif (preg_match('/Android/i', $ua))     $os = 'Android';
-    elseif (preg_match('/iPhone|iPad|iPod/i', $ua)) $os = 'iOS';
-    elseif (preg_match('/Mac OS X/i', $ua))    $os = 'macOS';
-    elseif (preg_match('/Linux/i', $ua))       $os = 'Linux';
+    if      (preg_match('/Windows NT/i', $ua))       $os = 'Windows';
+    elseif  (preg_match('/CrOS/i', $ua))             $os = 'ChromeOS';
+    elseif  (preg_match('/Android/i', $ua))          $os = 'Android';
+    elseif  (preg_match('/iPhone|iPad|iPod/i', $ua)) $os = 'iOS';
+    elseif  (preg_match('/Mac OS X/i', $ua))         $os = 'macOS';
+    elseif  (preg_match('/Linux/i', $ua))            $os = 'Linux';
 
     return ['device' => $device, 'browser' => $browser, 'os' => $os];
 }
 
-try {
-    $pdo = api_pdo();
+$role    = $_SESSION['admin_role']    ?? '';
+$adminId = (int) ($_SESSION['admin_id'] ?? 0);
 
+try {
+    $pdo    = api_pdo();
+    $method = $_SERVER['REQUEST_METHOD'];
+
+    // ── POST — user management actions (super_admin only) ─────────────────────
+    if ($method === 'POST') {
+        if (!hasPermission($role, 'users')) {
+            http_response_code(403);
+            echo json_encode(['error' => 'ممنوع: صلاحيات غير كافية']);
+            exit;
+        }
+
+        $body   = json_decode(file_get_contents('php://input'), true) ?? [];
+        $action = $body['action'] ?? '';
+
+        if ($action === 'create_user') {
+            $username = trim($body['username'] ?? '');
+            $password = $body['password'] ?? '';
+            $newRole  = $body['role'] ?? '';
+
+            if ($username === '' || strlen($password) < 1 || !in_array($newRole, ['super_admin', 'admin', 'support'], true)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'بيانات غير صحيحة']);
+                exit;
+            }
+
+            $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
+            $stmt = $pdo->prepare("
+                INSERT INTO dashboard_users (username, password_hash, role, created_by)
+                VALUES (:u, :h, :r, :cb)
+            ");
+            $stmt->execute([':u' => $username, ':h' => $hash, ':r' => $newRole, ':cb' => $adminId]);
+            echo json_encode(['ok' => true, 'id' => (int) $pdo->lastInsertId()]);
+
+        } elseif ($action === 'toggle_user') {
+            $targetId = (int) ($body['id'] ?? 0);
+            if ($targetId === 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'معرّف غير صحيح']);
+                exit;
+            }
+            if ($targetId === $adminId) {
+                http_response_code(400);
+                echo json_encode(['error' => 'لا يمكنك تعطيل حسابك الخاص']);
+                exit;
+            }
+            $stmt = $pdo->prepare("
+                UPDATE dashboard_users
+                SET is_active = IF(is_active = 1, 0, 1)
+                WHERE id = :id
+            ");
+            $stmt->execute([':id' => $targetId]);
+            echo json_encode(['ok' => true]);
+
+        } elseif ($action === 'delete_user') {
+            $targetId = (int) ($body['id'] ?? 0);
+            if ($targetId === 0 || $targetId === $adminId) {
+                http_response_code(400);
+                echo json_encode(['error' => 'لا يمكن حذف هذا الحساب']);
+                exit;
+            }
+            $stmt = $pdo->prepare("DELETE FROM dashboard_users WHERE id = :id");
+            $stmt->execute([':id' => $targetId]);
+            echo json_encode(['ok' => true]);
+
+        } else {
+            http_response_code(400);
+            echo json_encode(['error' => 'إجراء غير معروف']);
+        }
+        exit;
+    }
+
+    // ── GET ───────────────────────────────────────────────────────────────────
+    $type = $_GET['type'] ?? '';
+
+    if (!hasPermission($role, $type)) {
+        http_response_code(403);
+        echo json_encode(['error' => 'ممنوع: صلاحيات غير كافية']);
+        exit;
+    }
+
+    // ── STATS — single table scan with conditional aggregation ────────────────
     if ($type === 'stats') {
-        $total      = (int) $pdo->query('SELECT COUNT(*) FROM visitors')->fetchColumn();
-        $today      = (int) $pdo->query("SELECT COUNT(*) FROM visitors WHERE DATE(first_seen) = CURDATE()")->fetchColumn();
-        $yesterday  = (int) $pdo->query("SELECT COUNT(*) FROM visitors WHERE DATE(first_seen) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)")->fetchColumn();
-        $thisWeek   = (int) $pdo->query("SELECT COUNT(*) FROM visitors WHERE first_seen >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetchColumn();
-        $lastWeek   = (int) $pdo->query("SELECT COUNT(*) FROM visitors WHERE first_seen BETWEEN DATE_SUB(NOW(), INTERVAL 14 DAY) AND DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetchColumn();
-        $thisMonth  = (int) $pdo->query("SELECT COUNT(*) FROM visitors WHERE MONTH(first_seen)=MONTH(NOW()) AND YEAR(first_seen)=YEAR(NOW())")->fetchColumn();
-        $totalHits  = (int) $pdo->query('SELECT COALESCE(SUM(hit_count),0) FROM visitors')->fetchColumn();
-        $online     = (int) $pdo->query("SELECT COUNT(*) FROM visitors WHERE last_seen >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)")->fetchColumn();
-        $avgHits    = $total > 0 ? round($totalHits / $total, 1) : 0;
+
+        $row = $pdo->query("
+            SELECT
+                COUNT(*)                                                          AS total,
+                COALESCE(SUM(hit_count), 0)                                       AS total_hits,
+                SUM(first_seen >= CURDATE())                                      AS today,
+                SUM(first_seen >= CURDATE() - INTERVAL 1 DAY
+                    AND first_seen <  CURDATE())                                  AS yesterday,
+                SUM(first_seen >= NOW() - INTERVAL 7 DAY)                         AS this_week,
+                SUM(first_seen >= NOW() - INTERVAL 14 DAY
+                    AND first_seen <  NOW() - INTERVAL 7 DAY)                    AS last_week,
+                SUM(first_seen >= DATE_FORMAT(NOW(), '%Y-%m-01'))                 AS this_month,
+                SUM(last_seen  >= NOW() - INTERVAL 5 MINUTE)                     AS online
+            FROM visitors
+        ")->fetch();
+
+        $total     = (int) $row['total'];
+        $today     = (int) $row['today'];
+        $yesterday = (int) $row['yesterday'];
+        $thisWeek  = (int) $row['this_week'];
+        $lastWeek  = (int) $row['last_week'];
+        $totalHits = (int) $row['total_hits'];
 
         echo json_encode([
             'total'       => $total,
@@ -64,37 +180,48 @@ try {
             'yesterday'   => $yesterday,
             'thisWeek'    => $thisWeek,
             'lastWeek'    => $lastWeek,
-            'thisMonth'   => $thisMonth,
+            'thisMonth'   => (int) $row['this_month'],
             'totalHits'   => $totalHits,
-            'avgHits'     => $avgHits,
-            'online'      => $online,
-            'growthToday' => $yesterday > 0 ? round(($today - $yesterday) / $yesterday * 100, 1) : null,
-            'growthWeek'  => $lastWeek  > 0 ? round(($thisWeek - $lastWeek) / $lastWeek * 100, 1)  : null,
+            'avgHits'     => $total > 0 ? round($totalHits / $total, 1) : 0,
+            'online'      => (int) $row['online'],
+            'growthToday' => $yesterday > 0 ? round(($today    - $yesterday) / $yesterday * 100, 1) : null,
+            'growthWeek'  => $lastWeek  > 0 ? round(($thisWeek - $lastWeek)  / $lastWeek  * 100, 1) : null,
         ]);
 
+    // ── CHART ─────────────────────────────────────────────────────────────────
     } elseif ($type === 'chart') {
+
         $days = min(90, max(7, (int)($_GET['days'] ?? 30)));
         $stmt = $pdo->prepare("
             SELECT DATE(first_seen) AS date, COUNT(*) AS count
-            FROM visitors
-            WHERE first_seen >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
-            GROUP BY DATE(first_seen)
-            ORDER BY date ASC
+            FROM   visitors
+            WHERE  first_seen >= CURDATE() - INTERVAL :days DAY
+            GROUP  BY DATE(first_seen)
+            ORDER  BY date ASC
         ");
         $stmt->execute([':days' => $days]);
         echo json_encode($stmt->fetchAll());
 
+    // ── DEVICES ───────────────────────────────────────────────────────────────
     } elseif ($type === 'devices') {
-        $rows = $pdo->query("SELECT user_agent, COUNT(*) AS count FROM visitors WHERE user_agent IS NOT NULL GROUP BY user_agent")->fetchAll();
-        $agg  = ['mobile' => 0, 'tablet' => 0, 'desktop' => 0];
+
+        $rows = $pdo->query("
+            SELECT user_agent, COUNT(*) AS cnt
+            FROM   visitors
+            WHERE  user_agent IS NOT NULL
+            GROUP  BY user_agent
+        ")->fetchAll();
+
+        $agg = ['mobile' => 0, 'tablet' => 0, 'desktop' => 0];
         foreach ($rows as $row) {
-            $parsed = parseDevice($row['user_agent']);
-            $agg[$parsed['device']] += (int) $row['count'];
+            $agg[parseDevice($row['user_agent'])['device']] += (int) $row['cnt'];
         }
         echo json_encode($agg);
 
+    // ── VISITORS ──────────────────────────────────────────────────────────────
     } elseif ($type === 'visitors') {
-        $page   = max(1, (int)($_GET['page'] ?? 1));
+
+        $page   = max(1, (int)($_GET['page']  ?? 1));
         $limit  = min(100, max(10, (int)($_GET['limit'] ?? 25)));
         $offset = ($page - 1) * $limit;
         $search = trim($_GET['search'] ?? '');
@@ -102,7 +229,7 @@ try {
         $where  = '';
         $params = [];
         if ($search !== '') {
-            $where = 'WHERE ip_address LIKE :s OR v_id LIKE :s OR user_agent LIKE :s';
+            $where        = 'WHERE ip_address LIKE :s OR v_id LIKE :s OR user_agent LIKE :s';
             $params[':s'] = '%' . $search . '%';
         }
 
@@ -110,16 +237,23 @@ try {
         $countStmt->execute($params);
         $totalCount = (int) $countStmt->fetchColumn();
 
-        $stmt = $pdo->prepare("SELECT * FROM visitors $where ORDER BY last_seen DESC LIMIT :lim OFFSET :off");
-        $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
-        $stmt->bindValue(':off', $offset, PDO::PARAM_INT);
-        foreach ($params as $k => $v) $stmt->bindValue($k, $v);
-        $stmt->execute();
-        $rows = $stmt->fetchAll();
+        $dataStmt = $pdo->prepare("
+            SELECT id, v_id, ip_address, user_agent, first_seen, last_seen, hit_count
+            FROM   visitors
+            $where
+            ORDER  BY last_seen DESC
+            LIMIT  :lim OFFSET :off
+        ");
+        $dataStmt->bindValue(':lim', $limit,  PDO::PARAM_INT);
+        $dataStmt->bindValue(':off', $offset, PDO::PARAM_INT);
+        foreach ($params as $k => $v) $dataStmt->bindValue($k, $v);
+        $dataStmt->execute();
+        $rows = $dataStmt->fetchAll();
 
         foreach ($rows as &$row) {
-            $ua = $row['user_agent'] ?? '';
+            $ua            = $row['user_agent'] ?? '';
             $row['parsed'] = $ua ? parseDevice($ua) : ['device' => 'unknown', 'browser' => '—', 'os' => '—'];
+            unset($row['user_agent']);
         }
         unset($row);
 
@@ -131,11 +265,35 @@ try {
             'pages'    => (int) ceil($totalCount / $limit),
         ]);
 
+    // ── USERS — super_admin only ──────────────────────────────────────────────
+    } elseif ($type === 'users') {
+
+        $rows = $pdo->query("
+            SELECT  u.id,
+                    u.username,
+                    u.role,
+                    u.is_active,
+                    u.created_at,
+                    c.username AS created_by_name
+            FROM    dashboard_users u
+            LEFT JOIN dashboard_users c ON c.id = u.created_by
+            ORDER   BY u.created_at ASC
+        ")->fetchAll();
+
+        foreach ($rows as &$r) {
+            $r['role_label'] = roleLabelAr($r['role']);
+            $r['is_self']    = ((int) $r['id']) === $adminId;
+        }
+        unset($r);
+
+        echo json_encode($rows);
+
     } else {
         http_response_code(400);
         echo json_encode(['error' => 'Unknown type']);
     }
+
 } catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+    echo json_encode(['error' => 'Database error']);
 }

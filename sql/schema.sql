@@ -7,5 +7,6 @@ CREATE TABLE IF NOT EXISTS visitors (
   last_seen TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   hit_count INT UNSIGNED NOT NULL DEFAULT 1,
   UNIQUE KEY uk_visitors_v_id (v_id),
-  KEY idx_visitors_last_seen (last_seen)
+  KEY idx_visitors_last_seen  (last_seen),
+  KEY idx_visitors_first_seen (first_seen)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
