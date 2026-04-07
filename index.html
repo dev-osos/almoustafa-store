@@ -2323,10 +2323,6 @@
       <div class="pdd-phone" id="pdd-phone">—</div>
     </div>
   </div>
-  <div class="pdd-address-row">
-    <span class="material-symbols-outlined pdd-address-icon">location_on</span>
-    <span class="pdd-address-text" id="pdd-address"></span>
-  </div>
   <div class="pdd-edit-list">
     <button class="pdd-edit-item" id="btn-edit-segment" type="button">
       <div class="pdd-edit-item-main">
@@ -2959,7 +2955,7 @@
             profileCityInput.value = selectedCity;
             profileCityInput.disabled = !selectedGovernorateId;
             profileCityInput.placeholder = selectedGovernorateId ? 'اكتب لاختيار المدينة...' : 'اختر المحافظة أولاً';
-            profileAddressDetails.value = session?.addressDetails || (session?.address && !session?.governorate && !session?.city ? session.address : '');
+            profileAddressDetails.value = session?.addressDetails || session?.address || '';
             closeSuggestions(profileGovernorateSuggestions);
             closeSuggestions(profileCitySuggestions);
             // preload cities if governorate already selected
@@ -2985,7 +2981,11 @@
             const session = getSession();
             document.getElementById('pdd-name').textContent = session?.name || 'مستخدم';
             document.getElementById('pdd-phone').textContent = session?.phone || '—';
-            const currentAddress = session?.address || 'لم يتم تحديد العنوان بعد';
+            const currentAddress = buildAddressLabel(
+                session?.governorate || '',
+                session?.city        || '',
+                session?.addressDetails || session?.address || ''
+            ) || 'لم يتم تحديد العنوان بعد';
             const segmentLabels = { 'مستهلك': 'مستهلك', 'جملة': 'جملة', 'corporate': 'جملة الجملة', 'consumer': 'مستهلك', 'wholesale': 'جملة' };
             const currentSegment = segmentLabels[session?.segment] || session?.segment || 'لم يتم تحديد الشريحة بعد';
             document.getElementById('pdd-address').textContent = currentAddress;

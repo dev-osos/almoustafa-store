@@ -1094,8 +1094,9 @@ body {
       s.governorateId = acSelected ? acSelected.id   : null;
       s.city          = citySelected ? citySelected.name : area;
       s.cityId        = citySelected ? citySelected.id   : null;
-      s.area          = area;
-      s.address       = address;
+      s.area           = area;
+      s.address        = [acSelected?.name || document.getElementById('address-city').value.trim(), citySelected?.name || area, address].filter(Boolean).join('، ');
+      s.addressDetails = address;
       s.coords        = userCoords;
       s.profileDone   = true;
       localStorage.setItem('alm_session', JSON.stringify(s));
