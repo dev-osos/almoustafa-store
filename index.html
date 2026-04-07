@@ -398,6 +398,63 @@
         .modal-timer .hl { color: #fed65b; font-weight: 700; }
         .modal-back-link { text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.3); cursor: pointer; margin-top: 6px; }
         .modal-back-link:hover { color: rgba(255,255,255,0.6); }
+
+        /* ── Phone + country code row ── */
+        .phone-row { display: flex; gap: 8px; align-items: stretch; }
+        .country-code-btn {
+            flex-shrink: 0;
+            display: flex; align-items: center; gap: 5px;
+            padding: 0 10px;
+            background: rgba(255,255,255,0.06);
+            border: 1.5px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff; font-family: 'Manrope', sans-serif; font-size: 0.82rem;
+            cursor: pointer; white-space: nowrap;
+            transition: background 0.2s, border-color 0.2s;
+            position: relative;
+        }
+        .country-code-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(254,214,91,0.3); }
+        .country-code-btn .flag { font-size: 1.1rem; line-height: 1; }
+        .country-code-btn .dial { font-weight: 700; letter-spacing: 0.03em; direction: ltr; }
+        .country-code-btn .chevron { font-size: 14px; opacity: 0.5; font-family: 'Material Symbols Outlined'; font-weight: normal; }
+        .cc-dropdown {
+            position: absolute; top: calc(100% + 6px); right: 0;
+            width: 260px; max-height: 240px; overflow-y: auto;
+            background: rgba(22,10,3,0.98);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+            z-index: 400;
+            display: none;
+            direction: rtl;
+        }
+        .cc-dropdown.open { display: block; }
+        .cc-search {
+            padding: 10px 12px 6px;
+            position: sticky; top: 0;
+            background: rgba(22,10,3,0.98);
+        }
+        .cc-search input {
+            width: 100%; padding: 7px 10px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; color: #fff;
+            font-size: 0.78rem; font-family: 'Manrope', sans-serif;
+            outline: none; direction: rtl;
+        }
+        .cc-search input::placeholder { color: rgba(255,255,255,0.3); }
+        .cc-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 14px; cursor: pointer;
+            font-size: 0.8rem; color: rgba(255,255,255,0.8);
+            transition: background 0.15s;
+        }
+        .cc-item:hover, .cc-item.selected { background: rgba(254,214,91,0.1); color: #fed65b; }
+        .cc-item .cc-flag { font-size: 1.1rem; flex-shrink: 0; }
+        .cc-item .cc-name { flex: 1; }
+        .cc-item .cc-dial { font-weight: 700; direction: ltr; opacity: 0.7; font-size: 0.75rem; }
+        .phone-row .modal-field-wrap { flex: 1; }
+        .phone-row .modal-field-wrap input { border-radius: 12px; }
         .modal-success-icon {
             width: 64px; height: 64px;
             background: rgba(254,214,91,0.12);
@@ -2664,6 +2721,90 @@
             });
         }
 
+        // ========== COUNTRY CODE PICKER ==========
+        const COUNTRIES = [
+          {n:'السعودية',    f:'🇸🇦', d:'+966'}, {n:'مصر',           f:'🇪🇬', d:'+20'},
+          {n:'الإمارات',   f:'🇦🇪', d:'+971'}, {n:'الكويت',        f:'🇰🇼', d:'+965'},
+          {n:'قطر',        f:'🇶🇦', d:'+974'}, {n:'البحرين',       f:'🇧🇭', d:'+973'},
+          {n:'عُمان',      f:'🇴🇲', d:'+968'}, {n:'الأردن',        f:'🇯🇴', d:'+962'},
+          {n:'لبنان',      f:'🇱🇧', d:'+961'}, {n:'العراق',        f:'🇮🇶', d:'+964'},
+          {n:'سوريا',      f:'🇸🇾', d:'+963'}, {n:'اليمن',         f:'🇾🇪', d:'+967'},
+          {n:'ليبيا',      f:'🇱🇾', d:'+218'}, {n:'تونس',          f:'🇹🇳', d:'+216'},
+          {n:'الجزائر',    f:'🇩🇿', d:'+213'}, {n:'المغرب',        f:'🇲🇦', d:'+212'},
+          {n:'السودان',    f:'🇸🇩', d:'+249'}, {n:'موريتانيا',     f:'🇲🇷', d:'+222'},
+          {n:'الصومال',    f:'🇸🇴', d:'+252'}, {n:'جيبوتي',        f:'🇩🇯', d:'+253'},
+          {n:'تركيا',      f:'🇹🇷', d:'+90'},  {n:'إيران',         f:'🇮🇷', d:'+98'},
+          {n:'باكستان',    f:'🇵🇰', d:'+92'},  {n:'الهند',         f:'🇮🇳', d:'+91'},
+          {n:'بنغلاديش',   f:'🇧🇩', d:'+880'}, {n:'إندونيسيا',     f:'🇮🇩', d:'+62'},
+          {n:'ماليزيا',    f:'🇲🇾', d:'+60'},  {n:'الفلبين',       f:'🇵🇭', d:'+63'},
+          {n:'المملكة المتحدة',f:'🇬🇧',d:'+44'},{n:'ألمانيا',     f:'🇩🇪', d:'+49'},
+          {n:'فرنسا',      f:'🇫🇷', d:'+33'},  {n:'إيطاليا',       f:'🇮🇹', d:'+39'},
+          {n:'إسبانيا',    f:'🇪🇸', d:'+34'},  {n:'هولندا',        f:'🇳🇱', d:'+31'},
+          {n:'السويد',     f:'🇸🇪', d:'+46'},  {n:'النرويج',       f:'🇳🇴', d:'+47'},
+          {n:'الدنمارك',   f:'🇩🇰', d:'+45'},  {n:'كندا',          f:'🇨🇦', d:'+1'},
+          {n:'الولايات المتحدة',f:'🇺🇸',d:'+1'},{n:'أستراليا',     f:'🇦🇺', d:'+61'},
+          {n:'نيوزيلندا',  f:'🇳🇿', d:'+64'},  {n:'جنوب أفريقيا', f:'🇿🇦', d:'+27'},
+          {n:'نيجيريا',    f:'🇳🇬', d:'+234'}, {n:'كينيا',         f:'🇰🇪', d:'+254'},
+          {n:'إثيوبيا',    f:'🇪🇹', d:'+251'}, {n:'غانا',          f:'🇬🇭', d:'+233'},
+        ];
+
+        let selectedCountry = COUNTRIES[0]; // default: Saudi
+
+        function buildCcList(filter) {
+          const list = document.getElementById('cc-list');
+          list.innerHTML = '';
+          const q = (filter || '').trim();
+          const filtered = q ? COUNTRIES.filter(c => c.n.includes(q) || c.d.includes(q)) : COUNTRIES;
+          filtered.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'cc-item' + (c === selectedCountry ? ' selected' : '');
+            div.setAttribute('role', 'option');
+            div.innerHTML = `<span class="cc-flag">${c.f}</span><span class="cc-name">${c.n}</span><span class="cc-dial">${c.d}</span>`;
+            div.addEventListener('mousedown', (e) => {
+              e.preventDefault();
+              selectedCountry = c;
+              document.getElementById('cc-flag').textContent = c.f;
+              document.getElementById('cc-dial').textContent = c.d;
+              document.getElementById('reg-phone').placeholder = c.d === '+966' ? '5XXXXXXXX' : 'XXXXXXXXX';
+              closeCcDropdown();
+            });
+            list.appendChild(div);
+          });
+        }
+
+        function openCcDropdown() {
+          document.getElementById('cc-dropdown').classList.add('open');
+          document.getElementById('cc-btn').setAttribute('aria-expanded', 'true');
+          document.getElementById('cc-search-input').value = '';
+          buildCcList('');
+          setTimeout(() => document.getElementById('cc-search-input').focus(), 50);
+        }
+        function closeCcDropdown() {
+          document.getElementById('cc-dropdown').classList.remove('open');
+          document.getElementById('cc-btn').setAttribute('aria-expanded', 'false');
+        }
+
+        document.getElementById('cc-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = document.getElementById('cc-dropdown').classList.contains('open');
+          isOpen ? closeCcDropdown() : openCcDropdown();
+        });
+        document.getElementById('cc-search-input').addEventListener('input', (e) => {
+          buildCcList(e.target.value);
+        });
+        document.addEventListener('click', (e) => {
+          if (!document.getElementById('cc-btn').contains(e.target)) closeCcDropdown();
+        });
+
+        // Helper: get full international phone from picker + input
+        function getRegPhone() {
+          const raw = document.getElementById('reg-phone').value.trim().replace(/[\s\-().]+/g, '');
+          const local = raw.replace(/^0+/, ''); // strip leading zeros
+          return selectedCountry.d + local;
+        }
+
+        buildCcList('');
+
         // ========== LOGIN MODAL ==========
 
         // --- Session helpers ---
@@ -3566,7 +3707,7 @@
         // --- Register Step 1 — send OTP ---
         document.getElementById('btn-send-otp').addEventListener('click', async () => {
             const name     = document.getElementById('reg-name').value.trim();
-            const phone    = document.getElementById('reg-phone').value.trim();
+            const phone    = getRegPhone();
             const password = document.getElementById('reg-password').value;
             const btn      = document.getElementById('btn-send-otp');
 
@@ -3645,7 +3786,7 @@
 
         // --- Resend OTP ---
         document.getElementById('btn-resend-otp').addEventListener('click', async () => {
-            const phone = document.getElementById('reg-phone').value.trim();
+            const phone = getRegPhone();
             const btn   = document.getElementById('btn-resend-otp');
             btn.disabled = true;
             btn.textContent = 'جارٍ إعادة الإرسال...';
@@ -3675,7 +3816,7 @@
             if (code.length < 4) { alert('يرجى إدخال الكود المكوّن من 4 أرقام'); return; }
 
             const name     = document.getElementById('reg-name').value.trim();
-            const phone    = document.getElementById('reg-phone').value.trim();
+            const phone    = getRegPhone();
             const password = document.getElementById('reg-password').value;
             const btn      = document.getElementById('btn-verify-otp');
 
@@ -3847,9 +3988,24 @@
       </div>
       <div class="modal-field">
         <label for="reg-phone">رقم الهاتف</label>
-        <div class="modal-field-wrap">
-          <span class="modal-field-icon material-symbols-outlined">phone_iphone</span>
-          <input id="reg-phone" type="tel" placeholder="01XXXXXXXXX" autocomplete="tel"/>
+        <div class="phone-row">
+          <!-- Country code picker -->
+          <button type="button" class="country-code-btn" id="cc-btn" aria-haspopup="listbox" aria-expanded="false">
+            <span class="flag" id="cc-flag">🇸🇦</span>
+            <span class="dial" id="cc-dial">+966</span>
+            <span class="chevron">expand_more</span>
+            <div class="cc-dropdown" id="cc-dropdown" role="listbox">
+              <div class="cc-search">
+                <input type="text" id="cc-search-input" placeholder="ابحث عن دولة..." autocomplete="off"/>
+              </div>
+              <div id="cc-list"></div>
+            </div>
+          </button>
+          <!-- Phone number -->
+          <div class="modal-field-wrap">
+            <span class="modal-field-icon material-symbols-outlined">phone_iphone</span>
+            <input id="reg-phone" type="tel" placeholder="5XXXXXXXX" autocomplete="tel" dir="ltr"/>
+          </div>
         </div>
       </div>
       <div class="modal-field">

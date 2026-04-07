@@ -77,9 +77,12 @@ $message = implode("\n", [
     'لا تُشارك هذا الكود مع أي شخص.',
 ]);
 
-// ── Send via WasenderAPI ──────────────────────────────────────────────────────
+// ── Send via WasenderAPI ─────────────────────────────────────────────────────
+// WasenderAPI expects the number without leading '+', e.g. "966501234567"
+$phoneForApi = ltrim($phone, '+');
+
 $payload = json_encode([
-    'to'   => $phone,
+    'to'   => $phoneForApi,
     'text' => $message,
 ]);
 
