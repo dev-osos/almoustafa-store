@@ -18,6 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
 
 require_once __DIR__ . '/../../apis/bootstrap.php';
 
+// ── Session variables ─────────────────────────────────────────────────────────
+$adminRole     = $_SESSION['admin_role']     ?? '';
+$adminUsername = $_SESSION['admin_username'] ?? '';
+$adminId       = (int) ($_SESSION['admin_id'] ?? 0);
+
 // ── Role helpers ──────────────────────────────────────────────────────────────
 function roleLabelAr(string $role): string
 {
