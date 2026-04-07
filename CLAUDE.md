@@ -38,6 +38,7 @@ All API files live in `apis/` and share a layered bootstrap pattern:
 | `v_id.php` | Visitor identification: reads/issues `v_id` cookie, persists to DB |
 
 Each endpoint starts with `api_response_init()` then `api_require_method([...])`.
+never use "SELECT *" use optemized queries
 
 ### Database
 Single table `visitors` (schema in `sql/schema.sql`): tracks unique visitors by `v_id` (format `v_[32 hex chars]`) with IP, user agent, hit count.

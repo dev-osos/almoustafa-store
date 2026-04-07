@@ -1,4 +1,4 @@
-const CACHE_NAME = 'almoustafa-static-v6';
+const CACHE_NAME = 'almoustafa-static-v7';
 const PRECACHE_ASSETS = [
   './',
   'index.html',
@@ -17,7 +17,8 @@ const PRECACHE_ASSETS = [
   'pics/collections/derivatives.jpg',
   'pics/collections/beauty.jpg',
   'pics/collections/dates.jpg',
-  'pics/collections/nuts.jpg'
+  'pics/collections/nuts.jpg',
+  'js/cookie-consent.js'
 ];
 
 self.addEventListener('install', (event) => {
