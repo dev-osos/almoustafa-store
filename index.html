@@ -2630,7 +2630,7 @@
   <div class="container mx-auto max-w-6xl">
 
     <!-- Main grid -->
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 mb-16">
 
       <!-- Brand / About column -->
       <div class="md:col-span-5 flex flex-col gap-5">
@@ -2653,34 +2653,34 @@
       </div>
 
       <!-- Spacer -->
-      <div class="md:col-span-1"></div>
+      <div class="hidden md:block md:col-span-1"></div>
 
       <!-- Links columns -->
-      <div class="md:col-span-6 grid grid-cols-3 gap-2 md:gap-8">
+      <div class="col-span-1 md:col-span-6 grid grid-cols-3 gap-4 md:gap-8">
 
         <!-- Col 1 -->
         <div class="flex flex-col gap-2 md:gap-3">
           <div class="font-headline text-[#fed65b] text-xs md:text-sm font-bold mb-1 md:mb-2">المتجر</div>
-          <a href="products.html" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-xs md:text-sm hover:text-[#fed65b] transition-colors"><i class="bi bi-grid-3x3-gap"></i>جميع المنتجات</a>
-          <a href="products.html#offers" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-xs md:text-sm hover:text-[#fed65b] transition-colors"><i class="bi bi-tags"></i>العروض</a>
-          <button onclick="document.getElementById('wholesale-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-xs md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none"><i class="bi bi-boxes"></i>بالجملة</button>
+          <a href="products.html" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-[11px] md:text-sm hover:text-[#fed65b] transition-colors leading-snug"><i class="bi bi-grid-3x3-gap md:inline hidden"></i><i class="bi bi-grid-3x3-gap md:hidden"></i>جميع المنتجات</a>
+          <a href="products.html#offers" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-[11px] md:text-sm hover:text-[#fed65b] transition-colors leading-snug"><i class="bi bi-tags"></i>العروض</a>
+          <button onclick="document.getElementById('wholesale-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-[11px] md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none leading-snug text-right"><i class="bi bi-boxes"></i>بالجملة</button>
         </div>
 
         <!-- Col 2 -->
         <div class="flex flex-col gap-2 md:gap-3">
           <div class="font-headline text-[#fed65b] text-xs md:text-sm font-bold mb-1 md:mb-2">الشركة</div>
-          <button onclick="window.location.href='about.html'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-xs md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none"><i class="bi bi-book"></i>قصتنا</button>
-          <button onclick="document.getElementById('quality-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-xs md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none"><i class="bi bi-patch-check"></i>معايير الجودة</button>
-          <button onclick="document.getElementById('contact-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-xs md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none"><i class="bi bi-chat-dots"></i>تواصل معنا</button>
+          <button onclick="window.location.href='about.html'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-[11px] md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none leading-snug text-right"><i class="bi bi-book"></i>قصتنا</button>
+          <button onclick="document.getElementById('quality-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-[11px] md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none leading-snug text-right"><i class="bi bi-patch-check"></i>معايير الجودة</button>
+          <button onclick="document.getElementById('contact-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-[11px] md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none leading-snug text-right"><i class="bi bi-chat-dots"></i>تواصل معنا</button>
         </div>
 
         <!-- Col 3 -->
         <div class="flex flex-col gap-2 md:gap-3">
           <div class="font-headline text-[#fed65b] text-xs md:text-sm font-bold mb-1 md:mb-2">المساعدة</div>
-          <button onclick="document.getElementById('shipping-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-xs md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none"><i class="bi bi-truck"></i>معلومات الشحن</button>
-          <button onclick="document.getElementById('returns-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-xs md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none"><i class="bi bi-arrow-counterclockwise"></i>سياسة الإرجاع</button>
-          <button onclick="document.getElementById('faq-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-xs md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none"><i class="bi bi-question-circle"></i>الأسئلة الشائعة</button>
-          <button onclick="document.getElementById('privacy-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-xs md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none"><i class="bi bi-shield-check"></i>سياسة الخصوصية</button>
+          <button onclick="document.getElementById('shipping-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-[11px] md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none leading-snug text-right"><i class="bi bi-truck"></i>معلومات الشحن</button>
+          <button onclick="document.getElementById('returns-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-[11px] md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none leading-snug text-right"><i class="bi bi-arrow-counterclockwise"></i>سياسة الإرجاع</button>
+          <button onclick="document.getElementById('faq-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-[11px] md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none leading-snug text-right"><i class="bi bi-question-circle"></i>الأسئلة الشائعة</button>
+          <button onclick="document.getElementById('privacy-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-1 md:gap-2 text-[#fdf9f0]/55 text-[11px] md:text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none leading-snug text-right"><i class="bi bi-shield-check"></i>سياسة الخصوصية</button>
         </div>
 
       </div>
