@@ -515,11 +515,12 @@ const ADMIN = {
                   <th>الشريحة</th>
                   <th>المحافظة / المدينة</th>
                   <th>الملف</th>
+                  <th>رصيد المحفظة</th>
                   <th>تاريخ التسجيل</th>
                 </tr>
               </thead>
               <tbody id="custBody">
-                <tr><td colspan="7" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
+                <tr><td colspan="8" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -940,12 +941,17 @@ async function loadCustomers(page = 1) {
   const offset = (page - 1) * 25;
 
   if (!data.customers.length) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><span class="ms">person_search</span>لا توجد نتائج</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><span class="ms">person_search</span>لا توجد نتائج</div></td></tr>';
   } else {
     data.customers.forEach((c, i) => {
-      const seg   = SEGMENT_MAP[c.segment] ?? { label: c.segment, style: '' };
-      const loc   = [c.governorate, c.city].filter(Boolean).join(' / ') || '—';
-      const done  = c.profile_complete == 1;
+      const seg     = SEGMENT_MAP[c.segment] ?? { label: c.segment, style: '' };
+      const loc     = [c.governorate, c.city].filter(Boolean).join(' / ') || '—';
+      const done    = c.profile_complete == 1;
+      const balance = parseFloat(c.wallet_balance ?? 0);
+      const balFmt  = balance.toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const balStyle = balance > 0
+        ? 'background:var(--green-bg);color:var(--green)'
+        : 'background:#f0f0f0;color:#888';
       const tr    = document.createElement('tr');
       tr.innerHTML = `
         <td style="color:var(--on-surface-dim);font-size:.78rem">${offset + i + 1}</td>
@@ -957,6 +963,11 @@ async function loadCustomers(page = 1) {
           <span style="font-size:.75rem;font-weight:700;padding:.2rem .6rem;border-radius:999px;
             ${done ? 'background:var(--green-bg);color:var(--green)' : 'background:#f0f0f0;color:#888'}">
             ${done ? 'مكتمل' : 'غير مكتمل'}
+          </span>
+        </td>
+        <td>
+          <span style="font-size:.78rem;font-weight:700;padding:.2rem .6rem;border-radius:999px;${balStyle}">
+            ${balFmt} ر.س
           </span>
         </td>
         <td><div class="date-text">${fmtDate(c.created_at)}</div></td>`;

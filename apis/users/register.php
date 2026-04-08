@@ -87,6 +87,22 @@ $stmt->execute([
 
 $customerId = (int) $pdo->lastInsertId();
 
+// ── Ensure wallets table exists and create wallet for new customer ────────────
+try {
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS wallets (
+            id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            customer_id BIGINT UNSIGNED NOT NULL,
+            balance     DECIMAL(12,2)  NOT NULL DEFAULT 0.00,
+            created_at  TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at  TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY uk_wallets_customer (customer_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+    $pdo->prepare("INSERT IGNORE INTO wallets (customer_id) VALUES (:cid)")
+        ->execute([':cid' => $customerId]);
+} catch (Throwable) { /* non-fatal */ }
+
 // ── Regenerate session to prevent session fixation ───────────────────────────
 session_regenerate_id(true);
 

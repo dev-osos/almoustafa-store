@@ -355,17 +355,38 @@ try {
 
         $where = $conds ? 'WHERE ' . implode(' AND ', $conds) : '';
 
+        // Ensure wallets table exists (lazy creation)
+        try {
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS wallets (
+                    id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                    customer_id BIGINT UNSIGNED NOT NULL,
+                    balance     DECIMAL(12,2)  NOT NULL DEFAULT 0.00,
+                    created_at  TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at  TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    UNIQUE KEY uk_wallets_customer (customer_id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ");
+            // Back-fill wallets for any existing customers that don't have one
+            $pdo->exec("
+                INSERT IGNORE INTO wallets (customer_id)
+                SELECT id FROM customers
+            ");
+        } catch (Throwable) { /* non-fatal */ }
+
         try {
             $countStmt = $pdo->prepare("SELECT COUNT(*) FROM customers $where");
             $countStmt->execute($params);
             $totalCount = (int) $countStmt->fetchColumn();
 
             $dataStmt = $pdo->prepare("
-                SELECT id, name, phone, segment, governorate, city,
-                       profile_complete, created_at
-                FROM   customers
+                SELECT c.id, c.name, c.phone, c.segment, c.governorate, c.city,
+                       c.profile_complete, c.created_at,
+                       COALESCE(w.balance, 0.00) AS wallet_balance
+                FROM   customers c
+                LEFT JOIN wallets w ON w.customer_id = c.id
                 $where
-                ORDER  BY created_at DESC
+                ORDER  BY c.created_at DESC
                 LIMIT  :lim OFFSET :off
             ");
             $dataStmt->bindValue(':lim', $limit,  PDO::PARAM_INT);
