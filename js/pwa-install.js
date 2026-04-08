@@ -8,8 +8,8 @@
   'use strict';
 
   const STORAGE_KEY = 'almoustafa_pwa_prompt';
-  const DISMISS_DAYS = 7;
-  const SHOW_DELAY_MS = 20000; // 20 seconds
+  const DISMISS_DAYS = 1;
+  const SHOW_DELAY_MS = 10000; // 10 seconds
 
   // ── helpers ──────────────────────────────────────────────
   function shouldShow() {
