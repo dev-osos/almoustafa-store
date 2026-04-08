@@ -1,0 +1,37 @@
+{
+  "name": "متجر المصطفى",
+  "short_name": "المصطفى",
+  "description": "خبراء العسل الصافي — عسل طبيعي خام من أنقى المناطق",
+  "start_url": "/store/",
+  "scope": "/store/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fdf9f0",
+  "theme_color": "#3c0004",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["shopping", "food"],
+  "icons": [
+    { "src": "logo.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "logo.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "logo.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "تسوق الآن",
+      "short_name": "تسوق",
+      "description": "استعرض جميع المنتجات",
+      "url": "/store/collections.html",
+      "icons": [{ "src": "logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "آراء العملاء",
+      "short_name": "التقييمات",
+      "description": "اقرأ تجارب عملائنا",
+      "url": "/store/reviews.html",
+      "icons": [{ "src": "logo.png", "sizes": "192x192" }]
+    }
+  ]
+}

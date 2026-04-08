@@ -4,6 +4,12 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>المصطفى | خبراء العسل الصافي</title>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#3c0004"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="المصطفى"/>
+<link rel="apple-touch-icon" href="logo.png"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&amp;family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -2663,7 +2669,7 @@
         <!-- Col 2 -->
         <div class="flex flex-col gap-3">
           <div class="font-headline text-[#fed65b] text-sm font-bold mb-2">الشركة</div>
-          <button onclick="document.getElementById('story-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-2 text-[#fdf9f0]/55 text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none"><i class="bi bi-book"></i>قصتنا</button>
+          <button onclick="window.location.href='about.html'"><i class="bi bi-book"></i>قصتنا</button>
           <button onclick="document.getElementById('quality-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-2 text-[#fdf9f0]/55 text-sm hover:text-[#fed65b] transition-colors cursor-pointer bg-transparent border-none"><i class="bi bi-patch-check"></i>معايير الجودة</button>
           <button onclick="document.getElementById('contact-backdrop').classList.add('open');document.body.style.overflow='hidden'" class="flex items-center gap-2 text-[#fdf9f0]/55 text-sm hover:text-[#fed65b] transition-colors"><i class="bi bi-chat-dots"></i>تواصل معنا</button>
         </div>
@@ -5119,5 +5125,7 @@
 </div>
 
 <script src="js/cookie-consent.js"></script>
+<script src="js/pwa-install.js"></script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
 </body>
 </html>

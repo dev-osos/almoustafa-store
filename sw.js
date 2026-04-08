@@ -1,4 +1,4 @@
-const CACHE_NAME = 'almoustafa-static-v8';
+const CACHE_NAME = 'almoustafa-static-v9';
 const PRECACHE_ASSETS = [
   './',
   'index.html',
@@ -8,6 +8,7 @@ const PRECACHE_ASSETS = [
   'checkout.html',
   'onboarding.html',
   'contact.html',
+  'about.html',
   'powerd-by.html',
   'icons/bootstrap-icons/bootstrap-icons.min.css',
   'icons/bootstrap-icons/fonts/bootstrap-icons.woff2',
