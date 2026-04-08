@@ -7,10 +7,14 @@ api_response_init();
 api_require_method(['POST']);
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const WASENDER_URL   = 'https://wasenderapi.com/api/send-message';
-const WASENDER_TOKEN = 'a930f737979da9d40dbbf40bc9d67254153210924e6050e8bbf2870c59c4d923';
-const STORE_NAME     = 'متجر المصطفى للعسل';
-const CODE_TTL       = 600; // 10 minutes
+const WASENDER_URL = 'https://wasenderapi.com/api/send-message';
+const STORE_NAME   = 'متجر المصطفى للعسل';
+const CODE_TTL     = 600; // 10 minutes
+
+$wasenderToken = api_env('WASENDER_TOKEN', '');
+if ($wasenderToken === '' || $wasenderToken === null) {
+    api_error('خدمة الإرسال غير مهيأة', 503);
+}
 
 // ── Rate limit via session (no DB needed for OTP) ─────────────────────────────
 if (session_status() === PHP_SESSION_NONE) {
@@ -90,7 +94,7 @@ $ctx = stream_context_create([
     'http' => [
         'method'  => 'POST',
         'header'  => implode("\r\n", [
-            'Authorization: Bearer ' . WASENDER_TOKEN,
+            'Authorization: Bearer ' . $wasenderToken,
             'Content-Type: application/json',
             'Content-Length: ' . strlen($payload),
         ]),

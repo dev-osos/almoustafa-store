@@ -23,9 +23,9 @@ if (!preg_match('/^\+\d{7,15}$/', $phone)) {
 
 try {
     $pdo  = api_pdo();
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM customers WHERE phone = :p LIMIT 1");
+    $stmt = $pdo->prepare("SELECT 1 FROM customers WHERE phone = :p LIMIT 1");
     $stmt->execute([':p' => $phone]);
-    api_ok(['exists' => (int) $stmt->fetchColumn() > 0]);
+    api_ok(['exists' => $stmt->fetchColumn() !== false]);
 } catch (Throwable) {
     api_ok(['exists' => false]);
 }

@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>من نحن | متجر المصطفى</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Manrope:wght@200..800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary-fixed-variant": "#574500",
+            "surface-dim": "#dddad1",
+            "on-error": "#ffffff",
+            "surface-bright": "#fdf9f0",
+            "on-tertiary": "#ffffff",
+            "surface-container": "#f1eee5",
+            "inverse-primary": "#ffb3af",
+            "inverse-surface": "#31312b",
+            "inverse-on-surface": "#f4f0e7",
+            "secondary": "#735c00",
+            "on-primary-container": "#e37470",
+            "outline-variant": "#dcc0be",
+            "error": "#ba1a1a",
+            "on-tertiary-container": "#bd8e00",
+            "on-surface": "#1c1c17",
+            "surface-container-high": "#ece8df",
+            "on-background": "#1c1c17",
+            "on-primary-fixed": "#410005",
+            "primary-container": "#5d0e12",
+            "surface": "#fdf9f0",
+            "primary-fixed-dim": "#ffb3af",
+            "on-tertiary-fixed-variant": "#5b4300",
+            "surface-container-highest": "#e6e2d9",
+            "on-primary": "#ffffff",
+            "on-tertiary-fixed": "#261a00",
+            "on-secondary-fixed": "#241a00",
+            "surface-container-lowest": "#ffffff",
+            "tertiary": "#221700",
+            "on-secondary-container": "#745c00",
+            "on-secondary": "#ffffff",
+            "tertiary-container": "#3c2b00",
+            "error-container": "#ffdad6",
+            "tertiary-fixed": "#ffdf9e",
+            "primary": "#3c0004",
+            "primary-fixed": "#ffdad7",
+            "outline": "#897270",
+            "secondary-fixed-dim": "#e9c349",
+            "tertiary-fixed-dim": "#fabd00",
+            "on-error-container": "#93000a",
+            "secondary-fixed": "#ffe088",
+            "surface-tint": "#9f3f3e",
+            "surface-variant": "#e6e2d9",
+            "surface-container-low": "#f7f3ea",
+            "on-surface-variant": "#564241",
+            "on-primary-fixed-variant": "#802828",
+            "background": "#fdf9f0",
+            "secondary-container": "#fed65b"
+          },
+          fontFamily: {
+            "headline": ["Amiri", "serif"],
+            "body": ["Manrope", "sans-serif"],
+            "label": ["Manrope", "sans-serif"]
+          },
+          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+        },
+      },
+    }
+</script>
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    }
+
+    /* Scroll reveal */
+    .reveal { opacity: 0; transform: translateY(50px); transition: opacity 0.9s cubic-bezier(0.4,0,0.2,1), transform 0.9s cubic-bezier(0.4,0,0.2,1); }
+    .reveal.active { opacity: 1; transform: translateY(0); }
+    .reveal-left { opacity: 0; transform: translateX(60px); transition: opacity 0.9s cubic-bezier(0.4,0,0.2,1), transform 0.9s cubic-bezier(0.4,0,0.2,1); }
+    .reveal-left.active { opacity: 1; transform: translateX(0); }
+    .reveal-right { opacity: 0; transform: translateX(-60px); transition: opacity 0.9s cubic-bezier(0.4,0,0.2,1), transform 0.9s cubic-bezier(0.4,0,0.2,1); }
+    .reveal-right.active { opacity: 1; transform: translateX(0); }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.3s; }
+    .reveal-d4 { transition-delay: 0.4s; }
+    .reveal-d5 { transition-delay: 0.5s; }
+
+    /* Timeline */
+    .timeline-line {
+        position: absolute;
+        right: 50%;
+        top: 0; bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, transparent, #3c0004 10%, #735c00 50%, #3c0004 90%, transparent);
+    }
+    @media (max-width: 768px) {
+        .timeline-line { right: 20px; }
+    }
+
+    /* Stats counter */
+    .stat-card {
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(254,214,91,0.08) 0%, transparent 60%);
+        pointer-events: none;
+    }
+
+    /* Hero parallax */
+    .hero-bg {
+        background-attachment: fixed;
+        background-size: cover;
+        background-position: center;
+    }
+
+    /* Honey drip decoration */
+    .honey-drip {
+        position: relative;
+    }
+    .honey-drip::after {
+        content: '';
+        position: absolute;
+        bottom: -12px;
+        right: 0; left: 0;
+        height: 12px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 12'%3E%3Cpath d='M0,0 Q20,12 40,0 Q60,12 80,0 Q100,12 120,0 Q140,12 160,0 Q180,12 200,0 Q220,12 240,0 Q260,12 280,0 Q300,12 320,0 Q340,12 360,0 Q380,12 400,0 L400,12 L0,12 Z' fill='%23fdf9f0'/%3E%3C/svg%3E") repeat-x bottom;
+    }
+
+    /* Quality badge */
+    .quality-badge {
+        animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(-2deg); }
+        50% { transform: translateY(-12px) rotate(2deg); }
+    }
+
+    /* Image overlay */
+    .img-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(60,0,4,0.7) 0%, transparent 50%);
+    }
+
+    /* Parallax section divider */
+    .divider-wave {
+        overflow: hidden;
+        line-height: 0;
+    }
+
+    /* Mobile menu */
+    #mobile-menu {
+        position: fixed;
+        top: 0; right: -100%;
+        width: 85%; max-width: 360px;
+        height: 100vh;
+        background: #fdf9f0;
+        z-index: 200;
+        padding: 80px 32px 40px;
+        transition: right 0.35s cubic-bezier(0.4,0,0.2,1);
+        box-shadow: -10px 0 60px rgba(0,0,0,0.15);
+    }
+    #mobile-menu.open { right: 0; }
+    #mobile-menu-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(28,28,23,0.5);
+        z-index: 199;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.35s;
+    }
+    #mobile-menu-backdrop.open { opacity: 1; pointer-events: auto; }
+</style>
+</head>
+<body class="bg-background text-on-surface font-body">
+
+<!-- ========== NAVBAR ========== -->
+<nav class="fixed top-0 w-full z-50 bg-[#fdf9f0]/95 backdrop-blur-md shadow-lg border-b border-primary/5 flex justify-between items-center px-6 md:px-12 py-5">
+    <div class="flex items-center gap-4">
+        <a href="index.html">
+            <img alt="Al Moustafa Logo" class="h-12 w-auto drop-shadow-md" src="logo.png"/>
+        </a>
+        <div class="flex flex-col">
+            <span class="text-2xl md:text-3xl font-bold font-headline text-[#3c0004] uppercase tracking-[0.2em] leading-none">متجر المصطفى</span>
+            <span class="text-[13px] tracking-[0.3em] font-body text-secondary mt-1 uppercase">إسم يعني الثقه</span>
+        </div>
+    </div>
+    <div class="hidden md:flex items-center gap-10">
+        <a class="flex items-center gap-2 text-[#3c0004]/70 font-headline font-semibold text-base tracking-wide hover:text-[#735c00] transition-colors duration-300" href="index.html">
+            <i class="bi bi-house-door text-sm"></i> تراثنا
+        </a>
+        <a class="flex items-center gap-2 text-[#3c0004]/70 font-headline font-semibold text-base tracking-wide hover:text-[#735c00] transition-colors duration-300" href="collections.html">
+            <i class="bi bi-shop text-sm"></i> منتجاتنا
+        </a>
+        <a class="flex items-center gap-2 text-[#3c0004]/70 font-headline font-semibold text-base tracking-wide hover:text-[#735c00] transition-colors duration-300" href="reviews.html">
+            <i class="bi bi-star text-sm"></i> آراء العملاء
+        </a>
+        <a class="flex items-center gap-2 text-[#3c0004] border-b-2 border-[#3c0004] pb-1 font-headline font-semibold text-base tracking-wide" href="about.html">
+            <i class="bi bi-people text-sm"></i> من نحن
+        </a>
+    </div>
+    <div class="flex items-center gap-4">
+        <a href="collections.html" class="hidden md:inline-flex items-center gap-2 bg-primary text-on-primary px-7 py-3 rounded-full font-headline text-sm font-bold shadow-md hover:bg-primary-container transition-all hover:scale-105">
+            <i class="bi bi-bag-heart"></i> تسوق الآن
+        </a>
+        <button class="md:hidden text-primary" id="btn-mobile-menu">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+    </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div id="mobile-menu-backdrop"></div>
+<div id="mobile-menu">
+    <button id="btn-mobile-menu-close" class="absolute top-6 left-6 w-10 h-10 rounded-full border border-primary/20 flex items-center justify-center text-primary">
+        <span class="material-symbols-outlined">close</span>
+    </button>
+    <div class="flex flex-col gap-5 mt-4">
+        <a class="flex items-center gap-3 text-primary/70 font-headline font-semibold text-lg py-3 border-b border-primary/10" href="index.html">
+            <span class="material-symbols-outlined">home</span> تراثنا
+        </a>
+        <a class="flex items-center gap-3 text-primary/70 font-headline font-semibold text-lg py-3 border-b border-primary/10" href="collections.html">
+            <span class="material-symbols-outlined">store</span> منتجاتنا
+        </a>
+        <a class="flex items-center gap-3 text-primary/70 font-headline font-semibold text-lg py-3 border-b border-primary/10" href="reviews.html">
+            <span class="material-symbols-outlined">star</span> آراء العملاء
+        </a>
+        <a class="flex items-center gap-3 text-primary font-headline font-semibold text-lg py-3 border-b border-primary/10" href="about.html">
+            <span class="material-symbols-outlined">groups</span> من نحن
+        </a>
+    </div>
+</div>
+
+<!-- ========== HERO ========== -->
+<section class="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
+    <div class="absolute inset-0 z-0">
+        <img src="pics/bg.jpg" alt="خلفية العسل" class="w-full h-full object-cover object-center scale-105"/>
+        <div class="absolute inset-0 bg-gradient-to-b from-[#3c0004]/85 via-[#3c0004]/60 to-background"></div>
+        <!-- Floating honey particles -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-1/4 right-1/4 w-3 h-3 rounded-full bg-secondary-container/40 animate-ping" style="animation-duration:3s;animation-delay:0s;"></div>
+            <div class="absolute top-1/3 left-1/3 w-2 h-2 rounded-full bg-secondary-container/30 animate-ping" style="animation-duration:4s;animation-delay:1s;"></div>
+            <div class="absolute top-2/3 right-1/3 w-4 h-4 rounded-full bg-secondary-container/20 animate-ping" style="animation-duration:5s;animation-delay:2s;"></div>
+        </div>
+    </div>
+    <div class="relative z-10 text-center px-6 max-w-5xl mx-auto pt-28 pb-20">
+        <div class="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full px-6 py-3 mb-8 border border-white/20">
+            <i class="bi bi-hexagon-fill text-secondary-container text-sm"></i>
+            <span class="font-body text-white/80 text-sm tracking-widest uppercase">منذ عقود من الشغف</span>
+        </div>
+        <h1 class="font-headline text-6xl md:text-8xl text-white leading-tight mb-6 drop-shadow-2xl">
+            قصة المصطفى
+        </h1>
+        <p class="text-xl md:text-2xl text-white/75 max-w-3xl mx-auto leading-relaxed font-body mb-12">
+            رحلة بدأت بخلية واحدة وحلم لا يُقهر، لتصبح اليوم علامة الثقة الأولى في عالم العسل الأصيل
+        </p>
+        <div class="flex flex-wrap gap-6 justify-center">
+            <a href="#our-story" class="bg-secondary-container text-tertiary-container px-10 py-4 rounded-full font-headline text-lg font-bold shadow-2xl hover:scale-105 transition-all inline-flex items-center gap-3">
+                <i class="bi bi-book-half"></i> اقرأ قصتنا
+            </a>
+            <a href="collections.html" class="border-2 border-white/40 text-white px-10 py-4 rounded-full font-headline text-lg font-bold hover:bg-white/10 transition-all inline-flex items-center gap-3 backdrop-blur-sm">
+                <i class="bi bi-bag-heart"></i> تسوق الآن
+            </a>
+        </div>
+    </div>
+    <!-- Scroll indicator -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 animate-bounce">
+        <span class="text-white/40 text-xs font-body tracking-widest uppercase">استكشف</span>
+        <span class="material-symbols-outlined text-white/40">expand_more</span>
+    </div>
+</section>
+
+<!-- ========== STATS BAR ========== -->
+<section class="bg-primary py-14 relative overflow-hidden">
+    <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23ffffff%22 fill-opacity=%220.03%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+    <div class="container mx-auto px-6 md:px-12">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div class="stat-card reveal reveal-d1">
+                <div class="text-4xl md:text-6xl font-headline font-bold text-secondary-container mb-2" data-target="15">0</div>
+                <div class="text-secondary-container/50 font-body text-sm tracking-widest uppercase">سنة خبرة</div>
+            </div>
+            <div class="stat-card reveal reveal-d2">
+                <div class="text-4xl md:text-6xl font-headline font-bold text-secondary-container mb-2" data-target="500">0</div>
+                <div class="text-secondary-container/50 font-body text-sm tracking-widest uppercase">خلية نحل</div>
+            </div>
+            <div class="stat-card reveal reveal-d3">
+                <div class="text-4xl md:text-6xl font-headline font-bold text-secondary-container mb-2" data-target="12000">0</div>
+                <div class="text-secondary-container/50 font-body text-sm tracking-widest uppercase">عميل سعيد</div>
+            </div>
+            <div class="stat-card reveal reveal-d4">
+                <div class="text-4xl md:text-6xl font-headline font-bold text-secondary-container mb-2" data-target="8">0</div>
+                <div class="text-secondary-container/50 font-body text-sm tracking-widest uppercase">أنواع عسل فاخر</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== OUR STORY ========== -->
+<section id="our-story" class="py-28 bg-surface-container-low overflow-hidden">
+    <div class="container mx-auto px-6 md:px-12">
+        <div class="grid md:grid-cols-2 gap-16 items-center">
+            <div class="reveal-right">
+                <div class="relative">
+                    <div class="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl">
+                        <img src="pics/bg.jpg" alt="المؤسس يعمل مع خلايا النحل" class="w-full h-full object-cover hover:scale-105 transition-transform duration-700"/>
+                        <div class="img-overlay"></div>
+                        <div class="absolute bottom-6 right-6 left-6">
+                            <span class="text-white font-headline text-2xl font-bold drop-shadow-lg">المؤسس في أولى بداياته</span>
+                        </div>
+                    </div>
+                    <!-- Floating badge -->
+                    <div class="quality-badge absolute -top-6 -left-6 w-28 h-28 bg-secondary-container rounded-2xl shadow-2xl flex flex-col items-center justify-center rotate-6">
+                        <i class="bi bi-award-fill text-3xl text-primary mb-1"></i>
+                        <span class="font-headline text-primary text-xs text-center font-bold leading-tight px-2">جودة مضمونة</span>
+                    </div>
+                    <!-- Year badge -->
+                    <div class="absolute -bottom-5 -left-5 bg-primary text-on-primary rounded-2xl px-6 py-4 shadow-2xl">
+                        <div class="font-headline text-3xl font-bold text-secondary-container">2009</div>
+                        <div class="font-body text-xs text-on-primary/70 tracking-wider">عام التأسيس</div>
+                    </div>
+                </div>
+            </div>
+            <div class="reveal-left">
+                <span class="inline-block font-body text-secondary tracking-widest text-sm uppercase mb-4 bg-secondary-container/30 px-4 py-2 rounded-full">
+                    <i class="bi bi-book-half ml-2"></i> قصة الكفاح
+                </span>
+                <h2 class="font-headline text-5xl md:text-6xl text-primary leading-tight mb-8">
+                    من خلية واحدة<br/>إلى <span class="italic text-secondary">إمبراطورية العسل</span>
+                </h2>
+                <div class="space-y-5 text-on-surface-variant text-lg leading-relaxed">
+                    <p>
+                        بدأت رحلتنا في عام ٢٠٠٩ حين قرر مؤسسنا الحاج مصطفى أن يستثمر إرثاً عائلياً توارثه عن أجداده — حب النحل وسر استخراج أنقى أنواع العسل من قلب الطبيعة.
+                    </p>
+                    <p>
+                        لم يكن الطريق مفروشاً بالورود؛ أيام كثيرة قضاها تحت حر الشمس في الجبال البعيدة، ومواسم صعبة آمن فيها بما يصنعه حين لم يصدق أحد. لكنّه أصرّ، وصبر، وحافظ على جودة لا يساوم عليها.
+                    </p>
+                    <p>
+                        اليوم، ومع أكثر من <strong class="text-primary">٥٠٠ خلية نحل</strong> تنتشر عبر مناطق طبيعية نقية، وآلاف العملاء الذين أصبحوا أسرة واحدة — يستمر مشوار المصطفى كشهادة حية على أن الكفاح الصادق لا يذهب أبداً هباءً.
+                    </p>
+                </div>
+                <div class="mt-10 flex flex-wrap gap-4">
+                    <div class="flex items-center gap-3 bg-surface-container rounded-2xl px-5 py-3 border border-outline-variant/30">
+                        <i class="bi bi-geo-alt-fill text-primary text-xl"></i>
+                        <div>
+                            <div class="font-headline text-primary font-bold">مناطق طبيعية نقية</div>
+                            <div class="font-body text-on-surface-variant text-xs">بعيداً عن التلوث والصناعة</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-surface-container rounded-2xl px-5 py-3 border border-outline-variant/30">
+                        <i class="bi bi-shield-check-fill text-primary text-xl"></i>
+                        <div>
+                            <div class="font-headline text-primary font-bold">معايير دولية</div>
+                            <div class="font-body text-on-surface-variant text-xs">فحص وتحليل مستمر</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== TIMELINE — HISTORY ========== -->
+<section class="py-28 bg-background overflow-hidden">
+    <div class="container mx-auto px-6 md:px-12">
+        <div class="text-center mb-20 reveal">
+            <span class="inline-block font-body text-secondary tracking-widest text-sm uppercase mb-4 bg-secondary-container/30 px-4 py-2 rounded-full">
+                <i class="bi bi-clock-history ml-2"></i> تاريخ المنشأة
+            </span>
+            <h2 class="font-headline text-5xl md:text-6xl text-primary leading-tight">محطات صنعت <span class="italic text-secondary">المصطفى</span></h2>
+        </div>
+        <!-- Timeline -->
+        <div class="relative max-w-4xl mx-auto">
+            <div class="timeline-line hidden md:block"></div>
+            <div class="space-y-12 md:space-y-0">
+
+                <!-- Item 1 -->
+                <div class="md:grid md:grid-cols-2 md:gap-16 items-center mb-16 reveal reveal-d1">
+                    <div class="md:text-left mb-6 md:mb-0">
+                        <div class="bg-surface-container rounded-3xl p-8 border border-outline-variant/20 shadow-lg hover:shadow-xl transition-shadow">
+                            <div class="text-5xl font-headline font-bold text-secondary mb-2">٢٠٠٩</div>
+                            <h3 class="font-headline text-2xl text-primary font-bold mb-3">الشرارة الأولى</h3>
+                            <p class="text-on-surface-variant leading-relaxed">اقتناء أول خمس خلايا نحل وتجربة أول موسم إنتاج. كان العسل الأول حُلماً يتشكّل بأيدٍ خشنة وقلب كبير.</p>
+                        </div>
+                    </div>
+                    <div class="hidden md:flex justify-center relative">
+                        <div class="w-14 h-14 rounded-full bg-primary border-4 border-background shadow-lg flex items-center justify-center z-10">
+                            <i class="bi bi-flower1 text-secondary-container text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="md:grid md:grid-cols-2 md:gap-16 items-center mb-16 reveal reveal-d2">
+                    <div class="hidden md:flex justify-center relative order-1 md:order-none">
+                        <div class="w-14 h-14 rounded-full bg-secondary border-4 border-background shadow-lg flex items-center justify-center z-10">
+                            <i class="bi bi-people-fill text-primary text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mb-6 md:mb-0">
+                        <div class="bg-surface-container rounded-3xl p-8 border border-outline-variant/20 shadow-lg hover:shadow-xl transition-shadow">
+                            <div class="text-5xl font-headline font-bold text-secondary mb-2">٢٠١٣</div>
+                            <h3 class="font-headline text-2xl text-primary font-bold mb-3">التوسع والانتشار</h3>
+                            <p class="text-on-surface-variant leading-relaxed">تضاعف عدد الخلايا إلى أكثر من ١٠٠ خلية، وبدأت الكلمة تنتشر بين الناس — زبون يحيل زبوناً حتى امتلأت القوائم.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="md:grid md:grid-cols-2 md:gap-16 items-center mb-16 reveal reveal-d3">
+                    <div class="mb-6 md:mb-0">
+                        <div class="bg-surface-container rounded-3xl p-8 border border-outline-variant/20 shadow-lg hover:shadow-xl transition-shadow">
+                            <div class="text-5xl font-headline font-bold text-secondary mb-2">٢٠١٧</div>
+                            <h3 class="font-headline text-2xl text-primary font-bold mb-3">معمل التعبئة</h3>
+                            <p class="text-on-surface-variant leading-relaxed">افتتاح أول معمل تعبئة بمعايير النظافة الصارمة، وبدء الإنتاج الاحترافي مع الحفاظ الكامل على طابع العسل الطبيعي الخام.</p>
+                        </div>
+                    </div>
+                    <div class="hidden md:flex justify-center relative">
+                        <div class="w-14 h-14 rounded-full bg-primary border-4 border-background shadow-lg flex items-center justify-center z-10">
+                            <i class="bi bi-building text-secondary-container text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 4 -->
+                <div class="md:grid md:grid-cols-2 md:gap-16 items-center mb-16 reveal reveal-d4">
+                    <div class="hidden md:flex justify-center relative order-1 md:order-none">
+                        <div class="w-14 h-14 rounded-full bg-secondary border-4 border-background shadow-lg flex items-center justify-center z-10">
+                            <i class="bi bi-trophy-fill text-primary text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mb-6 md:mb-0">
+                        <div class="bg-surface-container rounded-3xl p-8 border border-outline-variant/20 shadow-lg hover:shadow-xl transition-shadow">
+                            <div class="text-5xl font-headline font-bold text-secondary mb-2">٢٠٢١</div>
+                            <h3 class="font-headline text-2xl text-primary font-bold mb-3">شهادة الجودة</h3>
+                            <p class="text-on-surface-variant leading-relaxed">الحصول على شهادات جودة المنتج الغذائي، وإطلاق موقع المتجر الإلكتروني ليصل العسل إلى كل بيت في مصر.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 5 -->
+                <div class="md:grid md:grid-cols-2 md:gap-16 items-center reveal reveal-d5">
+                    <div class="mb-6 md:mb-0">
+                        <div class="bg-primary rounded-3xl p-8 shadow-xl">
+                            <div class="text-5xl font-headline font-bold text-secondary-container mb-2">اليوم</div>
+                            <h3 class="font-headline text-2xl text-on-primary font-bold mb-3">إمبراطورية العسل</h3>
+                            <p class="text-on-primary/80 leading-relaxed">أكثر من ٥٠٠ خلية، ١٢٠٠٠ عميل راضٍ، ٨ أنواع من أجود العسل — والرحلة لم تنتهِ بعد.</p>
+                        </div>
+                    </div>
+                    <div class="hidden md:flex justify-center relative">
+                        <div class="w-14 h-14 rounded-full bg-secondary-container border-4 border-background shadow-lg flex items-center justify-center z-10">
+                            <i class="bi bi-stars text-primary text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== PRODUCTION LINE ========== -->
+<section class="py-28 bg-primary overflow-hidden relative">
+    <div class="absolute inset-0 opacity-5">
+        <div class="absolute top-0 right-0 w-96 h-96 rounded-full bg-secondary-container blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-secondary-container blur-3xl"></div>
+    </div>
+    <div class="container mx-auto px-6 md:px-12 relative z-10">
+        <div class="text-center mb-20 reveal">
+            <span class="inline-block font-body text-secondary-container/70 tracking-widest text-sm uppercase mb-4 bg-white/10 px-4 py-2 rounded-full">
+                <i class="bi bi-gear-wide-connected ml-2"></i> خط الإنتاج
+            </span>
+            <h2 class="font-headline text-5xl md:text-6xl text-on-primary leading-tight">
+                من الخلية <span class="italic text-secondary-container">إلى يديك</span>
+            </h2>
+            <p class="text-on-primary/60 text-xl mt-4 max-w-2xl mx-auto">كل خطوة مدروسة ومضبوطة لضمان أن ما يصلك هو أفضل ما يمكن للطبيعة تقديمه</p>
+        </div>
+
+        <!-- Production Steps Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+
+            <div class="group relative rounded-3xl overflow-hidden aspect-[4/3] shadow-2xl reveal reveal-d1">
+                <img src="pics/bg.jpg" alt="اختيار المواقع الطبيعية" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#3c0004]/90 via-[#3c0004]/30 to-transparent"></div>
+                <div class="absolute bottom-0 right-0 left-0 p-6">
+                    <div class="w-10 h-10 rounded-xl bg-secondary-container flex items-center justify-center mb-3">
+                        <span class="font-headline font-bold text-primary text-sm">١</span>
+                    </div>
+                    <h3 class="font-headline text-xl text-on-primary font-bold mb-1">اختيار الموقع</h3>
+                    <p class="text-on-primary/70 text-sm leading-relaxed">نختار بعناية مناطق بعيدة عن التلوث، حيث الأزهار البرية تفتح في هواء نقي</p>
+                </div>
+            </div>
+
+            <div class="group relative rounded-3xl overflow-hidden aspect-[4/3] shadow-2xl reveal reveal-d2">
+                <img src="pics/bg.jpg" alt="رعاية خلايا النحل" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#3c0004]/90 via-[#3c0004]/30 to-transparent"></div>
+                <div class="absolute bottom-0 right-0 left-0 p-6">
+                    <div class="w-10 h-10 rounded-xl bg-secondary-container flex items-center justify-center mb-3">
+                        <span class="font-headline font-bold text-primary text-sm">٢</span>
+                    </div>
+                    <h3 class="font-headline text-xl text-on-primary font-bold mb-1">رعاية الخلايا</h3>
+                    <p class="text-on-primary/70 text-sm leading-relaxed">متابعة يومية للخلايا وصحة النحل بأيدي مربّين محترفين لسنوات طويلة</p>
+                </div>
+            </div>
+
+            <div class="group relative rounded-3xl overflow-hidden aspect-[4/3] shadow-2xl reveal reveal-d3">
+                <img src="pics/bg.jpg" alt="موسم الحصاد" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#3c0004]/90 via-[#3c0004]/30 to-transparent"></div>
+                <div class="absolute bottom-0 right-0 left-0 p-6">
+                    <div class="w-10 h-10 rounded-xl bg-secondary-container flex items-center justify-center mb-3">
+                        <span class="font-headline font-bold text-primary text-sm">٣</span>
+                    </div>
+                    <h3 class="font-headline text-xl text-on-primary font-bold mb-1">موسم الحصاد</h3>
+                    <p class="text-on-primary/70 text-sm leading-relaxed">الحصاد في الوقت المناسب للحفاظ على أعلى تركيز للفوائد والنكهة الطبيعية</p>
+                </div>
+            </div>
+
+            <div class="group relative rounded-3xl overflow-hidden aspect-[4/3] shadow-2xl reveal reveal-d1">
+                <img src="pics/bg.jpg" alt="الفرز والتصفية" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#3c0004]/90 via-[#3c0004]/30 to-transparent"></div>
+                <div class="absolute bottom-0 right-0 left-0 p-6">
+                    <div class="w-10 h-10 rounded-xl bg-secondary-container flex items-center justify-center mb-3">
+                        <span class="font-headline font-bold text-primary text-sm">٤</span>
+                    </div>
+                    <h3 class="font-headline text-xl text-on-primary font-bold mb-1">الفرز والتصفية</h3>
+                    <p class="text-on-primary/70 text-sm leading-relaxed">تصفية طبيعية بدون حرارة للحفاظ على الإنزيمات والخصائص العلاجية الكاملة</p>
+                </div>
+            </div>
+
+            <div class="group relative rounded-3xl overflow-hidden aspect-[4/3] shadow-2xl reveal reveal-d2">
+                <img src="pics/bg.jpg" alt="فحص الجودة" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#3c0004]/90 via-[#3c0004]/30 to-transparent"></div>
+                <div class="absolute bottom-0 right-0 left-0 p-6">
+                    <div class="w-10 h-10 rounded-xl bg-secondary-container flex items-center justify-center mb-3">
+                        <span class="font-headline font-bold text-primary text-sm">٥</span>
+                    </div>
+                    <h3 class="font-headline text-xl text-on-primary font-bold mb-1">فحص الجودة</h3>
+                    <p class="text-on-primary/70 text-sm leading-relaxed">كل دفعة تخضع لفحص دقيق للنقاء والرطوبة والقوام قبل أي خطوة تالية</p>
+                </div>
+            </div>
+
+            <div class="group relative rounded-3xl overflow-hidden aspect-[4/3] shadow-2xl reveal reveal-d3">
+                <img src="pics/bg.jpg" alt="التعبئة والتغليف" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#3c0004]/90 via-[#3c0004]/30 to-transparent"></div>
+                <div class="absolute bottom-0 right-0 left-0 p-6">
+                    <div class="w-10 h-10 rounded-xl bg-secondary-container flex items-center justify-center mb-3">
+                        <span class="font-headline font-bold text-primary text-sm">٦</span>
+                    </div>
+                    <h3 class="font-headline text-xl text-on-primary font-bold mb-1">التعبئة الاحترافية</h3>
+                    <p class="text-on-primary/70 text-sm leading-relaxed">تعبئة في بيئة معقمة ضمن أوعية مختومة بإحكام للحفاظ على النضارة حتى وصولك</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ========== HYGIENE & CLEANLINESS ========== -->
+<section class="py-28 bg-surface-container-low overflow-hidden">
+    <div class="container mx-auto px-6 md:px-12">
+        <div class="grid md:grid-cols-2 gap-16 items-center">
+            <div class="reveal">
+                <span class="inline-block font-body text-secondary tracking-widest text-sm uppercase mb-4 bg-secondary-container/30 px-4 py-2 rounded-full">
+                    <i class="bi bi-shield-fill-check ml-2"></i> النظافة والسلامة
+                </span>
+                <h2 class="font-headline text-5xl md:text-6xl text-primary leading-tight mb-8">
+                    نقاء تراه<br/>وتشعر به في <span class="italic text-secondary">كل قطرة</span>
+                </h2>
+                <p class="text-on-surface-variant text-lg leading-relaxed mb-8">
+                    نؤمن بأن النظافة ليست خياراً، بل هي جوهر ما نقدمه. كل مرحلة من مراحل الإنتاج تخضع لبروتوكولات صارمة للنظافة والتطهير.
+                </p>
+                <div class="space-y-5">
+                    <div class="flex items-start gap-4 reveal reveal-d1">
+                        <div class="w-12 h-12 rounded-2xl bg-secondary-container/40 flex items-center justify-center flex-shrink-0 mt-1">
+                            <i class="bi bi-thermometer-half text-primary text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-headline text-primary font-bold text-xl mb-1">بدون تسخين</h4>
+                            <p class="text-on-surface-variant leading-relaxed">نحافظ على العسل الخام بدون أي معالجة حرارية تدمر الإنزيمات والفوائد الطبيعية</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4 reveal reveal-d2">
+                        <div class="w-12 h-12 rounded-2xl bg-secondary-container/40 flex items-center justify-center flex-shrink-0 mt-1">
+                            <i class="bi bi-droplet-fill text-primary text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-headline text-primary font-bold text-xl mb-1">تصفية طبيعية</h4>
+                            <p class="text-on-surface-variant leading-relaxed">تصفية بالجاذبية فقط دون ضغط أو مواد كيميائية للحفاظ على نقاء وطبيعية المنتج</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4 reveal reveal-d3">
+                        <div class="w-12 h-12 rounded-2xl bg-secondary-container/40 flex items-center justify-center flex-shrink-0 mt-1">
+                            <i class="bi bi-wind text-primary text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-headline text-primary font-bold text-xl mb-1">بيئة معقمة</h4>
+                            <p class="text-on-surface-variant leading-relaxed">غرف التعبئة مبردة ومعقمة بالأشعة فوق البنفسجية، والعاملون يرتدون معدات وقاية كاملة</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4 reveal reveal-d4">
+                        <div class="w-12 h-12 rounded-2xl bg-secondary-container/40 flex items-center justify-center flex-shrink-0 mt-1">
+                            <i class="bi bi-clipboard2-check-fill text-primary text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-headline text-primary font-bold text-xl mb-1">تتبع كامل</h4>
+                            <p class="text-on-surface-variant leading-relaxed">كل جرة عسل تحمل رقم دفعة تتيح لك تتبع مصدرها من الخلية إلى المنزل</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 reveal-left">
+                <div class="rounded-2xl overflow-hidden aspect-[3/4] shadow-xl">
+                    <img src="pics/bg.jpg" alt="معمل نظيف ومعقم" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"/>
+                </div>
+                <div class="flex flex-col gap-4 pt-8">
+                    <div class="rounded-2xl overflow-hidden aspect-square shadow-xl">
+                        <img src="pics/bg.jpg" alt="فحص الجودة" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"/>
+                    </div>
+                    <div class="rounded-2xl overflow-hidden aspect-square shadow-xl">
+                        <img src="pics/bg.jpg" alt="التعبئة النظيفة" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== QUALITY STANDARDS ========== -->
+<section class="py-28 bg-background overflow-hidden">
+    <div class="container mx-auto px-6 md:px-12">
+        <div class="text-center mb-20 reveal">
+            <span class="inline-block font-body text-secondary tracking-widest text-sm uppercase mb-4 bg-secondary-container/30 px-4 py-2 rounded-full">
+                <i class="bi bi-patch-check-fill ml-2"></i> معايير الجودة
+            </span>
+            <h2 class="font-headline text-5xl md:text-6xl text-primary leading-tight">
+                الجودة ليست شعاراً<br/><span class="italic text-secondary">بل هي وعدنا</span>
+            </h2>
+            <p class="text-on-surface-variant text-xl mt-6 max-w-2xl mx-auto">نلتزم بأعلى المعايير في كل مرحلة لأننا نؤمن بأنك تستحق الأفضل فقط</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <!-- Quality Card 1 -->
+            <div class="group bg-surface-container rounded-3xl p-8 border border-outline-variant/20 hover:border-secondary/30 hover:shadow-2xl transition-all duration-300 reveal reveal-d1">
+                <div class="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i class="bi bi-award-fill text-secondary-container text-2xl"></i>
+                </div>
+                <h3 class="font-headline text-2xl text-primary font-bold mb-4">فحص مخبري</h3>
+                <p class="text-on-surface-variant leading-relaxed mb-6">كل دفعة تخضع لفحوصات مخبرية تشمل نسبة الرطوبة، السكريات، الإنزيمات، ومستوى HMF للتأكد من الجودة والسلامة الكاملة.</p>
+                <div class="flex items-center gap-2 text-secondary font-body text-sm font-semibold">
+                    <i class="bi bi-check-circle-fill"></i> معتمد ومختبر
+                </div>
+            </div>
+
+            <!-- Quality Card 2 -->
+            <div class="group bg-surface-container rounded-3xl p-8 border border-outline-variant/20 hover:border-secondary/30 hover:shadow-2xl transition-all duration-300 reveal reveal-d2 md:mt-8">
+                <div class="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i class="bi bi-droplet-fill text-on-secondary text-2xl"></i>
+                </div>
+                <h3 class="font-headline text-2xl text-primary font-bold mb-4">عسل خام ١٠٠٪</h3>
+                <p class="text-on-surface-variant leading-relaxed mb-6">لا إضافات، لا سكر مضاف، لا تسخين، لا تصفية حرارية. ما يصلك هو تماماً ما أنتجه النحل — طبيعي بالكامل.</p>
+                <div class="flex items-center gap-2 text-secondary font-body text-sm font-semibold">
+                    <i class="bi bi-check-circle-fill"></i> خالي من الإضافات
+                </div>
+            </div>
+
+            <!-- Quality Card 3 -->
+            <div class="group bg-surface-container rounded-3xl p-8 border border-outline-variant/20 hover:border-secondary/30 hover:shadow-2xl transition-all duration-300 reveal reveal-d3">
+                <div class="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i class="bi bi-shield-check text-secondary-container text-2xl"></i>
+                </div>
+                <h3 class="font-headline text-2xl text-primary font-bold mb-4">ضمان الرضا</h3>
+                <p class="text-on-surface-variant leading-relaxed mb-6">إذا لم تكن راضياً ١٠٠٪ عن جودة ما وصلك، نستبدل أو نسترد بدون أي شروط. ثقتك هي أغلى ما نملك.</p>
+                <div class="flex items-center gap-2 text-secondary font-body text-sm font-semibold">
+                    <i class="bi bi-check-circle-fill"></i> استبدال مجاني
+                </div>
+            </div>
+        </div>
+
+        <!-- Quality visual banner -->
+        <div class="relative rounded-3xl overflow-hidden reveal">
+            <img src="pics/bg.jpg" alt="جودة العسل" class="w-full h-72 md:h-96 object-cover"/>
+            <div class="absolute inset-0 bg-gradient-to-l from-[#3c0004]/90 via-[#3c0004]/60 to-transparent"></div>
+            <div class="absolute inset-0 flex items-center justify-end px-10 md:px-20">
+                <div class="max-w-lg text-right">
+                    <h3 class="font-headline text-4xl md:text-5xl text-on-primary leading-tight mb-4">
+                        "أنا ضامن كل جرة<br/>بإسمي وبشرفي"
+                    </h3>
+                    <p class="text-on-primary/70 text-lg font-body">— الحاج مصطفى، المؤسس</p>
+                    <div class="mt-6 flex items-center gap-3 justify-end">
+                        <div class="flex">
+                            <i class="bi bi-star-fill text-secondary-container text-lg"></i>
+                            <i class="bi bi-star-fill text-secondary-container text-lg"></i>
+                            <i class="bi bi-star-fill text-secondary-container text-lg"></i>
+                            <i class="bi bi-star-fill text-secondary-container text-lg"></i>
+                            <i class="bi bi-star-fill text-secondary-container text-lg"></i>
+                        </div>
+                        <span class="text-on-primary/60 font-body text-sm">+١٢٠٠٠ تقييم إيجابي</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== VALUES ========== -->
+<section class="py-28 bg-primary relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-full h-full opacity-5">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full border-2 border-secondary-container"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-secondary-container"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full border border-secondary-container"></div>
+    </div>
+    <div class="container mx-auto px-6 md:px-12 relative z-10">
+        <div class="text-center mb-20 reveal">
+            <h2 class="font-headline text-5xl md:text-6xl text-on-primary leading-tight">
+                القيم التي نبني عليها <span class="italic text-secondary-container">كل يوم</span>
+            </h2>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="text-center reveal reveal-d1 group">
+                <div class="w-20 h-20 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-5 group-hover:bg-secondary-container/20 transition-colors">
+                    <i class="bi bi-heart-fill text-secondary-container text-3xl"></i>
+                </div>
+                <h4 class="font-headline text-on-primary text-xl font-bold mb-2">الأمانة</h4>
+                <p class="text-on-primary/50 font-body text-sm leading-relaxed">ما نصفه هو ما تجده بالضبط</p>
+            </div>
+            <div class="text-center reveal reveal-d2 group">
+                <div class="w-20 h-20 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-5 group-hover:bg-secondary-container/20 transition-colors">
+                    <i class="bi bi-leaf-fill text-secondary-container text-3xl"></i>
+                </div>
+                <h4 class="font-headline text-on-primary text-xl font-bold mb-2">الطبيعية</h4>
+                <p class="text-on-primary/50 font-body text-sm leading-relaxed">لا تدخل بشري في ما صنعته الطبيعة</p>
+            </div>
+            <div class="text-center reveal reveal-d3 group">
+                <div class="w-20 h-20 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-5 group-hover:bg-secondary-container/20 transition-colors">
+                    <i class="bi bi-gem text-secondary-container text-3xl"></i>
+                </div>
+                <h4 class="font-headline text-on-primary text-xl font-bold mb-2">الجودة</h4>
+                <p class="text-on-primary/50 font-body text-sm leading-relaxed">لا نقبل بأقل من الأفضل لك</p>
+            </div>
+            <div class="text-center reveal reveal-d4 group">
+                <div class="w-20 h-20 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-5 group-hover:bg-secondary-container/20 transition-colors">
+                    <i class="bi bi-people-fill text-secondary-container text-3xl"></i>
+                </div>
+                <h4 class="font-headline text-on-primary text-xl font-bold mb-2">الانتماء</h4>
+                <p class="text-on-primary/50 font-body text-sm leading-relaxed">عملاؤنا عائلة تستحق الأفضل</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== CTA ========== -->
+<section class="py-28 bg-surface-container-low">
+    <div class="container mx-auto px-6 md:px-12">
+        <div class="max-w-4xl mx-auto text-center reveal">
+            <div class="text-7xl mb-6">🍯</div>
+            <h2 class="font-headline text-5xl md:text-6xl text-primary leading-tight mb-6">
+                جاهز تذوق الفرق؟
+            </h2>
+            <p class="text-on-surface-variant text-xl leading-relaxed max-w-2xl mx-auto mb-12">
+                جرّب عسلنا مرة واحدة وستعرف لماذا يعود إلينا الآلاف مراراً وتكراراً. الجودة لا تحتاج إلى إقناع.
+            </p>
+            <div class="flex flex-wrap gap-6 justify-center">
+                <a href="collections.html" class="bg-primary text-on-primary px-12 py-5 rounded-full font-headline text-xl font-bold shadow-2xl hover:bg-primary-container transition-all hover:scale-105 active:scale-95 inline-flex items-center gap-3">
+                    <i class="bi bi-bag-heart"></i> تسوق الآن
+                </a>
+                <a href="contact.html" class="border-2 border-primary text-primary px-12 py-5 rounded-full font-headline text-xl font-bold hover:bg-primary/5 transition-all inline-flex items-center gap-3">
+                    <i class="bi bi-chat-dots"></i> تواصل معنا
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer class="bg-primary py-12">
+    <div class="container mx-auto px-6 md:px-12">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-4">
+                <img src="logo.png" alt="شعار المصطفى" class="h-10 w-auto opacity-80"/>
+                <div>
+                    <div class="font-headline text-on-primary font-bold text-lg">متجر المصطفى</div>
+                    <div class="font-body text-on-primary/50 text-xs tracking-widest">إسم يعني الثقه</div>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-6 justify-center">
+                <a href="index.html" class="text-on-primary/60 hover:text-secondary-container font-body text-sm transition-colors">الرئيسية</a>
+                <a href="collections.html" class="text-on-primary/60 hover:text-secondary-container font-body text-sm transition-colors">المنتجات</a>
+                <a href="reviews.html" class="text-on-primary/60 hover:text-secondary-container font-body text-sm transition-colors">التقييمات</a>
+                <a href="about.html" class="text-secondary-container font-body text-sm">من نحن</a>
+                <a href="contact.html" class="text-on-primary/60 hover:text-secondary-container font-body text-sm transition-colors">تواصل معنا</a>
+            </div>
+            <div class="text-on-primary/30 font-body text-xs text-center">
+                © ٢٠٢٥ متجر المصطفى · جميع الحقوق محفوظة
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ========== SCRIPTS ========== -->
+<script>
+    // Mobile menu
+    const btnOpen = document.getElementById('btn-mobile-menu');
+    const btnClose = document.getElementById('btn-mobile-menu-close');
+    const menu = document.getElementById('mobile-menu');
+    const backdrop = document.getElementById('mobile-menu-backdrop');
+    function openMenu() { menu.classList.add('open'); backdrop.classList.add('open'); document.body.style.overflow = 'hidden'; }
+    function closeMenu() { menu.classList.remove('open'); backdrop.classList.remove('open'); document.body.style.overflow = ''; }
+    btnOpen?.addEventListener('click', openMenu);
+    btnClose?.addEventListener('click', closeMenu);
+    backdrop?.addEventListener('click', closeMenu);
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => observer.observe(el));
+
+    // Counter animation
+    function animateCounter(el, target, duration = 2000) {
+        let start = 0;
+        const step = target / (duration / 16);
+        const timer = setInterval(() => {
+            start += step;
+            if (start >= target) { start = target; clearInterval(timer); }
+            el.textContent = Math.floor(start).toLocaleString('ar-EG');
+        }, 16);
+    }
+
+    const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const target = parseInt(entry.target.dataset.target);
+                animateCounter(entry.target, target);
+                counterObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('[data-target]').forEach(el => counterObserver.observe(el));
+</script>
+</body>
+</html>

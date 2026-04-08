@@ -87,6 +87,9 @@ $stmt->execute([
 
 $customerId = (int) $pdo->lastInsertId();
 
+// ── Regenerate session to prevent session fixation ───────────────────────────
+session_regenerate_id(true);
+
 // ── Save customer session ─────────────────────────────────────────────────────
 $_SESSION['customer_id']    = $customerId;
 $_SESSION['customer_phone'] = $phone;

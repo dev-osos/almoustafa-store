@@ -39,9 +39,22 @@ if (time() > $otp['expires']) {
     api_error('انتهت صلاحية الكود. يُرجى طلب كود جديد.', 410);
 }
 
-if (!hash_equals($otp['code'], $code)) {
-    api_error('الكود غير صحيح.', 422);
+// ── Brute-force: max 5 wrong attempts per OTP ────────────────────────────────
+$failKey  = 'otp_fails_' . md5($phone);
+$failCount = (int) ($_SESSION[$failKey] ?? 0);
+if ($failCount >= 5) {
+    unset($_SESSION[$sKey], $_SESSION[$failKey]);
+    api_error('تم تجاوز عدد المحاولات. يُرجى طلب كود جديد.', 429);
 }
+
+if (!hash_equals($otp['code'], $code)) {
+    $_SESSION[$failKey] = $failCount + 1;
+    $remaining = 5 - ($failCount + 1);
+    api_error('الكود غير صحيح.' . ($remaining > 0 ? ' المحاولات المتبقية: ' . $remaining : ' سيتم إلغاء الكود.'), 422);
+}
+
+// Reset fail counter on success
+unset($_SESSION[$failKey]);
 
 // Mark as used (single-use)
 $_SESSION[$sKey]['used'] = true;
