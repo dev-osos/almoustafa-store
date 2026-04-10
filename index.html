@@ -3661,12 +3661,12 @@
             if (!referralCode) return;
             
             // Fetch users who used this referral code
-            fetch(`apis/users/referrals.php?code=${referralCode}`)
+            fetch('apis/users/referral.php')
                 .then(res => res.json())
                 .then(data => {
                     const listEl = document.getElementById('referral-users-list');
-                    
-                    if (!data.success || !data.users || data.users.length === 0) {
+
+                    if (!data.success || !data.referred || data.referred.length === 0) {
                         listEl.innerHTML = `
                             <div class="referral-empty-state">
                                 <span class="material-symbols-outlined">person_search</span>
@@ -3676,17 +3676,17 @@
                         `;
                         return;
                     }
-                    
-                    listEl.innerHTML = data.users.map(user => `
+
+                    listEl.innerHTML = data.referred.map(user => `
                         <div class="referral-user-item">
                             <div class="referral-user-avatar">
                                 <span class="material-symbols-outlined">person</span>
                             </div>
                             <div class="referral-user-info">
                                 <div class="referral-user-name">${user.name}</div>
-                                <div class="referral-user-date">${new Date(user.created_at).toLocaleDateString('ar-EG')}</div>
+                                <div class="referral-user-phone">${user.phone}</div>
+                                <div class="referral-user-date">${new Date(user.joined_at).toLocaleDateString('ar-EG')}</div>
                             </div>
-                            <div class="referral-user-bonus">+25 EGP</div>
                         </div>
                     `).join('');
                 })
