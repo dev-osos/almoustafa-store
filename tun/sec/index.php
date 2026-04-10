@@ -380,7 +380,6 @@ const ADMIN = {
           $cards = [
             ['icon'=>'groups',        'label'=>'إجمالي الزوار',   'id'=>'sTotal', 'cls'=>''],
             ['icon'=>'today',         'label'=>'زوار اليوم',      'id'=>'sToday', 'cls'=>'',      'g'=>'gToday'],
-            ['icon'=>'date_range',    'label'=>'هذا الأسبوع',     'id'=>'sWeek',  'cls'=>'gold',  'g'=>'gWeek'],
             ['icon'=>'calendar_month','label'=>'هذا الشهر',       'id'=>'sMonth', 'cls'=>'gold'],
             ['icon'=>'ads_click',     'label'=>'إجمالي الزيارات', 'id'=>'sHits',  'cls'=>'green'],
             ['icon'=>'trending_up',   'label'=>'متوسط الزيارات',  'id'=>'sAvg',   'cls'=>'green'],
