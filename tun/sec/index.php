@@ -1016,8 +1016,8 @@ async function submitCreateUser(e) {
   const form = e.target;
   const btn  = $id('createSubmitBtn');
   const err  = $id('modalErr');
-  err.classList.remove('show');
-  btn.disabled = true;
+  if (err) err.classList.remove('show');
+  if (btn) btn.disabled = true;
   btn.textContent = 'جارٍ الإنشاء...';
 
   const data = Object.fromEntries(new FormData(form));
