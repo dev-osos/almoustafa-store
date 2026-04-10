@@ -55,7 +55,7 @@ try {
         LEFT JOIN customers AS ref ON ref.referred_by = owner.referral_code
         WHERE owner.referral_code IS NOT NULL
         GROUP BY owner.id, owner.referral_code, owner.name, owner.phone, owner.created_at
-        HAVING COUNT(ref.id) >= 1
+        HAVING COUNT(ref.id) >=  0
         ORDER BY COUNT(ref.id) DESC, owner.created_at DESC
     ");
     $codes = $codesStmt->fetchAll(PDO::FETCH_ASSOC);
