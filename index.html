@@ -2438,7 +2438,7 @@
         <span class="material-symbols-outlined">card_giftcard</span>
         <div class="pdd-edit-copy">
           <div class="pdd-edit-label">كود الدعوة</div>
-          <div class="pdd-edit-value" id="pdd-invite-code">عرض الكود</div>
+          <div class="pdd-edit-value" id="pdd-invite-code">123456</div>
         </div>
       </div>
       <div class="pdd-edit-action">
@@ -3573,12 +3573,12 @@
             closeProfileDropdown();
             invitationBackdrop.classList.add('open');
             document.body.style.overflow = 'hidden';
-            // Generate unique code from session phone if available
-            const session = getSession();
-            if (session?.phone) {
-                const code = 'HONEY' + session.phone.slice(-4);
-                invitationCodeDisplay.textContent = code;
-            }
+            // Generate 6 random digits for invitation code
+            const randomDigits = Math.floor(100000 + Math.random() * 900000).toString();
+            const code = randomDigits;
+            invitationCodeDisplay.textContent = code;
+            // Also update the dropdown display
+            document.getElementById('pdd-invite-code').textContent = code;
         }
 
         function closeInvitationModal() {
@@ -4975,7 +4975,7 @@
 
     <div class="referral-header-section">
       <div class="referral-code-label">كود الدعوة الخاص بك</div>
-      <div class="referral-code-display" id="invitation-code-display">HONEY25</div>
+      <div class="referral-code-display" id="invitation-code-display">123456</div>
       <button class="referral-copy-btn" id="btn-copy-invitation" type="button">
         <span class="material-symbols-outlined">content_copy</span>
         نسخ الكود
