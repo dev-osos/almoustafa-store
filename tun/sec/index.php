@@ -495,11 +495,12 @@ const ADMIN = {
         <div class="stats-grid" id="custStatsGrid">
           <?php
           $custCards = [
-            ['icon'=>'people_alt',   'label'=>'إجمالي العملاء',       'id'=>'csTotal',    'cls'=>''],
-            ['icon'=>'person_add',   'label'=>'مسجّلون اليوم',         'id'=>'csToday',    'cls'=>'',     'g'=>'cgToday'],
-            ['icon'=>'date_range',   'label'=>'هذا الأسبوع',          'id'=>'csWeek',     'cls'=>'gold', 'g'=>'cgWeek'],
-            ['icon'=>'task_alt',     'label'=>'ملفات مكتملة',          'id'=>'csComplete', 'cls'=>'green'],
-            ['icon'=>'person_off',   'label'=>'ملفات غير مكتملة',      'id'=>'csInc',      'cls'=>''],
+            ['icon'=>'people_alt',   'label'=>'إجمالي العملاء',       'id'=>'csTotal',     'cls'=>''],
+            ['icon'=>'person_add',   'label'=>'مسجّلون اليوم',         'id'=>'csToday',     'cls'=>'',     'g'=>'cgToday'],
+            ['icon'=>'date_range',   'label'=>'هذا الأسبوع',          'id'=>'csWeek',      'cls'=>'gold', 'g'=>'cgWeek'],
+            ['icon'=>'task_alt',     'label'=>'ملفات مكتملة',          'id'=>'csComplete',  'cls'=>'green'],
+            ['icon'=>'person_off',   'label'=>'ملفات غير مكتملة',      'id'=>'csInc',       'cls'=>''],
+            ['icon'=>'storefront',   'label'=>'عملاء الجملة',          'id'=>'csWholesale', 'cls'=>'gold'],
           ];
           foreach ($custCards as $c): ?>
           <div class="stat-card <?= $c['cls'] ?>">
@@ -667,16 +668,16 @@ function showSection(name) {
   if (name === 'reviews')    loadReviews();
 }
 
-// ── Restore last section on load ──────────────────────────────────────────────
-(function restoreSection() {
+// ── Restore last section on load — called at end of script after all vars ─────
+function restoreSection() {
   const valid = ['visitors', 'customers', 'reviews', 'users'];
   let saved;
   try { saved = localStorage.getItem('alm_admin_section'); } catch {}
   const section = valid.includes(saved) ? saved : 'visitors';
   // Ensure the section exists in the DOM (role-gated sections may be absent)
-  if (!$id(section + 'Section')) return showSection('visitors');
+  if (!$id(section + 'Section')) { showSection('visitors'); return; }
   showSection(section);
-})();
+}
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
 async function loadStats() {
@@ -1223,6 +1224,9 @@ async function reviewDelete(id, btn) {
   }
   btn.disabled = false;
 }
+
+// ── Run after all declarations ────────────────────────────────────────────────
+restoreSection();
 </script>
 </body>
 </html>
