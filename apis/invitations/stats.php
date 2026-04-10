@@ -50,7 +50,7 @@ try {
         FROM invitations i
         LEFT JOIN customers c ON i.code = c.invitation_code
         GROUP BY i.id, i.code, i.created_at, i.expires_at, i.is_active, i.max_uses, i.usage_count, i.description
-        HAVING i.usage_count >= 1
+        HAVING i.usage_count >= 0
         ORDER BY i.usage_count DESC, i.created_at DESC
     ");
     $codesStmt->execute();
