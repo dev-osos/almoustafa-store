@@ -304,6 +304,34 @@ const ADMIN = {
   </div>
 </div>
 
+<!-- Modal: invitation users -->
+<div class="modal-backdrop" id="invitationUsersModal">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <div class="modal-title"><span class="ms">group</span> مستخدمو الكود: <span id="modalInvCode"></span></div>
+      <button class="modal-close" onclick="closeInvitationModal()"><span class="ms">close</span></button>
+    </div>
+    <div class="table-wrap" style="max-height:400px;overflow-y:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>الاسم</th>
+            <th>رقم الهاتف</th>
+            <th>تاريخ التسجيل</th>
+          </tr>
+        </thead>
+        <tbody id="modalInvUsersBody">
+          <tr><td colspan="4" style="text-align:center;padding:2rem">جارٍ التحميل...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="cancel-btn" onclick="closeInvitationModal()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
 <!-- Sidebar backdrop (mobile) -->
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
 
@@ -332,6 +360,11 @@ const ADMIN = {
       <?php if (can($adminRole, 'users')): ?>
       <div class="nav-item" id="nav-users" onclick="showSection('users')">
         <span class="ms">manage_accounts</span> إدارة المستخدمين
+      </div>
+      <?php endif; ?>
+      <?php if (in_array($adminRole, ['super_admin', 'admin'])): ?>
+      <div class="nav-item" id="nav-invitations" onclick="showSection('invitations')">
+        <span class="ms">card_giftcard</span> الدعوات
       </div>
       <?php endif; ?>
     </nav>
@@ -579,6 +612,60 @@ const ADMIN = {
       </div>
       <?php endif; ?>
 
+      <!-- ── INVITATIONS SECTION ─────────────────────────── -->
+      <?php if (in_array($adminRole, ['super_admin', 'admin'])): ?>
+      <div class="section" id="invitationsSection">
+
+        <!-- Invitation Stats -->
+        <div class="stats-grid" id="invStatsGrid">
+          <?php
+          $invCards = array(
+            array('icon'=>'card_giftcard',   'label'=>'إجمالي الأكواد',       'id'=>'invTotal',     'cls'=>''),
+            array('icon'=>'check_circle',    'label'=>'أكواد نشطة',           'id'=>'invActive',     'cls'=>'green'),
+            array('icon'=>'group_add',       'label'=>'إجمالي الاستخدامات',    'id'=>'invUsage',     'cls'=>'gold'),
+            array('icon'=>'person',          'label'=>'المستخدمون الفريدون',   'id'=>'invCustomers', 'cls'=>'')
+          );
+          foreach ($invCards as $c): ?>
+          <div class="stat-card <?= $c['cls'] ?>">
+            <div class="stat-label"><span class="ms"><?= $c['icon'] ?></span><?= $c['label'] ?></div>
+            <div class="stat-value skeleton skel-val" id="<?= $c['id'] ?>">—</div>
+          </div>
+          <?php endforeach; ?>
+        </div>
+
+        <!-- Invitations Table -->
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title"><span class="ms">card_giftcard</span> سجل الأكواد</div>
+            <button class="primary-btn" onclick="loadInvitations()">
+              <span class="ms">refresh</span> تحديث
+            </button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>الكود</th>
+                  <th>الحالة</th>
+                  <th>مرات الاستخدام</th>
+                  <th>الحد الأقصى</th>
+                  <th>عدد المستخدمين</th>
+                  <th>تاريخ الإنشاء</th>
+                  <th>انتهاء الصلاحية</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="invBody">
+                <tr><td colspan="9" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /invitationsSection -->
+      <?php endif; ?>
+
     </div><!-- /content -->
   </main>
 </div>
@@ -652,7 +739,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
 });
 
 // ── Section switching ─────────────────────────────────────────────────────────
-const SECTION_TITLES = { visitors: 'إحصائيات الزوار', customers: 'عملاؤنا', users: 'إدارة المستخدمين', reviews: 'إدارة الآراء' };
+const SECTION_TITLES = { visitors: 'إحصائيات الزوار', customers: 'عملاؤنا', users: 'إدارة المستخدمين', reviews: 'إدارة الآراء', invitations: 'الدعوات' };
 
 function showSection(name) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -667,11 +754,12 @@ function showSection(name) {
   if (name === 'users')      loadUsers();
   if (name === 'customers')  { loadCustomerStats(); loadCustomers(1); }
   if (name === 'reviews')    loadReviews();
+  if (name === 'invitations') loadInvitations();
 }
 
 // ── Restore last section on load — called at end of script after all vars ─────
 function restoreSection() {
-  const valid = ['visitors', 'customers', 'reviews', 'users'];
+  const valid = ['visitors', 'customers', 'reviews', 'users', 'invitations'];
   let saved;
   try { saved = localStorage.getItem('alm_admin_section'); } catch {}
   const section = valid.includes(saved) ? saved : 'visitors';
@@ -1224,6 +1312,111 @@ async function reviewDelete(id, btn) {
     renderReviewsList();
   }
   btn.disabled = false;
+}
+
+// ── Invitations ───────────────────────────────────────────────────────────────────
+let invitationsData = [];
+
+async function loadInvitations() {
+  try {
+    const res = await fetch('../../apis/invitations/stats.php');
+    if (!res.ok) throw new Error('Failed to load');
+    const data = await res.json();
+    
+    // Update stats
+    ['invTotal','invActive','invUsage','invCustomers'].forEach(id => {
+      const el = $id(id);
+      if (el) {
+        el.classList.remove('skeleton','skel-val');
+        switch(id) {
+          case 'invTotal': el.textContent = fmt(data.stats.total_codes); break;
+          case 'invActive': el.textContent = fmt(data.stats.active_codes); break;
+          case 'invUsage': el.textContent = fmt(data.stats.total_usage); break;
+          case 'invCustomers': el.textContent = fmt(data.stats.unique_customers); break;
+        }
+      }
+    });
+    
+    // Update table
+    invitationsData = data.codes || [];
+    renderInvitationsTable();
+  } catch(e) {
+    console.error('Failed to load invitations:', e);
+    const tbody = $id('invBody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:#c00;">فشل التحميل</td></tr>';
+  }
+}
+
+function renderInvitationsTable() {
+  const tbody = $id('invBody');
+  if (!tbody) return;
+  
+  if (invitationsData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:3rem;color:var(--on-surface-dim);">لا توجد أكواد دعوة بعد</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = '';
+  invitationsData.forEach((inv, idx) => {
+    const tr = document.createElement('tr');
+    const statusBadge = inv.is_active 
+      ? '<span style="color:var(--green);font-weight:700;">نشط</span>'
+      : '<span style="color:var(--red-text);font-weight:700;">غير نشط</span>';
+    
+    const expiresDate = inv.expires_at ? fmtDate(inv.expires_at) : '—';
+    
+    tr.innerHTML = `
+      <td>${idx + 1}</td>
+      <td><code style="background:var(--surface-dim);padding:.2rem .5rem;border-radius:4px;font-family:monospace;">${inv.code}</code></td>
+      <td>${statusBadge}</td>
+      <td>${fmt(inv.usage_count)}</td>
+      <td>${inv.max_uses ? fmt(inv.max_uses) : 'غير محدود'}</td>
+      <td><button onclick="showInvitationUsers('${inv.code}')" style="background:var(--primary);color:#fff;border:none;border-radius:6px;padding:.3rem .6rem;cursor:pointer;font-size:.75rem;">${fmt(inv.customer_count)} مستخدم</button></td>
+      <td>${fmtDate(inv.created_at)}</td>
+      <td>${expiresDate}</td>
+      <td>
+        <button onclick="showInvitationUsers('${inv.code}')" style="background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-border);border-radius:6px;padding:.3rem .6rem;cursor:pointer;font-size:.75rem;">
+          <span class="ms" style="font-size:1rem;">visibility</span> عرض
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function showInvitationUsers(code) {
+  const modal = $id('invitationUsersModal');
+  const codeSpan = $id('modalInvCode');
+  const tbody = $id('modalInvUsersBody');
+  
+  if (!modal || !codeSpan || !tbody) return;
+  
+  codeSpan.textContent = code;
+  modal.classList.add('open');
+  
+  // Find invitation data
+  const invitation = invitationsData.find(inv => inv.code === code);
+  if (!invitation || !invitation.customers || invitation.customers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--on-surface-dim);">لا يوجد مستخدمون لهذا الكود</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = '';
+  invitation.customers.forEach((customer, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${idx + 1}</td>
+      <td>${customer.name}</td>
+      <td><code style="background:var(--surface-dim);padding:.2rem .4rem;border-radius:3px;font-family:monospace;font-size:.8rem;">${customer.phone}</code></td>
+      <td>${fmtDate(customer.created_at)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function closeInvitationModal() {
+  const modal = $id('invitationUsersModal');
+  if (modal) modal.classList.remove('open');
 }
 
 // ── Run after all declarations ────────────────────────────────────────────────
