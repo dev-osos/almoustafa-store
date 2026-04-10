@@ -723,6 +723,64 @@
         .referral-empty-icon { font-size: 36px; color: rgba(255,255,255,0.12); display: block; margin-bottom: 8px; }
         .referral-empty-text { font-size: 0.8rem; color: rgba(255,255,255,0.3); }
         .referral-empty-sub { font-size: 0.7rem; color: rgba(255,255,255,0.18); margin-top: 4px; }
+        .referral-users-list {
+            margin-top: 12px;
+        }
+        .referral-empty-state {
+            text-align: center;
+            padding: 24px 0;
+        }
+        .referral-empty-state .material-symbols-outlined {
+            font-size: 36px;
+            color: rgba(255,255,255,0.12);
+            display: block;
+            margin-bottom: 8px;
+        }
+        .referral-user-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+        .referral-user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(254,214,91,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .referral-user-avatar .material-symbols-outlined {
+            font-size: 20px;
+            color: var(--gold);
+        }
+        .referral-user-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .referral-user-name {
+            font-size: 0.85rem;
+            color: #fff;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .referral-user-date {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.5);
+        }
+        .referral-user-bonus {
+            background: rgba(254,214,91,0.15);
+            color: var(--gold);
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
         /* Wallet Modal Styles */
         .wallet-balance-section {
             text-align: center;
@@ -2438,7 +2496,7 @@
         <span class="material-symbols-outlined">card_giftcard</span>
         <div class="pdd-edit-copy">
           <div class="pdd-edit-label">كود الدعوة</div>
-          <div class="pdd-edit-value" id="pdd-invite-code">123456</div>
+          <div class="pdd-edit-value" id="pdd-invite-code">-</div>
         </div>
       </div>
       <div class="pdd-edit-action">
@@ -3591,6 +3649,57 @@
             invitationCodeDisplay.textContent = code;
             // Also update dropdown display
             document.getElementById('pdd-invite-code').textContent = code;
+            
+            // Load referral users
+            loadReferralUsers();
+        }
+
+        function loadReferralUsers() {
+            const session = getSession();
+            const referralCode = session?.invitationCode;
+            
+            if (!referralCode) return;
+            
+            // Fetch users who used this referral code
+            fetch(`apis/users/referrals.php?code=${referralCode}`)
+                .then(res => res.json())
+                .then(data => {
+                    const listEl = document.getElementById('referral-users-list');
+                    
+                    if (!data.success || !data.users || data.users.length === 0) {
+                        listEl.innerHTML = `
+                            <div class="referral-empty-state">
+                                <span class="material-symbols-outlined">person_search</span>
+                                <div class="referral-empty-text">Did not use the invitation code yet</div>
+                                <div class="referral-empty-sub">Share the code with your friends to start earning rewards</div>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    listEl.innerHTML = data.users.map(user => `
+                        <div class="referral-user-item">
+                            <div class="referral-user-avatar">
+                                <span class="material-symbols-outlined">person</span>
+                            </div>
+                            <div class="referral-user-info">
+                                <div class="referral-user-name">${user.name}</div>
+                                <div class="referral-user-date">${new Date(user.created_at).toLocaleDateString('ar-EG')}</div>
+                            </div>
+                            <div class="referral-user-bonus">+25 EGP</div>
+                        </div>
+                    `).join('');
+                })
+                .catch(err => {
+                    console.error('Failed to load referral users:', err);
+                    const listEl = document.getElementById('referral-users-list');
+                    listEl.innerHTML = `
+                        <div class="referral-empty-state">
+                            <span class="material-symbols-outlined">error</span>
+                            <div class="referral-empty-text">Failed to load data</div>
+                        </div>
+                    `;
+                });
         }
 
         function closeInvitationModal() {
@@ -5017,6 +5126,20 @@
         <div class="info-highlight">
           <div class="info-highlight-title"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-left:4px;">payments</span>٢٥ ج.م</div>
           <div class="info-highlight-text">رصيد في محفظتك لكل دعوة ناجحة</div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">
+          <span class="material-symbols-outlined">people</span>
+          المستخدمون الذين استخدموا كودك
+        </div>
+        <div id="referral-users-list" class="referral-users-list">
+          <div class="referral-empty-state">
+            <span class="material-symbols-outlined">person_search</span>
+            <div class="referral-empty-text">لم يستخدم أحد كود الدعوة الخاص بك بعد</div>
+            <div class="referral-empty-sub">شارك الكود مع أصدقائك لبدء كسب المكافآت</div>
+          </div>
         </div>
       </div>
     </div>

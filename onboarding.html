@@ -617,6 +617,13 @@ body {
           </div>
         </div>
       </div>
+      <div class="field">
+        <label for="invitation-code">كود الدعوة (اختياري)</label>
+        <div class="field-wrap">
+          <span class="field-icon material-symbols-outlined">card_giftcard</span>
+          <input id="invitation-code" type="text" placeholder="أدخل كود الدعوة إن وجد" maxlength="6" dir="ltr"/>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -733,6 +740,9 @@ body {
   if (session && session.segment) {
     const segmentInput = document.querySelector('input[name="customer-segment"][value="' + session.segment + '"]');
     if (segmentInput) segmentInput.checked = true;
+  }
+  if (session && session.invitationCode) {
+    document.getElementById('invitation-code').value = session.invitationCode;
   }
 
   // ── Geolocation & map ──────────────────────────────
@@ -894,6 +904,30 @@ body {
       acError.classList.add('show');
     }
     return false;
+  }
+
+  // ── Invitation Code Validation ─────────────────────
+  function validateInvitationCode() {
+    const codeInput = document.getElementById('invitation-code');
+    const code = codeInput.value.trim();
+    
+    if (code && code.length === 6 && /^\d{6}$/.test(code)) {
+      codeInput.classList.remove('invalid');
+      return true;
+    }
+    
+    if (code) {
+      codeInput.classList.add('invalid');
+    }
+    return false;
+  }
+
+  function generateInvitationCode() {
+    const codeInput = document.getElementById('invitation-code');
+    if (!codeInput.value.trim()) {
+      const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+      codeInput.value = randomCode;
+    }
   }
 
   function acMoveFocus(dir) {
@@ -1075,14 +1109,28 @@ body {
   });
   document.addEventListener('click', (e) => { if (!cityWrap.contains(e.target)) cityClose(); });
 
-  // ── Submit ─────────────────────────────────────────
+  // ── Invitation Code Events ─────────────────────
+  const invitationCodeInput = document.getElementById('invitation-code');
+  
+  invitationCodeInput.addEventListener('focus', generateInvitationCode);
+  invitationCodeInput.addEventListener('input', validateInvitationCode);
+
+  // ── Submit ───────────────────────────────────
   document.getElementById('btn-submit').addEventListener('click', async () => {
     const name    = document.getElementById('full-name').value.trim();
     const phone   = document.getElementById('full-phone').value.trim();
     const segment = document.querySelector('input[name="customer-segment"]:checked')?.value || 'consumer';
+    const invitationCode = document.getElementById('invitation-code').value.trim();
     const area    = document.getElementById('address-area').value.trim();
     const address = document.getElementById('address-detail').value.trim();
     const btn     = document.getElementById('btn-submit');
+
+    // Validate invitation code if provided
+    if (invitationCode && !validateInvitationCode()) {
+      alert('كود الدعوة يجب أن يكون ٦ أرقام فقط');
+      document.getElementById('invitation-code').focus();
+      return;
+    }
 
     // ── Save to localStorage ──────────────────────────
     try {
@@ -1090,10 +1138,11 @@ body {
       s.name          = name || s.name;
       s.phone         = phone || s.phone;
       s.segment       = segment;
-      s.governorate   = acSelected ? acSelected.name : document.getElementById('address-city').value.trim();
-      s.governorateId = acSelected ? acSelected.id   : null;
-      s.city          = citySelected ? citySelected.name : area;
-      s.cityId        = citySelected ? citySelected.id   : null;
+      s.invitationCode = invitationCode || s.invitationCode;
+      s.governorate   = acSelected ? acSelected.name    : document.getElementById('address-city').value.trim();
+      s.governorateId = acSelected    ? acSelected.id      : null;
+      s.city          = citySelected ? citySelected.name  : area;
+      s.cityId        = citySelected ? citySelected.id    : null;
       s.area           = area;
       s.address        = [acSelected?.name || document.getElementById('address-city').value.trim(), citySelected?.name || area, address].filter(Boolean).join('، ');
       s.addressDetails = address;
@@ -1110,6 +1159,7 @@ body {
         name,
         phone:          phone || null,
         segment,
+        invitation_code: invitationCode || null,
         governorate:    acSelected    ? acSelected.name    : document.getElementById('address-city').value.trim(),
         governorate_id: acSelected    ? acSelected.id      : null,
         city:           citySelected  ? citySelected.name  : area,
