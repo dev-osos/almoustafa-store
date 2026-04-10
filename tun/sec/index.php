@@ -656,7 +656,7 @@ const ADMIN = {
                 </tr>
               </thead>
               <tbody id="invBody">
-                <tr><td colspan="9" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
+                <tr><td colspan="7" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -1351,7 +1351,7 @@ async function loadInvitations() {
   } catch(e) {
     console.error('Failed to load invitations:', e);
     const tbody = $id('invBody');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:#c00;">فشل التحميل</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#c00;">فشل التحميل</td></tr>';
   }
 }
 
@@ -1360,7 +1360,7 @@ function renderInvitationsTable() {
   if (!tbody) return;
   
   if (invitationsData.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:3rem;color:var(--on-surface-dim);">لا توجد أكواد دعوة بعد</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--on-surface-dim);">لا توجد أكواد دعوة بعد</td></tr>';
     return;
   }
   
