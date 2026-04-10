@@ -9,10 +9,11 @@ api_require_method(['POST']);
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-$body     = json_decode(file_get_contents('php://input'), true) ?? [];
-$name     = trim((string) ($body['name']     ?? ''));
-$phone    = trim((string) ($body['phone']    ?? ''));
-$password = (string) ($body['password'] ?? '');
+$body       = json_decode(file_get_contents('php://input'), true) ?? [];
+$name       = trim((string) ($body['name']        ?? ''));
+$phone      = trim((string) ($body['phone']       ?? ''));
+$password   = (string) ($body['password']         ?? '');
+$referredBy = trim((string) ($body['referred_by'] ?? ''));
 
 // ── Normalise phone ───────────────────────────────────────────────────────────
 $phone = preg_replace('/[\s\-().]+/', '', $phone);
@@ -53,9 +54,12 @@ try {
             lng              DECIMAL(10,7) DEFAULT NULL,
             profile_complete TINYINT(1)    NOT NULL DEFAULT 0,
             v_id             CHAR(34)      DEFAULT NULL,
+            referral_code    CHAR(6)       DEFAULT NULL,
+            referred_by      CHAR(6)       DEFAULT NULL,
             created_at       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             UNIQUE KEY uk_customers_phone (phone),
+            UNIQUE KEY uk_customers_referral (referral_code),
             KEY idx_customers_v_id (v_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
@@ -70,19 +74,41 @@ if ($check->fetch()) {
     api_error('هذا الرقم مسجّل مسبقاً. يمكنك تسجيل الدخول.', 409);
 }
 
+// ── Generate unique 6-digit referral code ─────────────────────────────────────
+$referralCode = null;
+for ($i = 0; $i < 20; $i++) {
+    $candidate = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    $chk = $pdo->prepare("SELECT id FROM customers WHERE referral_code = :c LIMIT 1");
+    $chk->execute([':c' => $candidate]);
+    if (!$chk->fetch()) { $referralCode = $candidate; break; }
+}
+
+// ── Validate referred_by code if provided ─────────────────────────────────────
+if ($referredBy !== '') {
+    if (!preg_match('/^\d{6}$/', $referredBy)) {
+        $referredBy = '';
+    } else {
+        $refChk = $pdo->prepare("SELECT id FROM customers WHERE referral_code = :c LIMIT 1");
+        $refChk->execute([':c' => $referredBy]);
+        if (!$refChk->fetch()) { $referredBy = ''; }
+    }
+}
+
 // ── Insert customer ───────────────────────────────────────────────────────────
 $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
 $vid  = isset($_COOKIE['v_id']) ? trim($_COOKIE['v_id']) : null;
 
 $stmt = $pdo->prepare("
-    INSERT INTO customers (name, phone, password_hash, v_id)
-    VALUES (:name, :phone, :hash, :vid)
+    INSERT INTO customers (name, phone, password_hash, v_id, referral_code, referred_by)
+    VALUES (:name, :phone, :hash, :vid, :rcode, :rby)
 ");
 $stmt->execute([
     ':name'  => $name !== '' ? $name : null,
     ':phone' => $phone,
     ':hash'  => $hash,
     ':vid'   => $vid,
+    ':rcode' => $referralCode,
+    ':rby'   => $referredBy !== '' ? $referredBy : null,
 ]);
 
 $customerId = (int) $pdo->lastInsertId();
@@ -115,7 +141,8 @@ $_SESSION['customer_name']  = $name;
 unset($_SESSION[$sKey], $_SESSION['otp_rate_' . md5($phone)]);
 
 api_ok([
-    'customer_id' => $customerId,
-    'phone'       => $phone,
-    'name'        => $name ?: null,
+    'customer_id'   => $customerId,
+    'phone'         => $phone,
+    'name'          => $name ?: null,
+    'referral_code' => $referralCode,
 ]);

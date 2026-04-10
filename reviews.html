@@ -192,24 +192,24 @@
     <!-- Overall stats -->
     <div class="flex items-center justify-center gap-8 flex-wrap">
       <div class="text-center">
-        <div class="font-headline text-6xl text-primary font-bold">٤.٩</div>
-        <div class="flex justify-center gap-1 my-2">
-          <span class="material-symbols-outlined text-secondary" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-          <span class="material-symbols-outlined text-secondary" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-          <span class="material-symbols-outlined text-secondary" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-          <span class="material-symbols-outlined text-secondary" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-          <span class="material-symbols-outlined text-secondary" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
+        <div class="font-headline text-6xl text-primary font-bold" id="stat-avg">—</div>
+        <div class="flex justify-center gap-1 my-2" id="stat-stars">
+          <span class="material-symbols-outlined text-on-surface-variant/30" style="font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
+          <span class="material-symbols-outlined text-on-surface-variant/30" style="font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
+          <span class="material-symbols-outlined text-on-surface-variant/30" style="font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
+          <span class="material-symbols-outlined text-on-surface-variant/30" style="font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
+          <span class="material-symbols-outlined text-on-surface-variant/30" style="font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
         </div>
         <div class="text-on-surface-variant text-sm">من ٥</div>
       </div>
       <div class="w-px h-16 bg-outline-variant"></div>
       <div class="text-center">
-        <div class="font-headline text-5xl text-primary font-bold">+٢٤٠</div>
+        <div class="font-headline text-5xl text-primary font-bold" id="stat-total">—</div>
         <div class="text-on-surface-variant text-sm mt-2">تقييم موثق</div>
       </div>
       <div class="w-px h-16 bg-outline-variant"></div>
       <div class="text-center">
-        <div class="font-headline text-5xl text-primary font-bold">٩٨٪</div>
+        <div class="font-headline text-5xl text-primary font-bold" id="stat-sat">—</div>
         <div class="text-on-surface-variant text-sm mt-2">نسبة الرضا</div>
       </div>
     </div>
@@ -219,36 +219,36 @@
 <!-- Rating breakdown -->
 <section class="py-16 bg-surface-container-low reveal-on-scroll">
   <div class="container mx-auto px-12 max-w-xl">
-    <div class="flex flex-col gap-3">
+    <div class="flex flex-col gap-3" id="rating-bars">
       <div class="flex items-center gap-4">
         <span class="font-headline text-sm w-6 text-center text-primary font-bold">٥</span>
         <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-        <div class="flex-1 bg-outline-variant/30 rounded-full h-2 overflow-hidden"><div class="rating-bar-fill" style="width:88%"></div></div>
-        <span class="text-on-surface-variant text-xs w-8">٨٨٪</span>
+        <div class="flex-1 bg-outline-variant/30 rounded-full h-2 overflow-hidden"><div class="rating-bar-fill" id="bar-5" style="width:0%"></div></div>
+        <span class="text-on-surface-variant text-xs w-8" id="pct-5">٠٪</span>
       </div>
       <div class="flex items-center gap-4">
         <span class="font-headline text-sm w-6 text-center text-primary font-bold">٤</span>
         <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-        <div class="flex-1 bg-outline-variant/30 rounded-full h-2 overflow-hidden"><div class="rating-bar-fill" style="width:8%"></div></div>
-        <span class="text-on-surface-variant text-xs w-8">٨٪</span>
+        <div class="flex-1 bg-outline-variant/30 rounded-full h-2 overflow-hidden"><div class="rating-bar-fill" id="bar-4" style="width:0%"></div></div>
+        <span class="text-on-surface-variant text-xs w-8" id="pct-4">٠٪</span>
       </div>
       <div class="flex items-center gap-4">
         <span class="font-headline text-sm w-6 text-center text-primary font-bold">٣</span>
         <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-        <div class="flex-1 bg-outline-variant/30 rounded-full h-2 overflow-hidden"><div class="rating-bar-fill" style="width:3%"></div></div>
-        <span class="text-on-surface-variant text-xs w-8">٣٪</span>
+        <div class="flex-1 bg-outline-variant/30 rounded-full h-2 overflow-hidden"><div class="rating-bar-fill" id="bar-3" style="width:0%"></div></div>
+        <span class="text-on-surface-variant text-xs w-8" id="pct-3">٠٪</span>
       </div>
       <div class="flex items-center gap-4">
         <span class="font-headline text-sm w-6 text-center text-primary font-bold">٢</span>
         <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-        <div class="flex-1 bg-outline-variant/30 rounded-full h-2 overflow-hidden"><div class="rating-bar-fill" style="width:1%"></div></div>
-        <span class="text-on-surface-variant text-xs w-8">١٪</span>
+        <div class="flex-1 bg-outline-variant/30 rounded-full h-2 overflow-hidden"><div class="rating-bar-fill" id="bar-2" style="width:0%"></div></div>
+        <span class="text-on-surface-variant text-xs w-8" id="pct-2">٠٪</span>
       </div>
       <div class="flex items-center gap-4">
         <span class="font-headline text-sm w-6 text-center text-primary font-bold">١</span>
         <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-        <div class="flex-1 bg-outline-variant/30 rounded-full h-2 overflow-hidden"><div class="rating-bar-fill" style="width:0%"></div></div>
-        <span class="text-on-surface-variant text-xs w-8">٠٪</span>
+        <div class="flex-1 bg-outline-variant/30 rounded-full h-2 overflow-hidden"><div class="rating-bar-fill" id="bar-1" style="width:0%"></div></div>
+        <span class="text-on-surface-variant text-xs w-8" id="pct-1">٠٪</span>
       </div>
     </div>
   </div>
@@ -257,140 +257,28 @@
 <!-- Reviews grid -->
 <section class="py-24 bg-surface-container reveal-on-scroll">
   <div class="container mx-auto px-12 max-w-6xl">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-      <!-- Review 1 -->
-      <div class="review-card">
-        <div class="flex justify-between items-start mb-4">
-          <div class="flex gap-1">
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-          </div>
-          <span class="text-xs text-on-surface-variant bg-surface-container-low px-3 py-1 rounded-full">عسل السدر الملكي</span>
-        </div>
-        <p class="font-headline text-xl italic text-primary leading-relaxed mb-6">"لا يشبه أي شيء تجده في المتاجر. عمق النكهة يمثل الكمال المطلق."</p>
-        <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/30">
-          <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center font-headline text-primary font-bold">أ</div>
-          <div>
-            <div class="font-headline text-sm font-bold text-primary">أحمد سالم</div>
-            <div class="flex items-center gap-1 text-xs text-on-surface-variant"><i class="bi bi-patch-check-fill text-secondary"></i> عميل مميز</div>
-          </div>
-        </div>
+    <div id="reviews-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Skeleton placeholders -->
+      <div class="review-card animate-pulse">
+        <div class="h-4 bg-outline-variant/40 rounded w-1/2 mb-4"></div>
+        <div class="h-20 bg-outline-variant/30 rounded mb-6"></div>
+        <div class="h-4 bg-outline-variant/30 rounded w-1/3"></div>
       </div>
-
-      <!-- Review 2 -->
-      <div class="review-card">
-        <div class="flex justify-between items-start mb-4">
-          <div class="flex gap-1">
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-          </div>
-          <span class="text-xs text-on-surface-variant bg-surface-container-low px-3 py-1 rounded-full">مزيج الزهور البرية</span>
-        </div>
-        <p class="font-headline text-xl italic text-primary leading-relaxed mb-6">"طقسي اليومي الصباحي. يمكنك تذوق الفصول والعناية المبذولة في كل حصاد."</p>
-        <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/30">
-          <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center font-headline text-primary font-bold">م</div>
-          <div>
-            <div class="font-headline text-sm font-bold text-primary">مريم السيد</div>
-            <div class="flex items-center gap-1 text-xs text-on-surface-variant"><i class="bi bi-patch-check-fill text-secondary"></i> عميلة مميزة</div>
-          </div>
-        </div>
+      <div class="review-card animate-pulse">
+        <div class="h-4 bg-outline-variant/40 rounded w-1/2 mb-4"></div>
+        <div class="h-20 bg-outline-variant/30 rounded mb-6"></div>
+        <div class="h-4 bg-outline-variant/30 rounded w-1/3"></div>
       </div>
-
-      <!-- Review 3 -->
-      <div class="review-card">
-        <div class="flex justify-between items-start mb-4">
-          <div class="flex gap-1">
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-          </div>
-          <span class="text-xs text-on-surface-variant bg-surface-container-low px-3 py-1 rounded-full">عسل المانوكا</span>
-        </div>
-        <p class="font-headline text-xl italic text-primary leading-relaxed mb-6">"أهديته لوالدتي لفوائده الصحية، وقالت إنه الأجود الذي ذاقته في حياتها."</p>
-        <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/30">
-          <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center font-headline text-primary font-bold">ن</div>
-          <div>
-            <div class="font-headline text-sm font-bold text-primary">نورة العتيبي</div>
-            <div class="flex items-center gap-1 text-xs text-on-surface-variant"><i class="bi bi-patch-check-fill text-secondary"></i> عميلة موثقة</div>
-          </div>
-        </div>
+      <div class="review-card animate-pulse">
+        <div class="h-4 bg-outline-variant/40 rounded w-1/2 mb-4"></div>
+        <div class="h-20 bg-outline-variant/30 rounded mb-6"></div>
+        <div class="h-4 bg-outline-variant/30 rounded w-1/3"></div>
       </div>
-
-      <!-- Review 4 -->
-      <div class="review-card">
-        <div class="flex justify-between items-start mb-4">
-          <div class="flex gap-1">
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-          </div>
-          <span class="text-xs text-on-surface-variant bg-surface-container-low px-3 py-1 rounded-full">عسل الأكاسيا</span>
-        </div>
-        <p class="font-headline text-xl italic text-primary leading-relaxed mb-6">"التغليف رائع والرائحة مميزة من لحظة فتح العلبة. جودة استثنائية بكل المقاييس."</p>
-        <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/30">
-          <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center font-headline text-primary font-bold">خ</div>
-          <div>
-            <div class="font-headline text-sm font-bold text-primary">خالد المنصور</div>
-            <div class="flex items-center gap-1 text-xs text-on-surface-variant"><i class="bi bi-patch-check-fill text-secondary"></i> عميل دائم</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Review 5 -->
-      <div class="review-card">
-        <div class="flex justify-between items-start mb-4">
-          <div class="flex gap-1">
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-          </div>
-          <span class="text-xs text-on-surface-variant bg-surface-container-low px-3 py-1 rounded-full">عسل الزنجبيل</span>
-        </div>
-        <p class="font-headline text-xl italic text-primary leading-relaxed mb-6">"استخدمه يومياً في القهوة والشاي. الطعم لا يُقارن بأي منتج آخر جربته."</p>
-        <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/30">
-          <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center font-headline text-primary font-bold">س</div>
-          <div>
-            <div class="font-headline text-sm font-bold text-primary">سارة الحربي</div>
-            <div class="flex items-center gap-1 text-xs text-on-surface-variant"><i class="bi bi-patch-check-fill text-secondary"></i> عميلة موثقة</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Review 6 -->
-      <div class="review-card">
-        <div class="flex justify-between items-start mb-4">
-          <div class="flex gap-1">
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
-            <span class="material-symbols-outlined text-on-surface-variant text-sm">star</span>
-          </div>
-          <span class="text-xs text-on-surface-variant bg-surface-container-low px-3 py-1 rounded-full">عسل الغابة السوداء</span>
-        </div>
-        <p class="font-headline text-xl italic text-primary leading-relaxed mb-6">"نكهة عميقة وفريدة. الشحن كان سريعاً والتغليف محكماً. سأطلب مرة أخرى."</p>
-        <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/30">
-          <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center font-headline text-primary font-bold">ع</div>
-          <div>
-            <div class="font-headline text-sm font-bold text-primary">عمر الغامدي</div>
-            <div class="flex items-center gap-1 text-xs text-on-surface-variant"><i class="bi bi-person-check text-on-surface-variant"></i> عميل جديد</div>
-          </div>
-        </div>
-      </div>
-
+    </div>
+    <div id="reviews-empty" class="hidden text-center py-16">
+      <div class="text-6xl mb-4">🍯</div>
+      <p class="font-headline text-2xl text-primary mb-2">لا توجد آراء بعد</p>
+      <p class="text-on-surface-variant text-sm">كن أول من يشارك تجربته!</p>
     </div>
   </div>
 </section>
@@ -402,46 +290,58 @@
       <h2 class="font-headline text-5xl text-[#fed65b] mb-4">شاركنا رأيك</h2>
       <p class="text-[#fdf9f0]/55 text-sm leading-relaxed">تجربتك تهمنا — ساعد العملاء الآخرين في اتخاذ قرارهم</p>
     </div>
-    <div class="bg-[#fdf9f0]/05 border border-[#fdf9f0]/10 rounded-2xl p-10">
-      <div class="mb-6">
-        <label class="block text-[#fdf9f0]/60 text-xs font-bold mb-3 tracking-widest">تقييمك</label>
-        <div class="star-rating">
-          <input type="radio" id="s5" name="rating" value="5"/>
-          <label for="s5"></label>
-          <input type="radio" id="s4" name="rating" value="4"/>
-          <label for="s4"></label>
-          <input type="radio" id="s3" name="rating" value="3"/>
-          <label for="s3"></label>
-          <input type="radio" id="s2" name="rating" value="2"/>
-          <label for="s2"></label>
-          <input type="radio" id="s1" name="rating" value="1"/>
-          <label for="s1"></label>
+    <div class="bg-[#fdf9f0]/05 border border-[#fdf9f0]/10 rounded-2xl p-10" id="review-form-wrap">
+      <form id="review-form" novalidate>
+        <div class="mb-6">
+          <label class="block text-[#fdf9f0]/60 text-xs font-bold mb-3 tracking-widest">تقييمك <span class="text-[#fed65b]">*</span></label>
+          <div class="star-rating">
+            <input type="radio" id="s5" name="rating" value="5"/>
+            <label for="s5"></label>
+            <input type="radio" id="s4" name="rating" value="4"/>
+            <label for="s4"></label>
+            <input type="radio" id="s3" name="rating" value="3"/>
+            <label for="s3"></label>
+            <input type="radio" id="s2" name="rating" value="2"/>
+            <label for="s2"></label>
+            <input type="radio" id="s1" name="rating" value="1"/>
+            <label for="s1"></label>
+          </div>
         </div>
-      </div>
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block text-[#fdf9f0]/60 text-xs font-bold mb-2 tracking-widest">الاسم</label>
-          <input type="text" placeholder="اسمك الكريم" class="review-input"/>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-[#fdf9f0]/60 text-xs font-bold mb-2 tracking-widest">الاسم <span class="text-[#fed65b]">*</span></label>
+            <input type="text" id="rf-name" placeholder="اسمك الكريم" class="review-input" maxlength="100"/>
+          </div>
+          <div>
+            <label class="block text-[#fdf9f0]/60 text-xs font-bold mb-2 tracking-widest">المنتج</label>
+            <select id="rf-product" class="review-input" style="color:#1c1c17">
+              <option value="">اختر منتجاً (اختياري)</option>
+              <option>عسل السدر الملكي</option>
+              <option>مزيج الزهور البرية</option>
+              <option>عسل المانوكا</option>
+              <option>عسل الأكاسيا</option>
+              <option>عسل الزنجبيل</option>
+              <option>عسل الغابة السوداء</option>
+              <option>منتج آخر</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label class="block text-[#fdf9f0]/60 text-xs font-bold mb-2 tracking-widest">المنتج</label>
-          <select class="review-input" style="color:#1c1c17">
-            <option>عسل السدر الملكي</option>
-            <option>مزيج الزهور البرية</option>
-            <option>عسل المانوكا</option>
-            <option>عسل الأكاسيا</option>
-            <option>عسل الزنجبيل</option>
-            <option>منتج آخر</option>
-          </select>
+        <div class="mb-4">
+          <label class="block text-[#fdf9f0]/60 text-xs font-bold mb-2 tracking-widest">رأيك <span class="text-[#fed65b]">*</span></label>
+          <textarea id="rf-content" rows="4" placeholder="شاركنا تجربتك مع المنتج..." class="review-input resize-none" maxlength="2000"></textarea>
         </div>
+        <div id="rf-error" class="hidden mb-4 text-sm text-red-300 bg-red-900/20 border border-red-400/20 rounded-xl px-4 py-3"></div>
+        <button type="submit" id="rf-submit" class="w-full py-4 bg-[#fed65b] text-[#3c0004] rounded-xl font-headline text-base font-bold hover:bg-[#f5c400] transition-all hover:scale-[1.02] active:scale-95 shadow-lg flex items-center justify-center gap-2">
+          <span id="rf-btn-text">إرسال التقييم</span>
+          <span id="rf-spinner" class="hidden w-5 h-5 border-2 border-[#3c0004]/30 border-t-[#3c0004] rounded-full animate-spin"></span>
+        </button>
+      </form>
+      <!-- Success state -->
+      <div id="review-success" class="hidden text-center py-8">
+        <div class="text-5xl mb-4">🎉</div>
+        <h3 class="font-headline text-2xl text-[#fed65b] mb-2">شكراً على رأيك!</h3>
+        <p class="text-[#fdf9f0]/60 text-sm">تم استلام تقييمك بنجاح وسيظهر قريباً.</p>
       </div>
-      <div class="mb-6">
-        <label class="block text-[#fdf9f0]/60 text-xs font-bold mb-2 tracking-widest">رأيك</label>
-        <textarea rows="4" placeholder="شاركنا تجربتك مع المنتج..." class="review-input resize-none"></textarea>
-      </div>
-      <button class="w-full py-4 bg-[#fed65b] text-[#3c0004] rounded-xl font-headline text-base font-bold hover:bg-[#f5c400] transition-all hover:scale-[1.02] active:scale-95 shadow-lg">
-        إرسال التقييم
-      </button>
     </div>
   </div>
 </section>
@@ -493,16 +393,155 @@
 </div>
 
 <script>
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function toArabicDigits(n) {
+  return String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+}
+function starHTML(rating, size) {
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    const fill = i <= rating ? 1 : 0;
+    html += `<span class="material-symbols-outlined ${i <= rating ? 'text-secondary' : 'text-on-surface-variant/30'} ${size}" style="font-variation-settings:'FILL' ${fill},'wght' 300,'GRAD' 0,'opsz' 24;">star</span>`;
+  }
+  return html;
+}
+function buildReviewCard(r) {
+  const initial = r.name.trim().charAt(0) || '؟';
+  const productBadge = r.product
+    ? `<span class="text-xs text-on-surface-variant bg-surface-container-low px-3 py-1 rounded-full">${r.product}</span>`
+    : '';
+  const date = new Date(r.created_at).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+  return `
+    <div class="review-card">
+      <div class="flex justify-between items-start mb-4">
+        <div class="flex gap-1">${starHTML(parseInt(r.rating), 'text-sm')}</div>
+        ${productBadge}
+      </div>
+      <p class="font-headline text-xl italic text-primary leading-relaxed mb-6">"${r.content}"</p>
+      <div class="flex items-center gap-3 pt-4 border-t border-outline-variant/30">
+        <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center font-headline text-primary font-bold">${initial}</div>
+        <div>
+          <div class="font-headline text-sm font-bold text-primary">${r.name}</div>
+          <div class="text-xs text-on-surface-variant">${date}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Load reviews from API ─────────────────────────────────────────────────────
+async function loadReviews() {
+  try {
+    const res  = await fetch('apis/reviews/list.php');
+    const data = await res.json();
+    if (!data.ok) return;
+
+    const { reviews, stats } = data.data;
+
+    // Stats
+    const avgVal = stats.total > 0 ? stats.avg_rating.toFixed(1) : '—';
+    document.getElementById('stat-avg').textContent   = stats.total > 0 ? toArabicDigits(avgVal) : '—';
+    document.getElementById('stat-total').textContent = stats.total > 0 ? '+' + toArabicDigits(stats.total) : '—';
+    document.getElementById('stat-sat').textContent   = stats.total > 0 ? toArabicDigits(stats.satisfaction) + '٪' : '—';
+
+    // Stars
+    if (stats.total > 0) {
+      const starsEl = document.getElementById('stat-stars');
+      starsEl.innerHTML = starHTML(Math.round(stats.avg_rating), 'text-base');
+    }
+
+    // Bars
+    [5,4,3,2,1].forEach(n => {
+      const pct = stats[`pct_${n}`] ?? 0;
+      document.getElementById(`bar-${n}`).style.width = pct + '%';
+      document.getElementById(`pct-${n}`).textContent  = toArabicDigits(pct) + '٪';
+    });
+
+    // Grid
+    const grid  = document.getElementById('reviews-grid');
+    const empty = document.getElementById('reviews-empty');
+    if (reviews.length === 0) {
+      grid.classList.add('hidden');
+      empty.classList.remove('hidden');
+    } else {
+      grid.innerHTML = reviews.map(buildReviewCard).join('');
+      empty.classList.add('hidden');
+    }
+  } catch (e) {
+    console.warn('Failed to load reviews', e);
+    document.getElementById('reviews-grid').innerHTML = '';
+    document.getElementById('reviews-empty').classList.remove('hidden');
+  }
+}
+
+// ── Submit form ───────────────────────────────────────────────────────────────
+function initForm() {
+  const form    = document.getElementById('review-form');
+  const success = document.getElementById('review-success');
+  const errEl   = document.getElementById('rf-error');
+  const spinner = document.getElementById('rf-spinner');
+  const btnText = document.getElementById('rf-btn-text');
+  const submit  = document.getElementById('rf-submit');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errEl.classList.add('hidden');
+
+    const rating  = parseInt(form.querySelector('input[name="rating"]:checked')?.value ?? '0');
+    const name    = document.getElementById('rf-name').value.trim();
+    const product = document.getElementById('rf-product').value.trim();
+    const content = document.getElementById('rf-content').value.trim();
+
+    if (!rating)     { showErr('يرجى اختيار تقييم بالنجوم'); return; }
+    if (!name)       { showErr('يرجى إدخال اسمك'); return; }
+    if (!content)    { showErr('يرجى كتابة رأيك'); return; }
+
+    submit.disabled = true;
+    spinner.classList.remove('hidden');
+    btnText.textContent = 'جاري الإرسال...';
+
+    try {
+      const res  = await fetch('apis/reviews/submit.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating, name, product, content }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        form.classList.add('hidden');
+        success.classList.remove('hidden');
+        loadReviews();
+      } else {
+        showErr(data.error ?? 'حدث خطأ، حاول مرة أخرى');
+        resetBtn();
+      }
+    } catch (_) {
+      showErr('تعذّر الاتصال بالخادم، تحقق من الإنترنت');
+      resetBtn();
+    }
+  });
+
+  function showErr(msg) {
+    errEl.textContent = msg;
+    errEl.classList.remove('hidden');
+  }
+  function resetBtn() {
+    submit.disabled = false;
+    spinner.classList.add('hidden');
+    btnText.textContent = 'إرسال التقييم';
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   // Skeleton
   const overlay = document.getElementById('loading-overlay');
-  const main = document.getElementById('main-content');
-  setTimeout(() => {
+  const main    = document.getElementById('main-content');
+  loadReviews().finally(() => {
     overlay.style.opacity = '0';
     main.classList.remove('content-hidden');
     main.classList.add('content-visible');
     setTimeout(() => { overlay.style.display = 'none'; }, 700);
-  }, 1000);
+  });
 
   // Scroll reveal
   const observer = new IntersectionObserver((entries) => {
@@ -526,6 +565,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.style.overflow = '';
     }
   });
+
+  initForm();
 });
 </script>
 <style>.dev-badge{display:inline-flex;align-items:center;gap:.75rem;padding:.55rem 1.25rem .55rem 1rem;background:rgba(60,0,4,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:9999px;border:1px solid rgba(254,214,91,.25);box-shadow:0 4px 24px rgba(60,0,4,.35),inset 0 1px 0 rgba(254,214,91,.15);white-space:nowrap;text-decoration:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease,border-color .3s ease}.dev-badge:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 8px 32px rgba(60,0,4,.5),inset 0 1px 0 rgba(254,214,91,.3);border-color:rgba(254,214,91,.5)}.dev-badge:hover .badge-icon{animation:spark .5s ease forwards}@keyframes spark{0%{transform:rotate(0) scale(1)}30%{transform:rotate(-15deg) scale(1.2)}60%{transform:rotate(10deg) scale(.95)}100%{transform:rotate(0) scale(1)}}.badge-icon{width:1.75rem;height:1.75rem;background:linear-gradient(135deg,#fed65b,#b88a00);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}.badge-icon i{font-size:.8rem;color:#3c0004;line-height:1}.badge-text{display:flex;flex-direction:column;gap:.05rem;line-height:1}.badge-label{font-family:'Manrope',sans-serif;font-size:.6rem;font-weight:300;color:rgba(254,214,91,.55);letter-spacing:.08em;text-transform:uppercase}.badge-name{font-family:'Amiri',serif;font-size:.95rem;font-weight:700;color:#fed65b;letter-spacing:.02em}.dev-badge::before{content:'';position:absolute;inset:0;border-radius:9999px;padding:1px;background:linear-gradient(90deg,transparent,rgba(254,214,91,.4),transparent);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}.dev-badge-wrap{display:flex;justify-content:center;padding:2.5rem 0 3rem;}</style>

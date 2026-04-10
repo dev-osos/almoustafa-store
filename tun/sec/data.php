@@ -72,16 +72,51 @@ try {
     $pdo    = api_pdo();
     $method = $_SERVER['REQUEST_METHOD'];
 
-    // ── POST — user management actions (super_admin only) ─────────────────────
+    // ── POST — actions ────────────────────────────────────────────────────────
     if ($method === 'POST') {
+        $body   = json_decode(file_get_contents('php://input'), true) ?? [];
+        $action = $body['action'] ?? '';
+
+        // ── Reviews management (admin + super_admin) ──────────────────────────
+        if (in_array($action, ['review_toggle', 'review_delete', 'review_reorder'], true)) {
+            if (!in_array($role, ['super_admin', 'admin'], true)) {
+                http_response_code(403);
+                echo json_encode(['error' => 'ممنوع: صلاحيات غير كافية']);
+                exit;
+            }
+            $reviewId = (int) ($body['id'] ?? 0);
+
+            if ($action === 'review_toggle') {
+                if ($reviewId === 0) { http_response_code(400); echo json_encode(['error' => 'معرّف غير صحيح']); exit; }
+                $stmt = $pdo->prepare("UPDATE reviews SET visible = 1 - visible WHERE id = :id");
+                $stmt->execute([':id' => $reviewId]);
+                $vis = (int) $pdo->query("SELECT visible FROM reviews WHERE id = {$reviewId}")->fetchColumn();
+                echo json_encode(['ok' => true, 'visible' => (bool) $vis]);
+
+            } elseif ($action === 'review_delete') {
+                if ($reviewId === 0) { http_response_code(400); echo json_encode(['error' => 'معرّف غير صحيح']); exit; }
+                $pdo->prepare("DELETE FROM reviews WHERE id = :id")->execute([':id' => $reviewId]);
+                echo json_encode(['ok' => true]);
+
+            } elseif ($action === 'review_reorder') {
+                $ids = array_map('intval', $body['ids'] ?? []);
+                if (empty($ids)) { echo json_encode(['ok' => true]); exit; }
+                $total = count($ids);
+                $stmt  = $pdo->prepare("UPDATE reviews SET sort_order = :s WHERE id = :id");
+                foreach ($ids as $i => $id) {
+                    $stmt->execute([':s' => $total - $i, ':id' => $id]);
+                }
+                echo json_encode(['ok' => true]);
+            }
+            exit;
+        }
+
+        // ── User management (super_admin only) ───────────────────────────────
         if (!hasPermission($role, 'users')) {
             http_response_code(403);
             echo json_encode(['error' => 'ممنوع: صلاحيات غير كافية']);
             exit;
         }
-
-        $body   = json_decode(file_get_contents('php://input'), true) ?? [];
-        $action = $body['action'] ?? '';
 
         if ($action === 'create_user') {
             $username = trim($body['username'] ?? '');
@@ -142,6 +177,23 @@ try {
 
     // ── GET ───────────────────────────────────────────────────────────────────
     $type = $_GET['type'] ?? '';
+
+    // ── Reviews (admin + super_admin) ─────────────────────────────────────────
+    if ($type === 'reviews') {
+        if (!in_array($role, ['super_admin', 'admin'], true)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'ممنوع']);
+            exit;
+        }
+        $stmt = $pdo->query("
+            SELECT id, name, product, rating, content, visible, sort_order, created_at
+            FROM reviews
+            ORDER BY sort_order DESC, created_at DESC
+        ");
+        $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode(['ok' => true, 'reviews' => $reviews]);
+        exit;
+    }
 
     if (!hasPermission($role, $type)) {
         http_response_code(403);

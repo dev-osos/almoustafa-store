@@ -299,6 +299,11 @@ const ADMIN = {
       <div class="nav-item" id="nav-customers" onclick="showSection('customers')">
         <span class="ms">storefront</span> عملاؤنا
       </div>
+      <?php if (in_array($adminRole, ['super_admin', 'admin'])): ?>
+      <div class="nav-item" id="nav-reviews" onclick="showSection('reviews')">
+        <span class="ms">star</span> إدارة الآراء
+      </div>
+      <?php endif; ?>
       <?php if (can($adminRole, 'users')): ?>
       <div class="nav-item" id="nav-users" onclick="showSection('users')">
         <span class="ms">manage_accounts</span> إدارة المستخدمين
@@ -532,6 +537,19 @@ const ADMIN = {
 
       </div><!-- /customersSection -->
 
+      <!-- ── REVIEWS SECTION ───────────────────────────── -->
+      <?php if (in_array($adminRole, ['super_admin', 'admin'])): ?>
+      <div class="section" id="reviewsSection">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+          <h2 style="font-family:'Amiri',serif;font-size:1.4rem;color:var(--primary);margin:0;">آراء العملاء</h2>
+          <button onclick="loadReviews()" style="padding:.5rem 1.2rem;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Amiri',serif;font-size:.9rem;">تحديث</button>
+        </div>
+        <div id="reviews-admin-list" style="display:flex;flex-direction:column;gap:1rem;">
+          <div style="text-align:center;padding:3rem;color:var(--on-surface-dim);">جارٍ التحميل...</div>
+        </div>
+      </div>
+      <?php endif; ?>
+
     </div><!-- /content -->
   </main>
 </div>
@@ -580,7 +598,7 @@ function roleBadgeHtml(role, label) {
 }
 
 // ── Section switching ─────────────────────────────────────────────────────────
-const SECTION_TITLES = { visitors: 'إحصائيات الزوار', customers: 'عملاؤنا', users: 'إدارة المستخدمين' };
+const SECTION_TITLES = { visitors: 'إحصائيات الزوار', customers: 'عملاؤنا', users: 'إدارة المستخدمين', reviews: 'إدارة الآراء' };
 
 function showSection(name) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -592,6 +610,7 @@ function showSection(name) {
   $id('topbarTitle').textContent = SECTION_TITLES[name] ?? '';
   if (name === 'users')      loadUsers();
   if (name === 'customers')  { loadCustomerStats(); loadCustomers(1); }
+  if (name === 'reviews')    loadReviews();
 }
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
@@ -1013,6 +1032,132 @@ $id('custSearch').addEventListener('input', () => {
   clearTimeout(custSearchTimer);
   custSearchTimer = setTimeout(() => loadCustomers(1), 400);
 });
+
+// ── Reviews ───────────────────────────────────────────────────────────────────
+let reviewsData = [];
+let reviewsDragSrc = null;
+
+async function loadReviews() {
+  const list = $id('reviews-admin-list');
+  if (!list) return;
+  list.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--on-surface-dim);">جارٍ التحميل...</div>';
+  try {
+    const res  = await fetch('data.php?type=reviews');
+    const data = await res.json();
+    reviewsData = data.reviews ?? [];
+    renderReviewsList();
+  } catch(e) {
+    list.innerHTML = '<div style="text-align:center;padding:2rem;color:#c00;">فشل التحميل</div>';
+  }
+}
+
+function renderReviewsList() {
+  const list = $id('reviews-admin-list');
+  if (!list) return;
+  if (reviewsData.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--on-surface-dim);">لا توجد آراء بعد</div>';
+    return;
+  }
+  list.innerHTML = '';
+  reviewsData.forEach((r, idx) => {
+    const card = document.createElement('div');
+    card.dataset.id  = r.id;
+    card.dataset.idx = idx;
+    card.draggable   = true;
+    card.style.cssText = `
+      background:var(--surface);border:1px solid var(--border);border-radius:14px;
+      padding:1.1rem 1.4rem;display:flex;align-items:flex-start;gap:1rem;
+      opacity:${r.visible == 1 ? 1 : 0.45};cursor:grab;
+      transition:box-shadow .2s,transform .2s;
+    `;
+    // Stars
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+      stars += `<span class="ms" style="font-size:1rem;color:${i <= r.rating ? '#b88a00' : '#ddd'};font-variation-settings:'FILL' ${i<=r.rating?1:0},'wght' 300,'GRAD' 0,'opsz' 24;">star</span>`;
+    }
+    const date = new Date(r.created_at.replace(' ','T')+'Z').toLocaleDateString('ar-EG',{year:'numeric',month:'short',day:'numeric'});
+    card.innerHTML = `
+      <span class="ms" style="font-size:1.4rem;color:var(--on-surface-dim);cursor:grab;flex-shrink:0;margin-top:.2rem;">drag_indicator</span>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.4rem;">
+          <strong style="font-family:'Amiri',serif;font-size:1rem;color:var(--primary);">${r.name}</strong>
+          ${r.product ? `<span style="font-size:.75rem;background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-border);padding:.15rem .6rem;border-radius:20px;">${r.product}</span>` : ''}
+          <span style="display:flex;gap:1px;">${stars}</span>
+          <span style="font-size:.72rem;color:var(--on-surface-dim);margin-right:auto;">${date}</span>
+        </div>
+        <p style="font-size:.88rem;color:var(--on-surface-dim);margin:0;white-space:pre-wrap;word-break:break-word;">${r.content}</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.5rem;flex-shrink:0;">
+        <button onclick="reviewToggle(${r.id}, this)" title="${r.visible==1 ? 'إخفاء' : 'إظهار'}"
+          style="padding:.4rem .8rem;border:1px solid ${r.visible==1?'var(--gold-border)':'#ccc'};border-radius:8px;background:${r.visible==1?'var(--gold-bg)':'#f5f5f5'};cursor:pointer;font-size:.78rem;font-family:'Amiri',serif;white-space:nowrap;">
+          <span class="ms" style="font-size:.95rem;vertical-align:middle;">${r.visible==1?'visibility':'visibility_off'}</span>
+          ${r.visible==1?'ظاهر':'مخفي'}
+        </button>
+        <button onclick="reviewDelete(${r.id}, this)" title="حذف"
+          style="padding:.4rem .8rem;border:1px solid #f5b8b8;border-radius:8px;background:#fdecea;cursor:pointer;font-size:.78rem;font-family:'Amiri',serif;color:var(--primary);">
+          <span class="ms" style="font-size:.95rem;vertical-align:middle;">delete</span>
+          حذف
+        </button>
+      </div>`;
+
+    // Drag events
+    card.addEventListener('dragstart', e => {
+      reviewsDragSrc = card;
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => card.style.opacity = '0.3', 0);
+    });
+    card.addEventListener('dragend', () => {
+      reviewsDragSrc = null;
+      card.style.opacity = reviewsData[idx]?.visible == 1 ? '1' : '0.45';
+      list.querySelectorAll('[data-id]').forEach(c => c.style.background = '');
+    });
+    card.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (card !== reviewsDragSrc) card.style.background = '#f0eaff';
+    });
+    card.addEventListener('dragleave', () => { card.style.background = ''; });
+    card.addEventListener('drop', async e => {
+      e.preventDefault();
+      card.style.background = '';
+      if (!reviewsDragSrc || reviewsDragSrc === card) return;
+      // Reorder in DOM
+      const allCards = [...list.querySelectorAll('[data-id]')];
+      const fromIdx  = allCards.indexOf(reviewsDragSrc);
+      const toIdx    = allCards.indexOf(card);
+      if (fromIdx < toIdx) list.insertBefore(reviewsDragSrc, card.nextSibling);
+      else                  list.insertBefore(reviewsDragSrc, card);
+      // Persist order
+      const ids = [...list.querySelectorAll('[data-id]')].map(c => parseInt(c.dataset.id));
+      await fetch('data.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'review_reorder', ids}) });
+    });
+
+    list.appendChild(card);
+  });
+}
+
+async function reviewToggle(id, btn) {
+  btn.disabled = true;
+  const res  = await fetch('data.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'review_toggle',id}) });
+  const data = await res.json();
+  if (data.ok) {
+    const r = reviewsData.find(x => x.id == id);
+    if (r) r.visible = data.visible ? 1 : 0;
+    renderReviewsList();
+  }
+  btn.disabled = false;
+}
+
+async function reviewDelete(id, btn) {
+  if (!confirm('هل أنت متأكد من حذف هذا الرأي؟')) return;
+  btn.disabled = true;
+  const res  = await fetch('data.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'review_delete',id}) });
+  const data = await res.json();
+  if (data.ok) {
+    reviewsData = reviewsData.filter(x => x.id != id);
+    renderReviewsList();
+  }
+  btn.disabled = false;
+}
 </script>
 </body>
 </html>

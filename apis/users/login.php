@@ -69,7 +69,7 @@ try {
 // ── Fetch customer ────────────────────────────────────────────────────────────
 try {
     $stmt = $pdo->prepare("
-        SELECT id, name, phone, password_hash, profile_complete
+        SELECT id, name, phone, password_hash, profile_complete, referral_code
         FROM customers
         WHERE phone = :phone
         LIMIT 1
@@ -112,4 +112,5 @@ api_ok([
     'phone'            => $customer['phone'],
     'name'             => $customer['name'],
     'profile_complete' => (bool) $customer['profile_complete'],
+    'referral_code'    => $customer['referral_code'],
 ]);

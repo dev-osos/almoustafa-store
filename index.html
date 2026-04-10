@@ -648,6 +648,81 @@
             font-size: 0.82rem; font-weight: 700;
             color: #fed65b; direction: ltr;
         }
+        /* Referral Code Card */
+        .pdd-referral-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 12px; padding: 9px 10px;
+            background: rgba(60,0,4,0.18);
+            border-radius: 8px;
+            border: 1px solid rgba(115,92,0,0.22);
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .pdd-referral-row:hover {
+            background: rgba(60,0,4,0.28);
+            border-color: rgba(115,92,0,0.4);
+        }
+        .pdd-referral-label {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 0.71rem; color: rgba(255,255,255,0.4);
+        }
+        .pdd-referral-icon { font-size: 14px; color: rgba(254,214,91,0.6); }
+        .pdd-referral-code {
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.82rem; font-weight: 700;
+            color: #fed65b; letter-spacing: 0.18em; direction: ltr;
+        }
+        /* Referral Modal */
+        .referral-header-section {
+            text-align: center;
+            padding: 20px 24px;
+            background: linear-gradient(135deg, rgba(60,0,4,0.18) 0%, rgba(115,92,0,0.08) 100%);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(115,92,0,0.2);
+        }
+        .referral-code-display {
+            font-family: 'Manrope', sans-serif;
+            font-size: 2rem; font-weight: 800;
+            color: #fed65b; letter-spacing: 0.3em; direction: ltr;
+            margin: 8px 0 4px;
+        }
+        .referral-code-label { font-size: 0.7rem; color: rgba(255,255,255,0.35); margin-bottom: 10px; }
+        .referral-copy-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 14px; border-radius: 20px; border: none; cursor: pointer;
+            background: rgba(254,214,91,0.12); color: #fed65b;
+            font-size: 0.72rem; font-family: 'Manrope', sans-serif;
+            transition: background 0.2s;
+        }
+        .referral-copy-btn:hover { background: rgba(254,214,91,0.2); }
+        .referral-copy-btn .material-symbols-outlined { font-size: 14px; }
+        .referral-user-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 8px;
+        }
+        .referral-user-avatar {
+            width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+            background: rgba(254,214,91,0.08);
+            border: 1px solid rgba(254,214,91,0.2);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .referral-user-avatar span { font-size: 16px; color: rgba(254,214,91,0.55);
+            font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+        .referral-user-info { flex: 1; min-width: 0; }
+        .referral-user-name { font-size: 0.8rem; color: rgba(255,255,255,0.8); font-weight: 600; }
+        .referral-user-phone { font-size: 0.68rem; color: rgba(255,255,255,0.35); direction: ltr; text-align: right; }
+        .referral-user-date { font-size: 0.64rem; color: rgba(255,255,255,0.25); margin-top: 2px; }
+        .referral-empty {
+            text-align: center; padding: 24px 0;
+        }
+        .referral-empty-icon { font-size: 36px; color: rgba(255,255,255,0.12); display: block; margin-bottom: 8px; }
+        .referral-empty-text { font-size: 0.8rem; color: rgba(255,255,255,0.3); }
+        .referral-empty-sub { font-size: 0.7rem; color: rgba(255,255,255,0.18); margin-top: 4px; }
         /* Wallet Modal Styles */
         .wallet-balance-section {
             text-align: center;
