@@ -435,7 +435,7 @@ async function loadReviews() {
     const data = await res.json();
     if (!data.ok) return;
 
-    const { reviews, stats } = data.data;
+    const { reviews, stats } = data;
 
     // Stats
     const avgVal = stats.total > 0 ? stats.avg_rating.toFixed(1) : '—';
