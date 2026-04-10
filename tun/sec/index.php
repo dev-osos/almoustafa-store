@@ -233,8 +233,28 @@ tr:hover td { background:var(--surface-dim); }
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 .skel-val { height:2rem; width:70px; display:inline-block; }
 
+/* ── Mobile sidebar ──────────────────────────────────── */
+.sidebar-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:99; opacity:0; transition:opacity .3s; }
+.sidebar-backdrop.open { opacity:1; }
+.topbar-menu-btn { display:none; align-items:center; justify-content:center; width:38px; height:38px; border:1.5px solid var(--border); border-radius:10px; background:var(--surface-dim); cursor:pointer; color:var(--primary); flex-shrink:0; transition:background .15s; }
+.topbar-menu-btn:hover { background:var(--border); }
+.topbar-menu-btn .ms { font-size:1.35rem; }
+
 @media(max-width:900px){
-  .sidebar{display:none} .main{margin-right:0} .charts-row{grid-template-columns:1fr}
+  .sidebar {
+    transform: translateX(100%);
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+    box-shadow: none;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: -4px 0 32px rgba(0,0,0,.28);
+  }
+  .sidebar-backdrop { display:block; pointer-events:none; }
+  .sidebar-backdrop.open { pointer-events:all; }
+  .main { margin-right:0; }
+  .charts-row { grid-template-columns:1fr; }
+  .topbar-menu-btn { display:flex; }
 }
 </style>
 </head>
@@ -284,10 +304,13 @@ const ADMIN = {
   </div>
 </div>
 
+<!-- Sidebar backdrop (mobile) -->
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+
 <div class="layout">
 
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <h1>المصطفى</h1>
       <p>لوحة التحكم</p>
@@ -326,9 +349,14 @@ const ADMIN = {
   <!-- Main -->
   <main class="main">
     <div class="topbar">
-      <div>
-        <div class="topbar-title" id="topbarTitle">إحصائيات الزوار</div>
-        <div class="topbar-meta" id="lastUpdate">جارٍ التحميل...</div>
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <button class="topbar-menu-btn" id="btnMenuToggle" onclick="toggleSidebar()" aria-label="القائمة">
+          <span class="ms">menu</span>
+        </button>
+        <div>
+          <div class="topbar-title" id="topbarTitle">إحصائيات الزوار</div>
+          <div class="topbar-meta" id="lastUpdate">جارٍ التحميل...</div>
+        </div>
       </div>
       <?php if (can($adminRole, 'stats')): ?>
       <div class="online-badge">
@@ -596,6 +624,31 @@ function roleBadgeHtml(role, label) {
   return `<span class="role-badge" style="${styles[role] ?? ''}">${label}</span>`;
 }
 
+// ── Sidebar toggle (mobile) ───────────────────────────────────────────────────
+const sidebar         = $id('sidebar');
+const sidebarBackdrop = $id('sidebarBackdrop');
+
+function openSidebar() {
+  sidebar.classList.add('open');
+  sidebarBackdrop.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  sidebar.classList.remove('open');
+  sidebarBackdrop.classList.remove('open');
+  document.body.style.overflow = '';
+}
+function toggleSidebar() {
+  sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+}
+
+// Close sidebar when a nav item is tapped on mobile
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    if (window.innerWidth <= 900) closeSidebar();
+  });
+});
+
 // ── Section switching ─────────────────────────────────────────────────────────
 const SECTION_TITLES = { visitors: 'إحصائيات الزوار', customers: 'عملاؤنا', users: 'إدارة المستخدمين', reviews: 'إدارة الآراء' };
 
@@ -607,10 +660,23 @@ function showSection(name) {
   const nav = $id('nav-' + name);
   if (nav) nav.classList.add('active');
   $id('topbarTitle').textContent = SECTION_TITLES[name] ?? '';
+  // Persist current section
+  try { localStorage.setItem('alm_admin_section', name); } catch {}
   if (name === 'users')      loadUsers();
   if (name === 'customers')  { loadCustomerStats(); loadCustomers(1); }
   if (name === 'reviews')    loadReviews();
 }
+
+// ── Restore last section on load ──────────────────────────────────────────────
+(function restoreSection() {
+  const valid = ['visitors', 'customers', 'reviews', 'users'];
+  let saved;
+  try { saved = localStorage.getItem('alm_admin_section'); } catch {}
+  const section = valid.includes(saved) ? saved : 'visitors';
+  // Ensure the section exists in the DOM (role-gated sections may be absent)
+  if (!$id(section + 'Section')) return showSection('visitors');
+  showSection(section);
+})();
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
 async function loadStats() {
