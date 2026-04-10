@@ -2423,6 +2423,15 @@
     </div>
   </div>
   <div class="pdd-edit-list">
+    <div class="pdd-edit-item" style="cursor:default;">
+      <div class="pdd-edit-item-main">
+        <span class="material-symbols-outlined">sell</span>
+        <div class="pdd-edit-copy">
+          <div class="pdd-edit-label">الشريحة</div>
+          <div class="pdd-edit-value" id="pdd-segment">لم يتم تحديد الشريحة بعد</div>
+        </div>
+      </div>
+    </div>
     <button class="pdd-edit-item" id="btn-edit-address" type="button">
       <div class="pdd-edit-item-main">
         <span class="material-symbols-outlined">edit_location_alt</span>
@@ -3145,6 +3154,9 @@
             ) || 'لم يتم تحديد العنوان بعد';
             const addrEl = document.getElementById('pdd-address-short') || document.getElementById('pdd-address');
             if (addrEl) addrEl.textContent = currentAddress;
+            const segmentLabels = { 'مستهلك': 'مستهلك', 'جملة': 'جملة', 'corporate': 'جملة الجملة', 'consumer': 'مستهلك', 'wholesale': 'جملة' };
+            const currentSegment = segmentLabels[session?.segment] || session?.segment || 'لم يتم تحديد الشريحة بعد';
+            document.getElementById('pdd-segment').textContent = currentSegment;
             const balance = session?.wallet ?? 0;
             document.getElementById('pdd-wallet').textContent = Number(balance).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م';
             profileDropdown.classList.add('open');
