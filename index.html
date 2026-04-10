@@ -3055,25 +3055,37 @@
             localStorage.setItem('alm_session', JSON.stringify(data));
         }
 
-        // ── Global 401 interceptor — auto-logout if account deleted ───────────
+        // ── Global 401 interceptor ────────────────────────────────────────────
         const _nativeFetch = window.fetch.bind(window);
         window.fetch = async function(input, init) {
             const res = await _nativeFetch(input, init);
             if (res.status === 401 && getSession()) {
-                // Clone before consuming — caller may still read body
                 const clone = res.clone();
                 clone.json().then(d => {
-                    if (d?.error && d.error.includes('حذف')) {
+                    if (d?.error && (d.error.includes('حذف') || d.error.includes('مصادق'))) {
                         localStorage.removeItem('alm_session');
                         updateAccountIcon();
-                        // Show a brief notice then reload
-                        alert('تم حذف حسابك. سيتم تسجيل خروجك الآن.');
+                        alert('انتهت جلستك أو تم حذف حسابك. سيتم تسجيل خروجك.');
                         window.location.reload();
                     }
                 }).catch(() => {});
             }
             return res;
         };
+
+        // ── Verify session against server on page load ────────────────────────
+        (function verifySession() {
+            if (!getSession()) return;
+            _nativeFetch('apis/users/me.php')
+                .then(r => r.json())
+                .then(d => {
+                    if (!d.ok) {
+                        localStorage.removeItem('alm_session');
+                        updateAccountIcon();
+                    }
+                })
+                .catch(() => { /* offline — skip */ });
+        })();
         function updateAccountIcon() {
             const btn = document.getElementById('btn-account');
             if (!btn) return;
@@ -4037,12 +4049,50 @@
         });
 
         // --- Login submit ---
-        document.getElementById('btn-login-submit').addEventListener('click', () => {
-            const phone = document.getElementById('login-phone').value.trim();
-            setSession({ name: null, phone: phone, loggedAt: new Date().toISOString() });
-            updateAccountIcon();
-            document.getElementById('success-name-line').textContent = '';
-            showPanel('success');
+        document.getElementById('btn-login-submit').addEventListener('click', async () => {
+            const phone    = document.getElementById('login-phone').value.trim();
+            const password = document.getElementById('login-password').value;
+            const btn      = document.getElementById('btn-login-submit');
+
+            if (!phone || !password) { alert('يرجى إدخال رقم الهاتف وكلمة المرور'); return; }
+
+            btn.disabled = true;
+            btn.textContent = 'جارٍ التحقق...';
+            try {
+                const res  = await _nativeFetch('apis/users/login.php', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ phone, password }),
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.error || 'رقم الهاتف أو كلمة المرور غير صحيحة');
+                    return;
+                }
+
+                setSession({
+                    customer_id:   data.customer_id,
+                    name:          data.name || null,
+                    phone:         data.phone || phone,
+                    referral_code: data.referral_code || null,
+                    invitationCode: data.referral_code || null,
+                    loggedAt:      new Date().toISOString(),
+                });
+                updateAccountIcon();
+                document.getElementById('success-name-line').textContent = data.name ? 'أهلاً ' + data.name : '';
+
+                if (data.profile_complete === false) {
+                    window.location.href = 'onboarding.html';
+                } else {
+                    showPanel('success');
+                }
+            } catch {
+                alert('خطأ في الاتصال. يرجى المحاولة مجدداً.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'دخول';
+            }
         });
 
         // --- Register Step 1 — send OTP ---
