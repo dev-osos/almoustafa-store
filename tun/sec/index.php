@@ -754,7 +754,7 @@ function showSection(name) {
   if (name === 'users')      loadUsers();
   if (name === 'customers')  { loadCustomerStats(); loadCustomers(1); }
   if (name === 'reviews')    loadReviews();
-  if (name === 'invitations') loadInvitations();
+  if (name === 'invitations' && ADMIN.canUsers) loadInvitations();
 }
 
 // ── Restore last section on load — called at end of script after all vars ─────
@@ -1318,6 +1318,9 @@ async function reviewDelete(id, btn) {
 let invitationsData = [];
 
 async function loadInvitations() {
+  // Check if invitations section exists in DOM
+  if (!$id('invitationsSection')) return;
+  
   try {
     const res = await fetch('../../apis/invitations/stats.php');
     if (!res.ok) throw new Error('Failed to load');
