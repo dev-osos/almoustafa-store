@@ -312,7 +312,10 @@ const ADMIN = {
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <h1>المصطفى</h1>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <img src="../../logo.png" alt="المصطفى" style="width:48px;height:48px;border-radius:50%;object-fit:contain;border:2px solid rgba(254,214,91,0.3);">
+        <h1 style="margin:0;">المصطفى</h1>
+      </div>
       <p>لوحة التحكم</p>
     </div>
     <nav class="sidebar-nav">
