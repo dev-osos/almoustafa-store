@@ -2424,6 +2424,7 @@
   </div>
   <div class="pdd-edit-list">
     <div class="pdd-edit-item" style="cursor:default;">
+      
       <div class="pdd-edit-item-main">
         <span class="material-symbols-outlined">sell</span>
         <div class="pdd-edit-copy">
@@ -2432,6 +2433,18 @@
         </div>
       </div>
     </div>
+    <button class="pdd-edit-item" id="btn-invitation-code" type="button">
+      <div class="pdd-edit-item-main">
+        <span class="material-symbols-outlined">card_giftcard</span>
+        <div class="pdd-edit-copy">
+          <div class="pdd-edit-label">كود الدعوة</div>
+          <div class="pdd-edit-value" id="pdd-invite-code">عرض الكود</div>
+        </div>
+      </div>
+      <div class="pdd-edit-action">
+        <span class="material-symbols-outlined">open_in_new</span>
+      </div>
+    </button>
     <button class="pdd-edit-item" id="btn-edit-address" type="button">
       <div class="pdd-edit-item-main">
         <span class="material-symbols-outlined">edit_location_alt</span>
@@ -3552,6 +3565,52 @@
             openProfileEditModal();
         });
 
+        // --- Invitation Code Modal ---
+        const invitationBackdrop = document.getElementById('invitation-backdrop');
+        const invitationCodeDisplay = document.getElementById('invitation-code-display');
+
+        function openInvitationModal() {
+            closeProfileDropdown();
+            invitationBackdrop.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            // Generate unique code from session phone if available
+            const session = getSession();
+            if (session?.phone) {
+                const code = 'HONEY' + session.phone.slice(-4);
+                invitationCodeDisplay.textContent = code;
+            }
+        }
+
+        function closeInvitationModal() {
+            invitationBackdrop.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('btn-invitation-code').addEventListener('click', (e) => {
+            e.stopPropagation();
+            openInvitationModal();
+        });
+
+        document.getElementById('btn-invitation-close').addEventListener('click', closeInvitationModal);
+
+        document.getElementById('btn-copy-invitation').addEventListener('click', () => {
+            const code = invitationCodeDisplay.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.getElementById('btn-copy-invitation');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="material-symbols-outlined">check</span> تم النسخ!';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            }).catch(() => {
+                alert('كود الدعوة: ' + code);
+            });
+        });
+
+        invitationBackdrop.addEventListener('click', (e) => {
+            if (e.target === invitationBackdrop) closeInvitationModal();
+        });
+
         document.getElementById('btn-profile-edit-close').addEventListener('click', closeProfileEditModal);
         document.getElementById('btn-profile-edit-cancel').addEventListener('click', closeProfileEditModal);
         profileEditForm.addEventListener('submit', (e) => {
@@ -3692,6 +3751,9 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && profileEditBackdrop.classList.contains('open')) {
                 closeProfileEditModal();
+            }
+            if (e.key === 'Escape' && invitationBackdrop.classList.contains('open')) {
+                closeInvitationModal();
             }
         });
 
@@ -4900,6 +4962,51 @@
         </div>
       </div>
       
+    </div>
+  </div>
+</div>
+
+<!-- ========== INVITATION CODE MODAL ========== -->
+<div id="invitation-backdrop" class="info-backdrop">
+  <div class="info-modal">
+    <button class="info-close-btn" id="btn-invitation-close">
+      <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+    </button>
+
+    <div class="referral-header-section">
+      <div class="referral-code-label">كود الدعوة الخاص بك</div>
+      <div class="referral-code-display" id="invitation-code-display">HONEY25</div>
+      <button class="referral-copy-btn" id="btn-copy-invitation" type="button">
+        <span class="material-symbols-outlined">content_copy</span>
+        نسخ الكود
+      </button>
+    </div>
+
+    <div class="info-modal-content" style="padding:0 8px;">
+      <div class="info-section">
+        <div class="info-section-title">
+          <span class="material-symbols-outlined">group_add</span>
+          كيف يعمل؟
+        </div>
+        <p class="info-section-text" style="font-size:0.85rem;color:rgba(255,255,255,0.7);line-height:1.8;margin-bottom:16px;">
+          شارك كود الدعوة مع أصدقائك وعائلتك. عند استخدامهم للكود في تسجيلهم الأول، ستحصل أنت وهم على مكافآت حصرية!
+        </p>
+      </div>
+
+      <div class="info-section">
+        <div class="info-section-title">
+          <span class="material-symbols-outlined">card_giftcard</span>
+          مكافآت الدعوة
+        </div>
+        <div class="info-highlight">
+          <div class="info-highlight-title"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-left:4px;">percent</span>خصم ١٠٪</div>
+          <div class="info-highlight-text">لصديقك على أول طلب</div>
+        </div>
+        <div class="info-highlight">
+          <div class="info-highlight-title"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-left:4px;">payments</span>٢٥ ج.م</div>
+          <div class="info-highlight-text">رصيد في محفظتك لكل دعوة ناجحة</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
