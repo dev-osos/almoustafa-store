@@ -648,13 +648,11 @@ const ADMIN = {
                 <tr>
                   <th>#</th>
                   <th>الكود</th>
-                  <th>الحالة</th>
+                  <th>صاحب الكود</th>
+                  <th>رقم الهاتف</th>
                   <th>مرات الاستخدام</th>
-                  <th>الحد الأقصى</th>
-                  <th>عدد المستخدمين</th>
-                  <th>تاريخ الإنشاء</th>
-                  <th>انتهاء الصلاحية</th>
-                  <th>إجراءات</th>
+                  <th>تاريخ التسجيل</th>
+                  <th>المستخدمون</th>
                 </tr>
               </thead>
               <tbody id="invBody">
@@ -1377,16 +1375,14 @@ function renderInvitationsTable() {
     
     tr.innerHTML = `
       <td>${idx + 1}</td>
-      <td><code style="background:var(--surface-dim);padding:.2rem .5rem;border-radius:4px;font-family:monospace;">${inv.code}</code></td>
-      <td>${statusBadge}</td>
-      <td>${fmt(inv.usage_count)}</td>
-      <td>${inv.max_uses ? fmt(inv.max_uses) : 'غير محدود'}</td>
-      <td><button onclick="showInvitationUsers('${inv.code}')" style="background:var(--primary);color:#fff;border:none;border-radius:6px;padding:.3rem .6rem;cursor:pointer;font-size:.75rem;">${fmt(inv.customer_count)} مستخدم</button></td>
+      <td><code style="background:var(--surface-dim);padding:.2rem .5rem;border-radius:4px;font-family:monospace;letter-spacing:.12em;">${inv.code}</code></td>
+      <td>${inv.owner_name || '—'}</td>
+      <td style="direction:ltr;text-align:right;font-family:monospace;font-size:.8rem;">${inv.owner_phone || '—'}</td>
+      <td><span style="background:var(--green-bg);color:var(--green);font-weight:700;padding:.2rem .7rem;border-radius:999px;">${fmt(inv.usage_count)}</span></td>
       <td>${fmtDate(inv.created_at)}</td>
-      <td>${expiresDate}</td>
       <td>
-        <button onclick="showInvitationUsers('${inv.code}')" style="background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-border);border-radius:6px;padding:.3rem .6rem;cursor:pointer;font-size:.75rem;">
-          <span class="ms" style="font-size:1rem;">visibility</span> عرض
+        <button onclick="showInvitationUsers('${inv.code}')" style="background:var(--primary);color:#fff;border:none;border-radius:6px;padding:.3rem .75rem;cursor:pointer;font-size:.78rem;font-family:inherit;">
+          <span class="ms" style="font-size:.95rem;vertical-align:middle;">group</span> ${fmt(inv.customer_count)} مستخدم
         </button>
       </td>
     `;
