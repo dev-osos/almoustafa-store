@@ -777,7 +777,7 @@ async function loadStats() {
 
   ['sTotal','sToday','sWeek','sMonth','sHits','sAvg'].forEach(id => {
     const el = $id(id);
-    el.classList.remove('skeleton','skel-val');
+    if (el) el.classList.remove('skeleton','skel-val');
   });
 
   $id('sTotal').textContent = fmt(d.total);
@@ -998,11 +998,17 @@ async function deleteUser(id, username) {
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
 function openModal() {
-  $id('createUserForm').reset();
-  $id('modalErr').classList.remove('show');
-  $id('userModal').classList.add('open');
+  const form = $id('createUserForm');
+  const err = $id('modalErr');
+  const modal = $id('userModal');
+  if (form) form.reset();
+  if (err) err.classList.remove('show');
+  if (modal) modal.classList.add('open');
 }
-function closeModal() { $id('userModal').classList.remove('open'); }
+function closeModal() { 
+  const modal = $id('userModal');
+  if (modal) modal.classList.remove('open'); 
+}
 $id('userModal').addEventListener('click', e => { if (e.target === $id('userModal')) closeModal(); });
 
 async function submitCreateUser(e) {
