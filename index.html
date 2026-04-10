@@ -3229,8 +3229,8 @@
             const currentSegment = segmentLabels[session?.segment] || session?.segment || 'لم يتم تحديد الشريحة بعد';
             document.getElementById('pdd-segment').textContent = currentSegment;
             
-            // Show invitation code if exists, otherwise show default
-            const inviteCode = session?.invitationCode || '123456';
+            // Show referral code from session cache (updated by API)
+            const inviteCode = session?.referral_code || session?.invitationCode || '…';
             document.getElementById('pdd-invite-code').textContent = inviteCode;
             
             const balance = session?.wallet ?? 0;
@@ -3636,30 +3636,33 @@
             closeProfileDropdown();
             invitationBackdrop.classList.add('open');
             document.body.style.overflow = 'hidden';
-            // Get or create invitation code from session
+
+            // Show cached code immediately while API loads
             const session = getSession();
-            let code = session?.invitationCode;
-            
-            if (!code) {
-                // Generate new 6 digit code if doesn't exist
-                code = Math.floor(100000 + Math.random() * 900000).toString();
-                updateSessionField('invitationCode', code);
-            }
-            
-            invitationCodeDisplay.textContent = code;
-            // Also update dropdown display
-            document.getElementById('pdd-invite-code').textContent = code;
-            
+            const cached = session?.referral_code || session?.invitationCode || '…';
+            invitationCodeDisplay.textContent = cached;
+            document.getElementById('pdd-invite-code').textContent = cached;
+
+            // Always fetch fresh code from server
+            fetch('apis/users/referral.php')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok && data.referral_code) {
+                        const code = data.referral_code;
+                        invitationCodeDisplay.textContent = code;
+                        document.getElementById('pdd-invite-code').textContent = code;
+                        // Cache in session
+                        updateSessionField('referral_code', code);
+                        updateSessionField('invitationCode', code);
+                    }
+                })
+                .catch(() => {});
+
             // Load referral users
             loadReferralUsers();
         }
 
         function loadReferralUsers() {
-            const session = getSession();
-            const referralCode = session?.invitationCode;
-            
-            if (!referralCode) return;
-            
             // Fetch users who used this referral code
             fetch('apis/users/referral.php')
                 .then(res => res.json())
@@ -4161,10 +4164,12 @@
 
                 clearInterval(otpInterval);
                 setSession({
-                    customer_id: rData.customer_id,
-                    name:        rData.name || name || null,
-                    phone:       phone,
-                    loggedAt:    new Date().toISOString(),
+                    customer_id:   rData.customer_id,
+                    name:          rData.name || name || null,
+                    phone:         phone,
+                    referral_code: rData.referral_code || null,
+                    invitationCode: rData.referral_code || null,
+                    loggedAt:      new Date().toISOString(),
                 });
                 updateAccountIcon();
                 window.location.href = 'onboarding.html';
