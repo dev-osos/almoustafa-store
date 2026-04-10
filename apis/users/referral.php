@@ -17,67 +17,68 @@ if ($customerId === 0) {
 try {
     $pdo = api_pdo();
 
-    // Ensure columns exist (safe to run multiple times)
-    $pdo->exec("
-        ALTER TABLE customers
-            ADD COLUMN IF NOT EXISTS referral_code CHAR(6)  DEFAULT NULL,
-            ADD COLUMN IF NOT EXISTS referred_by   CHAR(6)  DEFAULT NULL
-    ");
-    $pdo->exec("
-        CREATE UNIQUE INDEX IF NOT EXISTS uk_customers_referral_code
-        ON customers (referral_code)
-    ");
+    // ── Add columns if missing (MySQL 5.7+ compatible) ────────────────────────
+    $cols = $pdo->query("SHOW COLUMNS FROM customers LIKE 'referral_code'")->fetchAll();
+    if (empty($cols)) {
+        $pdo->exec("ALTER TABLE customers ADD COLUMN referral_code CHAR(6) DEFAULT NULL");
+        $pdo->exec("ALTER TABLE customers ADD UNIQUE INDEX uk_customers_referral_code (referral_code)");
+    }
 
-    // Fetch current user's referral code
+    $cols2 = $pdo->query("SHOW COLUMNS FROM customers LIKE 'referred_by'")->fetchAll();
+    if (empty($cols2)) {
+        $pdo->exec("ALTER TABLE customers ADD COLUMN referred_by CHAR(6) DEFAULT NULL");
+    }
+
+    // ── Fetch or generate referral code for this customer ─────────────────────
     $stmt = $pdo->prepare("SELECT referral_code FROM customers WHERE id = :id LIMIT 1");
     $stmt->execute([':id' => $customerId]);
     $code = $stmt->fetchColumn();
 
-    // Generate if not set
     if (!$code) {
         $attempts = 0;
         do {
-            $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            $upd  = $pdo->prepare("UPDATE customers SET referral_code = :code WHERE id = :id AND referral_code IS NULL");
-            $upd->execute([':code' => $code, ':id' => $customerId]);
+            $candidate = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            try {
+                $upd = $pdo->prepare("UPDATE customers SET referral_code = :code WHERE id = :id AND referral_code IS NULL");
+                $upd->execute([':code' => $candidate, ':id' => $customerId]);
+                if ($upd->rowCount() > 0) { $code = $candidate; break; }
+            } catch (Throwable) { /* unique collision — retry */ }
             $attempts++;
-        } while ($upd->rowCount() === 0 && $attempts < 10);
-
-        // Verify it was saved (handles unique collision)
-        $stmt = $pdo->prepare("SELECT referral_code FROM customers WHERE id = :id LIMIT 1");
-        $stmt->execute([':id' => $customerId]);
-        $code = $stmt->fetchColumn();
+        } while ($attempts < 20);
     }
 
-    // Fetch users who used this referral code
-    $refStmt = $pdo->prepare("
-        SELECT name, phone, created_at
-        FROM customers
-        WHERE referred_by = :code
-        ORDER BY created_at DESC
-    ");
-    $refStmt->execute([':code' => $code]);
-    $referred = $refStmt->fetchAll(PDO::FETCH_ASSOC);
+    // ── Fetch users who used this code ────────────────────────────────────────
+    $referred = [];
+    if ($code) {
+        $refStmt = $pdo->prepare("
+            SELECT name, phone, created_at
+            FROM customers
+            WHERE referred_by = :code
+            ORDER BY created_at DESC
+        ");
+        $refStmt->execute([':code' => $code]);
+        $referred = $refStmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
-    // Mask phone numbers for privacy
+    // Mask phone numbers
     $referredList = array_map(function ($row) {
-        $phone = (string) $row['phone'];
+        $phone  = (string) $row['phone'];
         $masked = strlen($phone) > 6
             ? substr($phone, 0, 4) . str_repeat('*', strlen($phone) - 6) . substr($phone, -2)
             : $phone;
         return [
-            'name'       => $row['name'] ?: 'مستخدم',
-            'phone'      => $masked,
-            'joined_at'  => $row['created_at'],
+            'name'      => $row['name'] ?: 'مستخدم',
+            'phone'     => $masked,
+            'joined_at' => $row['created_at'],
         ];
     }, $referred);
 
 } catch (Throwable $e) {
-    api_error('خطأ في قاعدة البيانات', 500);
+    api_error('خطأ في قاعدة البيانات: ' . $e->getMessage(), 500);
 }
 
 api_ok([
-    'referral_code' => $code,
+    'referral_code' => $code ?: null,
     'referred'      => $referredList,
     'count'         => count($referredList),
 ]);

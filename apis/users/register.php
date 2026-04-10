@@ -63,6 +63,16 @@ try {
             KEY idx_customers_v_id (v_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
+    // ── Add referral columns to existing tables (MySQL 5.7+ compatible) ─────────
+    $hasRefCode = $pdo->query("SHOW COLUMNS FROM customers LIKE 'referral_code'")->fetch();
+    if (!$hasRefCode) {
+        $pdo->exec("ALTER TABLE customers ADD COLUMN referral_code CHAR(6) DEFAULT NULL");
+        try { $pdo->exec("ALTER TABLE customers ADD UNIQUE INDEX uk_customers_referral (referral_code)"); } catch (Throwable) {}
+    }
+    $hasRefBy = $pdo->query("SHOW COLUMNS FROM customers LIKE 'referred_by'")->fetch();
+    if (!$hasRefBy) {
+        $pdo->exec("ALTER TABLE customers ADD COLUMN referred_by CHAR(6) DEFAULT NULL");
+    }
 } catch (Throwable $e) {
     api_error('خطأ في قاعدة البيانات', 500);
 }
