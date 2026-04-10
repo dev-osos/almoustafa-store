@@ -3170,6 +3170,11 @@
             const segmentLabels = { 'مستهلك': 'مستهلك', 'جملة': 'جملة', 'corporate': 'جملة الجملة', 'consumer': 'مستهلك', 'wholesale': 'جملة' };
             const currentSegment = segmentLabels[session?.segment] || session?.segment || 'لم يتم تحديد الشريحة بعد';
             document.getElementById('pdd-segment').textContent = currentSegment;
+            
+            // Show invitation code if exists, otherwise show default
+            const inviteCode = session?.invitationCode || '123456';
+            document.getElementById('pdd-invite-code').textContent = inviteCode;
+            
             const balance = session?.wallet ?? 0;
             document.getElementById('pdd-wallet').textContent = Number(balance).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م';
             profileDropdown.classList.add('open');
@@ -3573,11 +3578,18 @@
             closeProfileDropdown();
             invitationBackdrop.classList.add('open');
             document.body.style.overflow = 'hidden';
-            // Generate 6 random digits for invitation code
-            const randomDigits = Math.floor(100000 + Math.random() * 900000).toString();
-            const code = randomDigits;
+            // Get or create invitation code from session
+            const session = getSession();
+            let code = session?.invitationCode;
+            
+            if (!code) {
+                // Generate new 6 digit code if doesn't exist
+                code = Math.floor(100000 + Math.random() * 900000).toString();
+                updateSessionField('invitationCode', code);
+            }
+            
             invitationCodeDisplay.textContent = code;
-            // Also update the dropdown display
+            // Also update dropdown display
             document.getElementById('pdd-invite-code').textContent = code;
         }
 
