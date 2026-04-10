@@ -7,12 +7,7 @@ require_once __DIR__ . '/../db.php';
 api_response_init();
 api_require_method(['POST']);
 
-if (session_status() === PHP_SESSION_NONE) session_start();
-
-$customerId = (int) ($_SESSION['customer_id'] ?? 0);
-if ($customerId === 0) {
-    api_error('غير مصادق. يرجى تسجيل الدخول أولاً.', 401);
-}
+require_once __DIR__ . '/../customer_auth.php';
 
 $body    = json_decode(file_get_contents('php://input'), true) ?? [];
 $name    = trim((string) ($body['name']           ?? ''));

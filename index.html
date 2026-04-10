@@ -3054,6 +3054,26 @@
         function setSession(data) {
             localStorage.setItem('alm_session', JSON.stringify(data));
         }
+
+        // ── Global 401 interceptor — auto-logout if account deleted ───────────
+        const _nativeFetch = window.fetch.bind(window);
+        window.fetch = async function(input, init) {
+            const res = await _nativeFetch(input, init);
+            if (res.status === 401 && getSession()) {
+                // Clone before consuming — caller may still read body
+                const clone = res.clone();
+                clone.json().then(d => {
+                    if (d?.error && d.error.includes('حذف')) {
+                        localStorage.removeItem('alm_session');
+                        updateAccountIcon();
+                        // Show a brief notice then reload
+                        alert('تم حذف حسابك. سيتم تسجيل خروجك الآن.');
+                        window.location.reload();
+                    }
+                }).catch(() => {});
+            }
+            return res;
+        };
         function updateAccountIcon() {
             const btn = document.getElementById('btn-account');
             if (!btn) return;
