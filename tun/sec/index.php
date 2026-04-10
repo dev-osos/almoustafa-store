@@ -472,7 +472,6 @@ const ADMIN = {
             ['icon'=>'date_range',   'label'=>'هذا الأسبوع',          'id'=>'csWeek',     'cls'=>'gold', 'g'=>'cgWeek'],
             ['icon'=>'task_alt',     'label'=>'ملفات مكتملة',          'id'=>'csComplete', 'cls'=>'green'],
             ['icon'=>'person_off',   'label'=>'ملفات غير مكتملة',      'id'=>'csInc',      'cls'=>''],
-            ['icon'=>'storefront',   'label'=>'جملة / جملة الجملة',    'id'=>'csWholesale','cls'=>'gold'],
           ];
           foreach ($custCards as $c): ?>
           <div class="stat-card <?= $c['cls'] ?>">

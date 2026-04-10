@@ -2423,14 +2423,6 @@
     </div>
   </div>
   <div class="pdd-edit-list">
-    <button class="pdd-edit-item" id="btn-edit-segment" type="button">
-      <div class="pdd-edit-item-main">
-        <span class="material-symbols-outlined">sell</span>
-        <div class="pdd-edit-copy">
-          <div class="pdd-edit-label">الشريحة</div>
-          <div class="pdd-edit-value" id="pdd-segment">لم يتم تحديد الشريحة بعد</div>
-        </div>
-      </div>
     <button class="pdd-edit-item" id="btn-edit-address" type="button">
       <div class="pdd-edit-item-main">
         <span class="material-symbols-outlined">edit_location_alt</span>
@@ -3015,7 +3007,6 @@
         const profileEditBackdrop = document.getElementById('profile-edit-backdrop');
         const profileEditForm = document.getElementById('profile-edit-form');
         const profileEditInput = document.getElementById('profile-edit-input');
-        const profileEditSegmentOptions = document.getElementById('profile-edit-segment-options');
         const profileEditAddressFields = document.getElementById('profile-edit-address-fields');
         const profileGovernorateInput = document.getElementById('profile-governorate-input');
         const profileGovernorateSuggestions = document.getElementById('profile-governorate-suggestions');
@@ -3143,12 +3134,6 @@
             return [governorate, city, details].filter(Boolean).join('، ');
         }
 
-        function setActiveSegmentOption(value) {
-            document.querySelectorAll('[data-segment-value]').forEach((option) => {
-                option.classList.toggle('active', option.dataset.segmentValue === value);
-            });
-        }
-
         function openProfileDropdown() {
             const session = getSession();
             document.getElementById('pdd-name').textContent = session?.name || 'مستخدم';
@@ -3158,11 +3143,8 @@
                 session?.city        || '',
                 session?.addressDetails || session?.address || ''
             ) || 'لم يتم تحديد العنوان بعد';
-            const segmentLabels = { 'مستهلك': 'مستهلك', 'جملة': 'جملة', 'corporate': 'جملة الجملة', 'consumer': 'مستهلك', 'wholesale': 'جملة' };
-            const currentSegment = segmentLabels[session?.segment] || session?.segment || 'لم يتم تحديد الشريحة بعد';
             const addrEl = document.getElementById('pdd-address-short') || document.getElementById('pdd-address');
             if (addrEl) addrEl.textContent = currentAddress;
-            document.getElementById('pdd-segment').textContent = currentSegment;
             const balance = session?.wallet ?? 0;
             document.getElementById('pdd-wallet').textContent = Number(balance).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م';
             profileDropdown.classList.add('open');
@@ -3175,7 +3157,7 @@
             return updateSessionData({ [field]: value });
         }
 
-        function openProfileEditModal(field) {
+        function openProfileEditModal() {
             const session = getSession();
             if (!session) {
                 showPanel('login');
@@ -3183,37 +3165,24 @@
                 return;
             }
 
-            const isAddress = field === 'address';
-            activeProfileEditField = field;
-            document.getElementById('profile-edit-title').textContent = isAddress ? 'تعديل العنوان' : 'تعديل الشريحة';
-            document.getElementById('profile-edit-sub').textContent = isAddress
-                ? 'أدخل عنوانك بالتفصيل ليصل الطلب إليك بسهولة ودقة أكبر.'
-                : 'حدّد الشريحة المناسبة لك لنمنحك تجربة شراء وعروضًا أدق.';
-            document.getElementById('profile-edit-label').textContent = isAddress ? 'العنوان الجديد' : 'الشريحة الجديدة';
-            document.getElementById('profile-edit-hint').textContent = isAddress
-                ? 'اختر المحافظة والمدينة ثم اكتب الشارع والعمارة ورقم الشقة أو الدور السكني.'
-                : 'اختر الشريحة المناسبة لك من الخيارات المتاحة.';
-            document.getElementById('profile-edit-icon').textContent = isAddress ? 'edit_location_alt' : 'sell';
-            document.getElementById('profile-edit-input-icon').textContent = isAddress ? 'location_on' : 'local_offer';
+            activeProfileEditField = 'address';
+            document.getElementById('profile-edit-title').textContent = 'تعديل العنوان';
+            document.getElementById('profile-edit-sub').textContent = 'أدخل عنوانك بالتفصيل ليصل الطلب إليك بسهولة ودقة أكبر.';
+            document.getElementById('profile-edit-label').textContent = 'العنوان الجديد';
+            document.getElementById('profile-edit-hint').textContent = 'اختر المحافظة والمدينة ثم اكتب الشارع والعمارة ورقم الشقة أو الدور السكني.';
+            document.getElementById('profile-edit-icon').textContent = 'edit_location_alt';
+            document.getElementById('profile-edit-input-icon').textContent = 'location_on';
             profileEditInput.placeholder = 'اكتب عنوانك بالتفصيل';
-            profileEditInput.value = isAddress ? (session?.[field] || '') : '';
+            profileEditInput.value = session?.address || '';
             profileEditInput.rows = 4;
             profileEditInput.closest('.profile-edit-field').style.display = 'none';
-            profileEditAddressFields.classList.toggle('open', isAddress);
-            profileEditSegmentOptions.classList.toggle('open', !isAddress);
-            if (!isAddress) {
-                const segMap = { 'consumer': 'مستهلك', 'wholesale': 'جملة', 'corporate': 'corporate' };
-                setActiveSegmentOption(segMap[session?.[field]] || session?.[field] || 'مستهلك');
-            } else {
-                populateAddressFields(session);
-            }
+            profileEditAddressFields.classList.add('open');
+            populateAddressFields(session);
 
             closeProfileDropdown();
             profileEditBackdrop.classList.add('open');
             document.body.style.overflow = 'hidden';
-            if (isAddress) {
-                setTimeout(() => profileGovernorateInput.focus(), 60);
-            }
+            setTimeout(() => profileGovernorateInput.focus(), 60);
         }
 
         function closeProfileEditModal() {
@@ -3224,44 +3193,34 @@
 
         function saveProfileEdit() {
             if (!activeProfileEditField) return;
-            const isAddress = activeProfileEditField === 'address';
-            if (isAddress) {
-                const governorate = profileGovernorateInput.value.trim();
-                const city = profileCityInput.value.trim();
-                const details = profileAddressDetails.value.trim();
+            const governorate = profileGovernorateInput.value.trim();
+            const city = profileCityInput.value.trim();
+            const details = profileAddressDetails.value.trim();
 
-                if (!governorate || !selectedGovernorateId) {
-                    alert('يرجى اختيار المحافظة من القائمة.');
-                    profileGovernorateInput.focus();
-                    return;
-                }
-                if (!city || !selectedCityId) {
-                    alert('يرجى اختيار المدينة من القائمة.');
-                    profileCityInput.focus();
-                    return;
-                }
-                if (!details) {
-                    alert('يرجى كتابة العنوان التفصيلي.');
-                    profileAddressDetails.focus();
-                    return;
-                }
-
-                updateSessionData({
-                    governorate,
-                    governorateId: selectedGovernorateId,
-                    city,
-                    cityId: selectedCityId,
-                    addressDetails: details,
-                    address: buildAddressLabel(governorate, city, details)
-                });
-            } else {
-                const normalizedValue = (document.querySelector('[data-segment-value].active')?.dataset.segmentValue || '').trim();
-                if (!normalizedValue) {
-                    alert('يرجى اختيار شريحة صالحة.');
-                    return;
-                }
-                updateSessionField(activeProfileEditField, normalizedValue);
+            if (!governorate || !selectedGovernorateId) {
+                alert('يرجى اختيار المحافظة من القائمة.');
+                profileGovernorateInput.focus();
+                return;
             }
+            if (!city || !selectedCityId) {
+                alert('يرجى اختيار المدينة من القائمة.');
+                profileCityInput.focus();
+                return;
+            }
+            if (!details) {
+                alert('يرجى كتابة العنوان التفصيلي.');
+                profileAddressDetails.focus();
+                return;
+            }
+
+            updateSessionData({
+                governorate,
+                governorateId: selectedGovernorateId,
+                city,
+                cityId: selectedCityId,
+                addressDetails: details,
+                address: buildAddressLabel(governorate, city, details)
+            });
             closeProfileEditModal();
         }
 
@@ -3578,12 +3537,7 @@
         
         document.getElementById('btn-edit-address').addEventListener('click', (e) => {
             e.stopPropagation();
-            openProfileEditModal('address');
-        });
-        
-        document.getElementById('btn-edit-segment').addEventListener('click', (e) => {
-            e.stopPropagation();
-            openProfileEditModal('segment');
+            openProfileEditModal();
         });
 
         document.getElementById('btn-profile-edit-close').addEventListener('click', closeProfileEditModal);
@@ -3594,11 +3548,6 @@
         });
         profileEditBackdrop.addEventListener('click', (e) => {
             if (e.target === profileEditBackdrop) closeProfileEditModal();
-        });
-        document.querySelectorAll('[data-segment-value]').forEach((option) => {
-            option.addEventListener('click', () => {
-                setActiveSegmentOption(option.dataset.segmentValue);
-            });
         });
         profileGovernorateInput.addEventListener('focus', () => {
             showGovernorateSuggestions(profileGovernorateInput.value);
@@ -5000,20 +4949,6 @@
             <textarea class="profile-edit-input" id="profile-address-details" rows="1" placeholder="اكتب الشارع واسم العمارة ورقم العقار أو الشقة أو الدور السكني"></textarea>
           </div>
         </div>
-      </div>
-      <div class="profile-edit-segment-options" id="profile-edit-segment-options">
-        <button class="profile-edit-option" type="button" data-segment-value="مستهلك">
-          <div class="profile-edit-option-title">مستهلك</div>
-          <div class="profile-edit-option-sub">للشراء الشخصي والطلبات العادية</div>
-        </button>
-        <button class="profile-edit-option" type="button" data-segment-value="جملة">
-          <div class="profile-edit-option-title">جملة</div>
-          <div class="profile-edit-option-sub">للكميات الكبيرة والأسعار الخاصة</div>
-        </button>
-        <button class="profile-edit-option" type="button" data-segment-value="corporate">
-          <div class="profile-edit-option-title">جملة الجملة</div>
-          <div class="profile-edit-option-sub">للموزعين والتجار بكميات ضخمة</div>
-        </button>
       </div>
       <div class="profile-edit-hint" id="profile-edit-hint">سيتم حفظ التعديل مباشرة على حسابك الحالي داخل الجلسة.</div>
       <div class="profile-edit-actions">
