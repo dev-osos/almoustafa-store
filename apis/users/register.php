@@ -135,9 +135,65 @@ try {
             UNIQUE KEY uk_wallets_customer (customer_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
-    $pdo->prepare("INSERT IGNORE INTO wallets (customer_id) VALUES (:cid)")
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS wallet_transactions (
+            id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            customer_id BIGINT UNSIGNED NOT NULL,
+            amount      DECIMAL(12,2)   NOT NULL,
+            type        ENUM('credit','debit') NOT NULL,
+            reason      VARCHAR(100)    NOT NULL,
+            ref_id      BIGINT UNSIGNED DEFAULT NULL,
+            created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            KEY idx_wt_customer (customer_id),
+            KEY idx_wt_created (created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+    // Create wallet and add 50 EGP welcome gift
+    $pdo->prepare("INSERT IGNORE INTO wallets (customer_id, balance) VALUES (:cid, 50.00)")
         ->execute([':cid' => $customerId]);
+    $pdo->prepare("
+        INSERT INTO wallet_transactions (customer_id, amount, type, reason)
+        VALUES (:cid, 50.00, 'credit', 'welcome_bonus')
+    ")->execute([':cid' => $customerId]);
 } catch (Throwable) { /* non-fatal */ }
+
+// ── Reward referrer: +20 EGP if a valid referral code was used ───────────────
+if ($referredBy !== '') {
+    try {
+        // Find referrer's customer_id
+        $refOwner = $pdo->prepare("SELECT id FROM customers WHERE referral_code = :c LIMIT 1");
+        $refOwner->execute([':c' => $referredBy]);
+        $referrerId = $refOwner->fetchColumn();
+
+        if ($referrerId) {
+            // Ensure referrer has a wallet row, then add 20 EGP
+            $pdo->prepare("INSERT IGNORE INTO wallets (customer_id) VALUES (:cid)")
+                ->execute([':cid' => $referrerId]);
+
+            $pdo->prepare("UPDATE wallets SET balance = balance + 20.00 WHERE customer_id = :cid")
+                ->execute([':cid' => $referrerId]);
+
+            // Log the transaction
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS wallet_transactions (
+                    id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                    customer_id BIGINT UNSIGNED NOT NULL,
+                    amount      DECIMAL(12,2)   NOT NULL,
+                    type        ENUM('credit','debit') NOT NULL,
+                    reason      VARCHAR(100)    NOT NULL,
+                    ref_id      BIGINT UNSIGNED DEFAULT NULL,
+                    created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    KEY idx_wt_customer (customer_id),
+                    KEY idx_wt_created (created_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ");
+            $pdo->prepare("
+                INSERT INTO wallet_transactions (customer_id, amount, type, reason, ref_id)
+                VALUES (:cid, 20.00, 'credit', 'referral_bonus', :ref_id)
+            ")->execute([':cid' => $referrerId, ':ref_id' => $customerId]);
+        }
+    } catch (Throwable) { /* non-fatal — registration still succeeds */ }
+}
 
 // ── Regenerate session to prevent session fixation ───────────────────────────
 session_regenerate_id(true);
@@ -155,4 +211,5 @@ api_ok([
     'phone'         => $phone,
     'name'          => $name ?: null,
     'referral_code' => $referralCode,
+    'welcome_gift'  => true,
 ]);

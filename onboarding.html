@@ -1401,5 +1401,179 @@ body {
 <script src="js/v_id_bootstrap.js"></script>
 <script src="js/cookie-consent.js"></script>
 <script>if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); }); }</script>
+
+<!-- ── Welcome Gift Modal ── -->
+<style>
+#welcome-gift-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.55);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+#welcome-gift-overlay.visible {
+  opacity: 1; pointer-events: all;
+}
+#welcome-gift-card {
+  background: var(--surface);
+  border-radius: 24px;
+  max-width: 380px; width: 100%;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(60,0,4,0.22);
+  transform: translateY(32px) scale(0.96);
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+#welcome-gift-overlay.visible #welcome-gift-card {
+  transform: translateY(0) scale(1);
+}
+.wg-header {
+  background: var(--primary);
+  padding: 32px 28px 24px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.wg-header::before {
+  content: '';
+  position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(254,214,91,0.2) 0%, transparent 65%);
+  border-radius: 50%; pointer-events: none;
+}
+.wg-icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(254,214,91,0.18);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+  border: 2px solid rgba(254,214,91,0.35);
+  position: relative; z-index: 1;
+}
+.wg-icon .material-symbols-outlined {
+  font-size: 36px; color: var(--gold);
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 40;
+}
+.wg-title {
+  font-family: 'Amiri', serif; font-size: 1.5rem; font-weight: 700;
+  color: #fff; margin-bottom: 6px; position: relative; z-index: 1;
+}
+.wg-subtitle {
+  font-size: 0.82rem; color: rgba(255,255,255,0.7);
+  letter-spacing: 0.08em; position: relative; z-index: 1;
+}
+.wg-body {
+  padding: 24px 28px 28px;
+  text-align: center;
+}
+.wg-amount-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+  border: 1.5px solid var(--gold-dim);
+  border-radius: 50px;
+  padding: 10px 22px;
+  margin-bottom: 18px;
+}
+.wg-amount-num {
+  font-family: 'Amiri', serif; font-size: 2rem; font-weight: 700;
+  color: var(--secondary); line-height: 1;
+}
+.wg-amount-label {
+  font-size: 0.85rem; color: var(--secondary); font-weight: 600;
+}
+.wg-desc {
+  font-size: 0.9rem; color: var(--outline); line-height: 1.7;
+  margin-bottom: 22px;
+}
+.wg-desc strong { color: var(--on-surface); }
+.wg-btn {
+  width: 100%; padding: 13px;
+  background: var(--primary); color: #fff;
+  border: none; border-radius: 12px;
+  font-family: 'Manrope', sans-serif; font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; transition: background 0.2s, transform 0.15s;
+}
+.wg-btn:hover { background: var(--primary-c); }
+.wg-btn:active { transform: scale(0.98); }
+
+@keyframes confettiFall {
+  0%   { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(60px) rotate(360deg); opacity: 0; }
+}
+.wg-confetti {
+  position: absolute; top: 8px; font-size: 18px;
+  animation: confettiFall 1.6s ease-in forwards;
+  pointer-events: none; z-index: 2;
+}
+</style>
+
+<div id="welcome-gift-overlay" role="dialog" aria-modal="true" aria-labelledby="wg-title-el">
+  <div id="welcome-gift-card">
+    <div class="wg-header" id="wg-header-el">
+      <div class="wg-icon">
+        <span class="material-symbols-outlined">card_giftcard</span>
+      </div>
+      <div class="wg-title" id="wg-title-el">مرحباً بك في متجر المصطفى!</div>
+      <div class="wg-subtitle">هدية ترحيبية خاصة لك</div>
+    </div>
+    <div class="wg-body">
+      <div class="wg-amount-badge">
+        <span class="wg-amount-num">50</span>
+        <span class="wg-amount-label">ج.م<br>رصيد مجاني</span>
+      </div>
+      <p class="wg-desc">
+        أضفنا <strong>50 جنيهًا</strong> إلى محفظتك تلقائيًا كهدية ترحيبية،
+        يمكنك استخدامها في أي طلب قادم.
+      </p>
+      <button class="wg-btn" id="wg-close-btn">رائع، شكراً!</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  if (sessionStorage.getItem('show_welcome_gift') !== '1') return;
+  sessionStorage.removeItem('show_welcome_gift');
+
+  var overlay = document.getElementById('welcome-gift-overlay');
+  var closeBtn = document.getElementById('wg-close-btn');
+  var header  = document.getElementById('wg-header-el');
+
+  // Confetti emojis
+  var confettiList = ['🎉','✨','🍯','💛','🎊','⭐'];
+  function spawnConfetti() {
+    for (var i = 0; i < 10; i++) {
+      (function(idx) {
+        setTimeout(function () {
+          var el = document.createElement('span');
+          el.className = 'wg-confetti';
+          el.textContent = confettiList[idx % confettiList.length];
+          el.style.right = (10 + Math.random() * 80) + '%';
+          el.style.animationDuration = (1.2 + Math.random() * 0.8) + 's';
+          header.appendChild(el);
+          setTimeout(function () { el.remove(); }, 2500);
+        }, idx * 120);
+      })(i);
+    }
+  }
+
+  function openModal() {
+    overlay.classList.add('visible');
+    spawnConfetti();
+    setTimeout(spawnConfetti, 1800);
+  }
+
+  function closeModal() {
+    overlay.classList.remove('visible');
+  }
+
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeModal();
+  });
+
+  // Show after slight delay so page renders first
+  setTimeout(openModal, 600);
+})();
+</script>
 </body>
 </html>

@@ -2431,12 +2431,12 @@
 <!-- Main Content (initially hidden) -->
 <div class="content-hidden" id="main-content">
 <!-- Top Navigation -->
-<nav class="fixed top-0 w-full z-50 bg-[#fdf9f0]/95 dark:bg-[#1c1c17]/95 backdrop-blur-md shadow-lg border-b border-primary/5 flex justify-between items-center px-12 py-8 max-w-full">
-<div class="flex items-center gap-4">
-<img alt="Al Moustafa Logo" class="h-14 w-auto drop-shadow-md" src="logo.png"/>
+<nav class="fixed top-0 w-full z-50 bg-[#fdf9f0]/95 dark:bg-[#1c1c17]/95 backdrop-blur-md shadow-lg border-b border-primary/5 flex justify-between items-center px-6 md:px-12 py-4 md:py-8 max-w-full">
+<div class="flex items-center gap-3 md:gap-4">
+<img alt="Al Moustafa Logo" class="h-10 md:h-14 w-auto drop-shadow-md" src="logo.png"/>
 <div class="flex flex-col">
-<span class="text-3xl font-bold font-headline text-[#3c0004] dark:text-[#fed65b] uppercase tracking-[0.2em] leading-none">متجر المصطفى</span>
-<span class="text-[15px] tracking-[0.3em] font-body text-secondary mt-1 uppercase"> إسم يعني الثقه</span>
+<span class="text-xl md:text-3xl font-bold font-headline text-[#3c0004] dark:text-[#fed65b] tracking-[0.05em] md:tracking-[0.2em] leading-none" style="-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;">متجر المصطفى</span>
+<span class="text-[12px] md:text-[15px] tracking-[0.15em] md:tracking-[0.3em] font-body text-secondary mt-1" style="-webkit-font-smoothing:antialiased;"> إسم يعني الثقه</span>
 </div>
 </div>
 <div class="hidden md:flex items-center gap-12">
@@ -4242,6 +4242,7 @@
                     loggedAt:      new Date().toISOString(),
                 });
                 updateAccountIcon();
+                if (rData.welcome_gift) sessionStorage.setItem('show_welcome_gift', '1');
                 window.location.href = 'onboarding.html';
             } catch {
                 alert('خطأ في الاتصال. يرجى المحاولة مجدداً.');
