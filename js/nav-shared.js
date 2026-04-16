@@ -51,13 +51,14 @@
     /* ── Mobile menu ── */
     '#nav-mm-bd{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:399;opacity:0;pointer-events:none;transition:opacity 0.3s;}',
     '#nav-mm-bd.open{opacity:1;pointer-events:auto;}',
-    '#nav-mm{position:fixed;top:0;left:0;width:280px;height:100vh;background:rgba(253,249,240,0.98);backdrop-filter:blur(20px);z-index:400;padding:72px 24px 32px;transform:translateX(-100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:10px 0 40px rgba(0,0,0,0.1);overflow-y:auto;}',
+    '#nav-mm{position:fixed;top:0;left:0;width:280px;height:100vh;background:rgba(253,249,240,0.98);backdrop-filter:blur(20px);z-index:400;padding:100px 24px 24px;transform:translateX(-100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:10px 0 40px rgba(0,0,0,0.1);overflow-y:auto;}',
     '#nav-mm.open{transform:translateX(0);}',
-    '#nav-mm-cls{position:absolute;top:16px;right:16px;width:38px;height:38px;border-radius:50%;border:1px solid rgba(60,0,4,0.2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#3c0004;}',
-    '.nav-mm-a{display:flex;align-items:center;gap:12px;color:rgba(60,0,4,0.65);font-family:"Manrope",sans-serif;font-weight:600;font-size:1rem;padding:13px 0;border-bottom:1px solid rgba(60,0,4,0.07);text-decoration:none;transition:color 0.2s;}',
-    '.nav-mm-a:hover,.nav-mm-a.cur{color:#3c0004;}',
-    '.nav-mm-a.cur{font-weight:700;}',
-    '.nav-mm-a i{font-size:1rem;width:20px;text-align:center;}'
+    '#nav-mm-cls{position:absolute;top:32px;right:24px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(60,0,4,0.2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#3c0004;}',
+    '.nav-mm-links{display:flex;flex-direction:column;gap:24px;}',
+    '.nav-mm-a{display:flex;align-items:center;gap:12px;color:rgba(60,0,4,0.7);font-family:"Amiri",serif;font-weight:600;font-size:1.125rem;padding:12px 0;border-bottom:1px solid rgba(60,0,4,0.1);text-decoration:none;transition:color 0.2s;}',
+    '.nav-mm-a:hover{color:#3c0004;}',
+    '.nav-mm-a.cur{color:#3c0004;font-weight:700;}',
+    '.nav-mm-a .material-symbols-outlined{font-size:22px;}'
   ].join('');
   document.head.appendChild(style);
 
@@ -91,11 +92,11 @@
   mmEl.id = 'nav-mm';
   mmEl.innerHTML =
     '<button id="nav-mm-cls"><span class="material-symbols-outlined" style="font-size:18px">close</span></button>' +
-    '<div>' +
-      '<a href="index.html" class="nav-mm-a' + ac('index.html') + '"><i class="bi bi-house-door"></i>تراثنا</a>' +
-      '<a href="collections.html" class="nav-mm-a' + ac('collections.html') + '"><i class="bi bi-shop"></i>منتجاتنا</a>' +
-      '<a href="reviews.html" class="nav-mm-a' + ac('reviews.html') + '"><i class="bi bi-star"></i>آراء العملاء</a>' +
-      '<a href="about.html" class="nav-mm-a' + ac('about.html') + '"><i class="bi bi-people"></i>من نحن</a>' +
+    '<div class="nav-mm-links">' +
+      '<a href="index.html" class="nav-mm-a' + ac('index.html') + '"><span class="material-symbols-outlined">home</span>تراثنا</a>' +
+      '<a href="collections.html" class="nav-mm-a' + ac('collections.html') + '"><span class="material-symbols-outlined">store</span>منتجاتنا</a>' +
+      '<a href="reviews.html" class="nav-mm-a' + ac('reviews.html') + '"><span class="material-symbols-outlined">star</span>آراء العملاء</a>' +
+      '<a href="about.html" class="nav-mm-a' + ac('about.html') + '"><span class="material-symbols-outlined">groups</span>من نحن</a>' +
     '</div>';
 
   document.body.appendChild(mmBd);
