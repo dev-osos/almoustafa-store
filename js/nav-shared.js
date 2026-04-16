@@ -55,10 +55,10 @@
     '#nav-mm.open{transform:translateX(0);}',
     '#nav-mm-cls{position:absolute;top:32px;right:24px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(60,0,4,0.2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#3c0004;}',
     '.nav-mm-links{display:flex;flex-direction:column;gap:24px;}',
-    '.nav-mm-a{display:flex;align-items:center;gap:12px;color:rgba(60,0,4,0.7);font-family:"Amiri",serif;font-weight:600;font-size:1.125rem;padding:12px 0;border-bottom:1px solid rgba(60,0,4,0.1);text-decoration:none;transition:color 0.2s;}',
+    '.nav-mm-a{display:flex;align-items:center;gap:14px;color:rgba(60,0,4,0.7);font-family:"Amiri",serif;font-weight:600;font-size:1.35rem;padding:16px 0;border-bottom:1px solid rgba(60,0,4,0.1);text-decoration:none;transition:color 0.2s;}',
     '.nav-mm-a:hover{color:#3c0004;}',
     '.nav-mm-a.cur{color:#3c0004;font-weight:700;}',
-    '.nav-mm-a .material-symbols-outlined{font-size:22px;}'
+    '.nav-mm-a .material-symbols-outlined{font-size:26px;}'
   ].join('');
   document.head.appendChild(style);
 
