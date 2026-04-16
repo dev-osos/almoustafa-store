@@ -148,7 +148,7 @@
       if (getSession()) {
         pdEl.classList.contains('open') ? closePd() : openPd();
       } else {
-        window.location.href = 'index.html';
+        window.location.href = 'index.html#login';
       }
     });
     document.addEventListener('click', function (e) {

@@ -2189,56 +2189,6 @@
         }
 
         /* Mobile Navigation Menu */
-        #mobile-menu {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 280px;
-            height: 100vh;
-            background: rgba(253,249,240,0.98);
-            backdrop-filter: blur(20px);
-            z-index: 400;
-            padding: 100px 24px 24px;
-            transform: translateX(-100%);
-            transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-            box-shadow: 10px 0 40px rgba(0,0,0,0.1);
-            overflow-y: auto;
-        }
-        #mobile-menu.open { transform: translateX(0); }
-        #mobile-menu-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 399;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-        #mobile-menu-backdrop.open { opacity: 1; pointer-events: auto; }
-        .mob-menu-link {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            color: rgba(60,0,4,0.7);
-            font-family: "Amiri", serif;
-            font-weight: 600;
-            font-size: 1.35rem;
-            padding: 20px 0;
-            border-bottom: 1px solid rgba(60,0,4,0.1);
-            text-decoration: none;
-            transition: color 0.2s;
-            min-height: 64px;
-            background: none;
-            border-top: none;
-            border-left: none;
-            border-right: none;
-            cursor: pointer;
-            width: 100%;
-            text-align: right;
-        }
-        .mob-menu-link:hover { color: #3c0004; }
-        .mob-menu-link.cur { color: #3c0004; font-weight: 700; }
-        .mob-menu-link .material-symbols-outlined { font-size: 26px; }
 
         /* Touch-friendly tap targets on mobile */
         @media (max-width: 768px) {
@@ -2560,35 +2510,6 @@
 </div>
 </nav>
 
-<!-- Mobile Menu -->
-<div id="mobile-menu-backdrop"></div>
-<div id="mobile-menu">
-  <button id="btn-mobile-menu-close" class="absolute top-8 right-6 w-10 h-10 rounded-full border border-primary/20 flex items-center justify-center text-primary">
-    <span class="material-symbols-outlined">close</span>
-  </button>
-  <div style="display:flex;flex-direction:column;gap:0;">
-    <a class="mob-menu-link cur" href="index.html">
-      <span class="material-symbols-outlined">home</span>
-      تراثنا
-    </a>
-    <a class="mob-menu-link" href="collections.html">
-      <span class="material-symbols-outlined">store</span>
-      منتجاتنا
-    </a>
-    <a class="mob-menu-link" href="reviews.html">
-      <span class="material-symbols-outlined">star</span>
-      آراء العملاء
-    </a>
-    <a class="mob-menu-link" href="about.html">
-      <span class="material-symbols-outlined">groups</span>
-      من نحن
-    </a>
-    <button onclick="document.getElementById('contact-backdrop').classList.add('open');document.body.style.overflow='hidden';document.getElementById('mobile-menu').classList.remove('open');document.getElementById('mobile-menu-backdrop').classList.remove('open');" class="mob-menu-link">
-      <span class="material-symbols-outlined">mail</span>
-      تواصل معنا
-    </button>
-  </div>
-</div>
 <!-- Hero Section -->
 <section class="relative min-h-screen flex items-center pt-24 overflow-hidden animate-fade-in">
 <div class="absolute inset-0 z-0">
@@ -3874,33 +3795,6 @@
             }
         });
 
-        // --- Mobile Menu ---
-        const mobileMenu = document.getElementById('mobile-menu');
-        const mobileMenuBackdrop = document.getElementById('mobile-menu-backdrop');
-        const btnMobileMenu = document.getElementById('btn-mobile-menu');
-        const btnMobileMenuClose = document.getElementById('btn-mobile-menu-close');
-
-        function openMobileMenu() {
-            mobileMenu.classList.add('open');
-            mobileMenuBackdrop.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeMobileMenu() {
-            mobileMenu.classList.remove('open');
-            mobileMenuBackdrop.classList.remove('open');
-            document.body.style.overflow = '';
-        }
-
-        btnMobileMenu.addEventListener('click', openMobileMenu);
-        btnMobileMenuClose.addEventListener('click', closeMobileMenu);
-        mobileMenuBackdrop.addEventListener('click', closeMobileMenu);
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && mobileMenu.classList.contains('open')) {
-                closeMobileMenu();
-            }
-        });
 
         document.getElementById('btn-open-logout').addEventListener('click', openLogoutModal);
         document.getElementById('btn-cancel-logout').addEventListener('click', closeLogoutModal);
@@ -3918,6 +3812,13 @@
             showPanel('register-1');
             openModal();
         });
+
+        // Auto-open login modal when redirected from another page
+        if (window.location.hash === '#login') {
+            showPanel('login');
+            openModal();
+            history.replaceState(null, '', window.location.pathname);
+        }
 
         document.getElementById('modal-close-btn').addEventListener('click', closeModal);
         document.getElementById('btn-success-close').addEventListener('click', closeModal);
@@ -5523,6 +5424,7 @@
     <span class="fab-text" id="fab-text">تواصل معنا</span>
 </div>
 
+<script src="js/nav-shared.js"></script>
 <script src="js/cookie-consent.js"></script>
 <script src="js/pwa-install.js"></script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
