@@ -72,6 +72,14 @@
   .info-row-icon { width: 36px; height: 36px; border-radius: 10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
   .info-row-label { font-size:0.7rem; color:rgba(60,0,4,0.4); font-weight:600; letter-spacing:0.04em; }
   .info-row-value { font-family:'Amiri',serif; font-size:0.95rem; font-weight:700; color:#3c0004; }
+  .info-row-input {
+    font-family:'Amiri',serif; font-size:0.95rem; font-weight:700; color:#3c0004;
+    background:transparent; border:none; outline:none; width:100%; padding:0;
+    border-bottom: 1.5px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .info-row-input:focus { border-bottom-color: rgba(60,0,4,0.3); }
+  .info-row-input::placeholder { color: rgba(60,0,4,0.3); font-weight:400; }
 
   /* Total rows */
   .total-row { display:flex; justify-content:space-between; padding: 10px 20px; }
@@ -230,9 +238,9 @@
           <div class="info-row-icon" style="background:rgba(60,0,4,0.06)">
             <span class="material-symbols-outlined text-primary" style="font-size:18px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">person</span>
           </div>
-          <div>
+          <div style="flex:1;min-width:0">
             <div class="info-row-label">الاسم</div>
-            <div class="info-row-value" id="user-name">—</div>
+            <input class="info-row-input" id="user-name" type="text" placeholder="أدخل اسمك الكامل" autocomplete="name"/>
           </div>
         </div>
 
@@ -240,9 +248,9 @@
           <div class="info-row-icon" style="background:rgba(60,0,4,0.06)">
             <span class="material-symbols-outlined text-primary" style="font-size:18px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">phone_iphone</span>
           </div>
-          <div>
+          <div style="flex:1;min-width:0">
             <div class="info-row-label">رقم الهاتف</div>
-            <div class="info-row-value" id="user-phone" style="direction:ltr;text-align:right">—</div>
+            <input class="info-row-input" id="user-phone" type="tel" placeholder="01XXXXXXXXX" style="direction:ltr;text-align:right" autocomplete="tel"/>
           </div>
         </div>
 
@@ -250,9 +258,9 @@
           <div class="info-row-icon" style="background:rgba(60,0,4,0.06)">
             <span class="material-symbols-outlined text-primary" style="font-size:18px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">location_on</span>
           </div>
-          <div>
+          <div style="flex:1;min-width:0">
             <div class="info-row-label">عنوان التوصيل</div>
-            <div class="info-row-value" id="user-address">—</div>
+            <input class="info-row-input" id="user-address" type="text" placeholder="المدينة، الحي، الشارع..." autocomplete="street-address"/>
           </div>
         </div>
 
@@ -324,9 +332,12 @@
   document.getElementById('delivery-range').textContent = 'خلال ' + toAr(deliveryDays) + ' أيام عمل من الآن';
 
   // --- Fill user info ---
-  document.getElementById('user-name').textContent    = session.name    || 'غير محدد';
-  document.getElementById('user-phone').textContent   = session.phone   || 'غير محدد';
-  document.getElementById('user-address').textContent = session.address || 'لم يتم تحديد العنوان';
+  const nameInput    = document.getElementById('user-name');
+  const phoneInput   = document.getElementById('user-phone');
+  const addressInput = document.getElementById('user-address');
+  if (session.name)    nameInput.value    = session.name;
+  if (session.phone)   phoneInput.value   = session.phone;
+  if (session.address) addressInput.value = session.address;
   const balance = session.wallet ?? 0;
   document.getElementById('user-wallet').textContent = Number(balance).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' ج.م';
 
@@ -366,6 +377,30 @@
 
   // --- Place order ---
   document.getElementById('btn-place-order').addEventListener('click', () => {
+    const name    = nameInput.value.trim();
+    const phone   = phoneInput.value.trim();
+    const address = addressInput.value.trim();
+
+    // Simple validation
+    const highlight = (el, bad) => {
+      el.style.borderBottomColor = bad ? '#c0392b' : 'transparent';
+    };
+    highlight(nameInput,    !name);
+    highlight(phoneInput,   !phone);
+    highlight(addressInput, !address);
+    if (!name || !phone || !address) {
+      // Scroll to first empty field
+      const firstEmpty = [nameInput, phoneInput, addressInput].find(i => !i.value.trim());
+      if (firstEmpty) firstEmpty.focus();
+      return;
+    }
+
+    // Persist back to session
+    session.name    = name;
+    session.phone   = phone;
+    session.address = address;
+    try { localStorage.setItem('alm_session', JSON.stringify(session)); } catch {}
+
     localStorage.removeItem('alm_cart');
     document.getElementById('success-overlay').classList.add('show');
   });
