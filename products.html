@@ -49,6 +49,39 @@
     border-bottom:1px solid rgba(60,0,4,0.08);
   }
   @media(min-width:768px){.filter-bar{top:96px;}}
+  /* Mobile collapse toggle */
+  #filter-toggle{
+    display:none;
+    width:100%;align-items:center;justify-content:space-between;
+    padding:10px 16px;background:none;border:none;cursor:pointer;
+    font-family:'Amiri',serif;font-size:0.9rem;font-weight:700;color:#3c0004;
+  }
+  #filter-toggle-label{display:flex;align-items:center;gap:8px;}
+  #filter-toggle-arrow{
+    font-size:18px;transition:transform 0.25s ease;
+    font-family:'Material Symbols Outlined';font-weight:normal;
+  }
+  #filter-toggle.open #filter-toggle-arrow{transform:rotate(180deg);}
+  #filter-collapsible{
+    overflow:hidden;
+    max-height:0;
+    transition:max-height 0.3s cubic-bezier(0.4,0,0.2,1), padding 0.3s ease;
+    padding:0 16px;
+  }
+  #filter-collapsible.open{
+    max-height:200px;
+    padding:8px 16px 12px;
+  }
+  @media(max-width:767px){
+    #filter-toggle{display:flex;}
+    .filter-bar > .container { display:block !important; padding:0 !important; }
+    #cat-tabs{ flex-wrap:wrap; }
+    .filter-search-wrap{ padding:0 16px 12px; border-top:1px solid rgba(60,0,4,0.06); }
+  }
+  @media(min-width:768px){
+    #filter-toggle{display:none !important;}
+    #filter-collapsible{max-height:none !important;padding:0 !important;overflow:visible !important;}
+  }
   .cat-tab{
     padding:6px 12px;border-radius:30px;
     font-family:'Amiri',serif;font-size:0.78rem;font-weight:700;
@@ -319,26 +352,38 @@
 <!-- Filter bar (sticky) -->
 <div class="filter-bar pt-[66px] md:pt-24">
   <div class="container mx-auto px-4 md:px-12 py-2 md:py-3 flex items-center justify-between gap-2 md:gap-4 flex-wrap">
-    <!-- Category tabs -->
-    <div class="flex items-center gap-2 flex-wrap" id="cat-tabs">
-      <button class="cat-tab active" data-cat="all"><i class="bi bi-grid-3x3-gap"></i>الكل</button>
-      <button class="cat-tab" data-cat="honey"><i class="bi bi-droplet-fill text-secondary"></i>العسل</button>
-      <button class="cat-tab" data-cat="derivatives"><i class="bi bi-jar text-secondary"></i>المشتقات</button>
-      <button class="cat-tab" data-cat="beauty"><i class="bi bi-stars text-secondary"></i>التجميل</button>
-      <button class="cat-tab" data-cat="dates"><i class="bi bi-circle-fill text-secondary" style="font-size:10px"></i>التمور</button>
-      <button class="cat-tab" data-cat="nuts"><i class="bi bi-triangle-fill text-secondary" style="font-size:10px"></i>المكسرات</button>
-      <button class="cat-tab offers-tab" data-cat="offers"><i class="bi bi-tag-fill"></i> العروض</button>
 
-      
+    <!-- Mobile toggle button -->
+    <button id="filter-toggle" aria-expanded="false" aria-controls="filter-collapsible">
+      <span id="filter-toggle-label">
+        <i class="bi bi-funnel-fill text-secondary text-sm"></i>
+        <span id="filter-toggle-text">الكل</span>
+      </span>
+      <span id="filter-toggle-arrow">expand_more</span>
+    </button>
+
+    <!-- Collapsible on mobile, always visible on desktop -->
+    <div id="filter-collapsible">
+      <div class="flex items-center gap-2 flex-wrap" id="cat-tabs">
+        <button class="cat-tab active" data-cat="all"><i class="bi bi-grid-3x3-gap"></i>الكل</button>
+        <button class="cat-tab" data-cat="honey"><i class="bi bi-droplet-fill text-secondary"></i>العسل</button>
+        <button class="cat-tab" data-cat="derivatives"><i class="bi bi-jar text-secondary"></i>المشتقات</button>
+        <button class="cat-tab" data-cat="beauty"><i class="bi bi-stars text-secondary"></i>التجميل</button>
+        <button class="cat-tab" data-cat="dates"><i class="bi bi-circle-fill text-secondary" style="font-size:10px"></i>التمور</button>
+        <button class="cat-tab" data-cat="nuts"><i class="bi bi-triangle-fill text-secondary" style="font-size:10px"></i>المكسرات</button>
+        <button class="cat-tab offers-tab" data-cat="offers"><i class="bi bi-tag-fill"></i> العروض</button>
+      </div>
     </div>
-    <!-- Search + count -->
-    <div class="flex items-center gap-4">
+
+    <!-- Search + count (always visible) -->
+    <div class="flex items-center gap-4 filter-search-wrap md:flex-row">
       <span id="results-count" class="text-on-surface-variant text-xs font-body"></span>
       <div class="relative">
         <i class="bi bi-search absolute right-3 top-1/2 -translate-y-1/2 text-primary/40 text-sm pointer-events-none"></i>
         <input id="search-input" type="text" placeholder="ابحث عن منتج..." class="search-input" style="padding-right:36px"/>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -861,12 +906,34 @@ document.addEventListener('DOMContentLoaded', () => {
     resultsCount.textContent = visible + ' منتج';
   }
 
+  // Mobile filter toggle
+  const filterToggle = document.getElementById('filter-toggle');
+  const filterCollapsible = document.getElementById('filter-collapsible');
+  const filterToggleText = document.getElementById('filter-toggle-text');
+
+  filterToggle.addEventListener('click', () => {
+    const isOpen = filterCollapsible.classList.contains('open');
+    filterCollapsible.classList.toggle('open', !isOpen);
+    filterToggle.classList.toggle('open', !isOpen);
+    filterToggle.setAttribute('aria-expanded', String(!isOpen));
+  });
+
+  function updateToggleLabel() {
+    const active = document.querySelector('.cat-tab.active');
+    if (active) filterToggleText.textContent = active.textContent.trim();
+  }
+
   // Category tabs
   document.getElementById('cat-tabs').addEventListener('click', e => {
     const tab = e.target.closest('.cat-tab');
     if (!tab) return;
     document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
+    updateToggleLabel();
+    // Close dropdown on mobile after selection
+    filterCollapsible.classList.remove('open');
+    filterToggle.classList.remove('open');
+    filterToggle.setAttribute('aria-expanded', 'false');
     applyFilters();
     // Scroll to section
     const cat = tab.dataset.cat;
@@ -889,6 +956,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tab) {
       document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
+      updateToggleLabel();
       applyFilters();
       setTimeout(() => {
         const sec = document.getElementById(hash);
