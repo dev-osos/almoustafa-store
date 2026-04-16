@@ -231,29 +231,6 @@
         </button>
     </div>
 </nav>
-
-<!-- Mobile Menu -->
-<div id="mobile-menu-backdrop"></div>
-<div id="mobile-menu">
-    <button id="btn-mobile-menu-close" class="absolute top-6 left-6 w-10 h-10 rounded-full border border-primary/20 flex items-center justify-center text-primary">
-        <span class="material-symbols-outlined">close</span>
-    </button>
-    <div class="flex flex-col gap-5 mt-4">
-        <a class="flex items-center gap-3 text-primary/70 font-headline font-semibold text-lg py-3 border-b border-primary/10" href="index.html">
-            <span class="material-symbols-outlined">home</span> تراثنا
-        </a>
-        <a class="flex items-center gap-3 text-primary/70 font-headline font-semibold text-lg py-3 border-b border-primary/10" href="collections.html">
-            <span class="material-symbols-outlined">store</span> منتجاتنا
-        </a>
-        <a class="flex items-center gap-3 text-primary/70 font-headline font-semibold text-lg py-3 border-b border-primary/10" href="reviews.html">
-            <span class="material-symbols-outlined">star</span> آراء العملاء
-        </a>
-        <a class="flex items-center gap-3 text-primary font-headline font-semibold text-lg py-3 border-b border-primary/10" href="about.html">
-            <span class="material-symbols-outlined">groups</span> من نحن
-        </a>
-    </div>
-</div>
-
 <!-- ========== HERO ========== -->
 <section class="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
     <div class="absolute inset-0 z-0">
@@ -786,17 +763,6 @@
 
 <!-- ========== SCRIPTS ========== -->
 <script>
-    // Mobile menu
-    const btnOpen = document.getElementById('btn-mobile-menu');
-    const btnClose = document.getElementById('btn-mobile-menu-close');
-    const menu = document.getElementById('mobile-menu');
-    const backdrop = document.getElementById('mobile-menu-backdrop');
-    function openMenu() { menu.classList.add('open'); backdrop.classList.add('open'); document.body.style.overflow = 'hidden'; }
-    function closeMenu() { menu.classList.remove('open'); backdrop.classList.remove('open'); document.body.style.overflow = ''; }
-    btnOpen?.addEventListener('click', openMenu);
-    btnClose?.addEventListener('click', closeMenu);
-    backdrop?.addEventListener('click', closeMenu);
-
     // Scroll reveal
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {

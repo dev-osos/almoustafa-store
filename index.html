@@ -2202,6 +2202,7 @@
             transform: translateX(-100%);
             transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
             box-shadow: 10px 0 40px rgba(0,0,0,0.1);
+            overflow-y: auto;
         }
         #mobile-menu.open { transform: translateX(0); }
         #mobile-menu-backdrop {
@@ -2214,6 +2215,30 @@
             transition: opacity 0.3s;
         }
         #mobile-menu-backdrop.open { opacity: 1; pointer-events: auto; }
+        .mob-menu-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: rgba(60,0,4,0.7);
+            font-family: "Amiri", serif;
+            font-weight: 600;
+            font-size: 1.35rem;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(60,0,4,0.1);
+            text-decoration: none;
+            transition: color 0.2s;
+            min-height: 64px;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            cursor: pointer;
+            width: 100%;
+            text-align: right;
+        }
+        .mob-menu-link:hover { color: #3c0004; }
+        .mob-menu-link.cur { color: #3c0004; font-weight: 700; }
+        .mob-menu-link .material-symbols-outlined { font-size: 26px; }
 
         /* Touch-friendly tap targets on mobile */
         @media (max-width: 768px) {
@@ -2541,24 +2566,24 @@
   <button id="btn-mobile-menu-close" class="absolute top-8 right-6 w-10 h-10 rounded-full border border-primary/20 flex items-center justify-center text-primary">
     <span class="material-symbols-outlined">close</span>
   </button>
-  <div class="flex flex-col gap-6">
-    <a class="flex items-center gap-3 text-primary font-headline font-semibold text-lg py-3 border-b border-primary/10" href="index.html">
+  <div style="display:flex;flex-direction:column;gap:0;">
+    <a class="mob-menu-link cur" href="index.html">
       <span class="material-symbols-outlined">home</span>
       تراثنا
     </a>
-    <a class="flex items-center gap-3 text-primary/70 font-headline font-semibold text-lg py-3 border-b border-primary/10" href="collections.html">
+    <a class="mob-menu-link" href="collections.html">
       <span class="material-symbols-outlined">store</span>
       منتجاتنا
     </a>
-    <a class="flex items-center gap-3 text-primary/70 font-headline font-semibold text-lg py-3 border-b border-primary/10" href="reviews.html">
+    <a class="mob-menu-link" href="reviews.html">
       <span class="material-symbols-outlined">star</span>
       آراء العملاء
     </a>
-    <a class="flex items-center gap-3 text-primary/70 font-headline font-semibold text-lg py-3 border-b border-primary/10" href="about.html">
+    <a class="mob-menu-link" href="about.html">
       <span class="material-symbols-outlined">groups</span>
       من نحن
     </a>
-    <button onclick="document.getElementById('contact-backdrop').classList.add('open');document.body.style.overflow='hidden';document.getElementById('mobile-menu').classList.remove('open');document.getElementById('mobile-menu-backdrop').classList.remove('open');" class="flex items-center gap-3 text-primary/70 font-headline font-semibold text-lg py-3 border-b border-primary/10 text-right">
+    <button onclick="document.getElementById('contact-backdrop').classList.add('open');document.body.style.overflow='hidden';document.getElementById('mobile-menu').classList.remove('open');document.getElementById('mobile-menu-backdrop').classList.remove('open');" class="mob-menu-link">
       <span class="material-symbols-outlined">mail</span>
       تواصل معنا
     </button>
