@@ -360,8 +360,8 @@
       <!-- Confirm button -->
       <div class="fade-up-4">
         <button class="confirm-btn" id="btn-place-order">
-          <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">verified</span>
           تأكيد و إتمام الطلب
+        <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">verified</span>
         </button>
         <p class="text-center text-on-surface-variant text-xs mt-3 font-body">
           <i class="bi bi-shield-check text-secondary"></i>
@@ -402,7 +402,7 @@
   const deliveryMax = new Date(now); deliveryMax.setDate(deliveryMax.getDate() + 5);
   const fmtDay = d => d.toLocaleDateString('ar-EG', { weekday:'long', month:'long', day:'numeric' });
   document.getElementById('delivery-date').textContent = fmtDay(deliveryMin) + ' — ' + fmtDay(deliveryMax);
-  document.getElementById('delivery-range').textContent = 'بين يومين وخمسة أيام عمل من الآن';
+  document.getElementById('delivery-range').textContent = 'من يومين الي خمسة أيام عمل من تاريخ الطلب';
 
   // --- Fill user info ---
   const nameInput        = document.getElementById('user-name');
