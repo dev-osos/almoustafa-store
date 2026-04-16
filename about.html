@@ -219,9 +219,13 @@
         </a>
     </div>
     <div class="flex items-center gap-4">
-        <a href="collections.html" class="hidden md:inline-flex items-center gap-2 bg-primary text-on-primary px-7 py-3 rounded-full font-headline text-sm font-bold shadow-md hover:bg-primary-container transition-all hover:scale-105">
-            <i class="bi bi-bag-heart"></i> تسوق الآن
-        </a>
+        <div class="relative hidden md:block" id="cart-icon-wrapper">
+          <button id="btn-cart" aria-expanded="false" class="text-primary hover:text-secondary transition-all scale-110 relative">
+            <span class="material-symbols-outlined">shopping_bag</span>
+            <span id="cart-badge" style="display:none" class="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center font-body"></span>
+          </button>
+        </div>
+        <button id="btn-account" class="hidden md:flex text-primary hover:text-secondary transition-all scale-110"><span class="material-symbols-outlined">person</span></button>
         <button class="md:hidden text-primary" id="btn-mobile-menu">
             <span class="material-symbols-outlined">menu</span>
         </button>
@@ -828,6 +832,7 @@
     document.querySelectorAll('[data-target]').forEach(el => counterObserver.observe(el));
 </script>
 <script src="js/pwa-install.js"></script>
+<script src="js/nav-shared.js"></script>
 <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
 </body>
 </html>

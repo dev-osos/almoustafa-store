@@ -175,7 +175,14 @@
     <button id="btn-contact" class="flex items-center gap-2 text-[#3c0004]/70 font-headline font-semibold text-base tracking-wide hover:text-[#735c00] transition-colors duration-300"><i class="bi bi-envelope text-sm"></i> تواصل معنا</button>
   </div>
   <div class="flex items-center gap-6">
-    <a href="collections.html" class="bg-primary text-on-primary px-6 py-2.5 rounded-full font-headline text-sm font-bold hover:bg-primary-container transition-all hover:scale-105">تسوق الآن</a>
+    <div class="relative" id="cart-icon-wrapper">
+      <button id="btn-cart" aria-expanded="false" class="text-primary hover:text-secondary transition-all scale-110 relative">
+        <span class="material-symbols-outlined">shopping_bag</span>
+        <span id="cart-badge" style="display:none" class="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center font-body"></span>
+      </button>
+    </div>
+    <button id="btn-account" class="text-primary hover:text-secondary transition-all scale-110"><span class="material-symbols-outlined">person</span></button>
+    <button id="btn-mobile-menu" class="md:hidden text-primary"><span class="material-symbols-outlined">menu</span></button>
   </div>
 </nav>
 
@@ -751,6 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }());
 </script>
+<script src="js/nav-shared.js"></script>
 <script src="js/v_id_bootstrap.js"></script>
 <script src="js/cookie-consent.js"></script>
 <script src="js/pwa-install.js"></script>
