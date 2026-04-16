@@ -61,7 +61,29 @@
   .order-row-img { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; flex-shrink:0; border: 1px solid rgba(60,0,4,0.08); }
   .order-row-name { font-family:'Amiri',serif; font-size:0.95rem; font-weight:700; color:#3c0004; }
   .order-row-qty  { font-size:0.75rem; color:rgba(60,0,4,0.45); margin-top:2px; }
-  .order-row-price{ font-family:'Manrope',sans-serif; font-size:0.88rem; font-weight:700; color:#735c00; margin-right:auto; flex-shrink:0; }
+  .order-row-price{ font-family:'Manrope',sans-serif; font-size:0.88rem; font-weight:700; color:#735c00; flex-shrink:0; }
+
+  /* Qty controls */
+  .qty-ctrl { display:flex; align-items:center; gap:6px; margin-top:6px; }
+  .qty-btn {
+    width:24px; height:24px; border-radius:7px; border:1.5px solid rgba(60,0,4,0.18);
+    background:#fff; color:#3c0004; font-size:1rem; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; flex-shrink:0;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .qty-btn:hover { background:rgba(60,0,4,0.07); border-color:rgba(60,0,4,0.35); }
+  .qty-btn:disabled { opacity:0.35; cursor:not-allowed; }
+  .qty-num { font-family:'Manrope',sans-serif; font-size:0.82rem; font-weight:700; color:#3c0004; min-width:20px; text-align:center; }
+  .remove-btn {
+    margin-right:auto; width:26px; height:26px; border-radius:7px; border:none;
+    background:rgba(198,40,40,0.07); color:#c62828;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; flex-shrink:0;
+    transition: background 0.15s;
+  }
+  .remove-btn:hover { background:rgba(198,40,40,0.15); }
+  .remove-btn .material-symbols-outlined { font-size:15px; }
 
   /* Info row */
   .info-row {
@@ -376,12 +398,11 @@
   document.getElementById('order-date').textContent = dateStr;
 
   // --- Delivery estimate (3-5 days) ---
-  const deliveryDays = Math.floor(Math.random() * 3) + 3; // 3-5
-  const deliveryDate = new Date(now);
-  deliveryDate.setDate(deliveryDate.getDate() + deliveryDays);
-  const deliveryStr = deliveryDate.toLocaleDateString('ar-EG', { weekday:'long', month:'long', day:'numeric' });
-  document.getElementById('delivery-date').textContent = deliveryStr;
-  document.getElementById('delivery-range').textContent = 'خلال ' + toAr(deliveryDays) + ' أيام عمل من الآن';
+  const deliveryMin = new Date(now); deliveryMin.setDate(deliveryMin.getDate() + 2);
+  const deliveryMax = new Date(now); deliveryMax.setDate(deliveryMax.getDate() + 5);
+  const fmtDay = d => d.toLocaleDateString('ar-EG', { weekday:'long', month:'long', day:'numeric' });
+  document.getElementById('delivery-date').textContent = fmtDay(deliveryMin) + ' — ' + fmtDay(deliveryMax);
+  document.getElementById('delivery-range').textContent = 'بين يومين وخمسة أيام عمل من الآن';
 
   // --- Fill user info ---
   const nameInput        = document.getElementById('user-name');
@@ -463,7 +484,7 @@
     document.addEventListener('click', e => { if (!wrap.contains(e.target)) close(); });
 
     return {
-      load(data) { items = data; if (placeholder) input.placeholder = placeholder; input.disabled = false; },
+      load(data, ph) { items = data; input.placeholder = ph || placeholder || ''; input.disabled = false; },
       getSelected() { return selected; },
       getValue() { return input.value.trim(); },
       setInput(val) { input.value = val; },
@@ -474,7 +495,7 @@
   // Governorate AC
   const govAC = makeAC({
     wrapId: 'co-gov-wrap', inputId: 'co-gov-input', listId: 'co-gov-list',
-    onSelect(gov) { cityAC.reset(gov.id); }
+    onSelect(gov) { cityACObj.reset(gov.id); }
   });
 
   // City AC
@@ -510,38 +531,102 @@
     .catch(() => {});
 
   // --- Render order items ---
-  const list = document.getElementById('order-items-list');
-  let subtotal = 0;
+  const listEl = document.getElementById('order-items-list');
 
-  cart.forEach(item => {
-    subtotal += item.price * item.qty;
+  function updateTotals() {
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const shipping = subtotal >= 500 ? 0 : 50;
+    document.getElementById('subtotal-val').textContent = fmtPrice(subtotal);
+    document.getElementById('shipping-val').textContent = shipping === 0 ? 'مجاني' : fmtPrice(shipping);
+    document.getElementById('total-val').textContent    = fmtPrice(subtotal + shipping);
+  }
+
+  function renderItem(item, idx) {
     const row = document.createElement('div');
     row.className = 'order-row';
+    row.dataset.idx = idx;
 
+    // Image
     const img = document.createElement('img');
     img.className = 'order-row-img'; img.src = item.img; img.alt = item.name;
 
+    // Info + qty controls
     const info = document.createElement('div');
     info.style.flex = '1';
-    const nameEl = document.createElement('div'); nameEl.className = 'order-row-name'; nameEl.textContent = item.name;
-    const qtyEl  = document.createElement('div'); qtyEl.className  = 'order-row-qty';
-    qtyEl.textContent = 'الكمية: ' + toAr(item.qty) + ' × ' + fmtPrice(item.price);
-    info.append(nameEl, qtyEl);
+    info.style.minWidth = '0';
 
+    const nameEl = document.createElement('div');
+    nameEl.className = 'order-row-name'; nameEl.textContent = item.name;
+
+    const unitEl = document.createElement('div');
+    unitEl.className = 'order-row-qty';
+    unitEl.textContent = fmtPrice(item.price) + ' / الوحدة';
+
+    // Qty stepper
+    const ctrl = document.createElement('div');
+    ctrl.className = 'qty-ctrl';
+
+    const minusBtn = document.createElement('button');
+    minusBtn.className = 'qty-btn'; minusBtn.type = 'button';
+    minusBtn.innerHTML = '−'; minusBtn.disabled = item.qty <= 1;
+
+    const numEl = document.createElement('span');
+    numEl.className = 'qty-num'; numEl.textContent = toAr(item.qty);
+
+    const plusBtn = document.createElement('button');
+    plusBtn.className = 'qty-btn'; plusBtn.type = 'button';
+    plusBtn.innerHTML = '+';
+
+    ctrl.append(minusBtn, numEl, plusBtn);
+    info.append(nameEl, unitEl, ctrl);
+
+    // Price
     const priceEl = document.createElement('div');
     priceEl.className = 'order-row-price';
     priceEl.textContent = fmtPrice(item.price * item.qty);
 
-    row.append(img, info, priceEl);
-    list.appendChild(row);
-  });
+    // Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn'; removeBtn.type = 'button';
+    removeBtn.title = 'إزالة المنتج';
+    removeBtn.innerHTML = '<span class="material-symbols-outlined">delete</span>';
 
-  const shipping = subtotal >= 500 ? 0 : 50;
-  const total = subtotal + shipping;
+    // Events
+    minusBtn.addEventListener('click', () => {
+      if (item.qty <= 1) return;
+      item.qty--;
+      numEl.textContent = toAr(item.qty);
+      priceEl.textContent = fmtPrice(item.price * item.qty);
+      minusBtn.disabled = item.qty <= 1;
+      updateTotals();
+    });
 
-  document.getElementById('subtotal-val').textContent = fmtPrice(subtotal);
-  document.getElementById('shipping-val').textContent = shipping === 0 ? 'مجاني' : fmtPrice(shipping);
-  document.getElementById('total-val').textContent    = fmtPrice(total);
+    plusBtn.addEventListener('click', () => {
+      item.qty++;
+      numEl.textContent = toAr(item.qty);
+      priceEl.textContent = fmtPrice(item.price * item.qty);
+      minusBtn.disabled = false;
+      updateTotals();
+    });
+
+    removeBtn.addEventListener('click', () => {
+      cart.splice(idx, 1);
+      if (!cart.length) { window.location.href = 'products.html'; return; }
+      renderAll();
+      updateTotals();
+    });
+
+    row.append(img, info, priceEl, removeBtn);
+    return row;
+  }
+
+  function renderAll() {
+    while (listEl.firstChild) listEl.removeChild(listEl.firstChild);
+    cart.forEach((item, idx) => listEl.appendChild(renderItem(item, idx)));
+  }
+
+  renderAll();
+  updateTotals();
 
   // --- Place order ---
   document.getElementById('btn-place-order').addEventListener('click', () => {
@@ -580,6 +665,7 @@
     session.address        = [govVal, cityVal, addressDetail].filter(Boolean).join('، ');
     try { localStorage.setItem('alm_session', JSON.stringify(session)); } catch {}
 
+    try { localStorage.setItem('alm_cart', JSON.stringify(cart)); } catch {}
     localStorage.removeItem('alm_cart');
     document.getElementById('success-overlay').classList.add('show');
   });
