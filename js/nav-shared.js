@@ -147,6 +147,8 @@
       e.stopPropagation();
       if (getSession()) {
         pdEl.classList.contains('open') ? closePd() : openPd();
+      } else if (window.almAuth) {
+        window.almAuth.open('login');
       } else {
         window.location.href = 'index.html#login';
       }
@@ -162,6 +164,12 @@
   });
 
   updateAccountIcon();
+
+  // Update icon after login via auth-modal
+  document.addEventListener('alm:session-changed', function () {
+    updateAccountIcon();
+    closePd();
+  });
 
   /* ─── Cart badge ───────────────────────────────────────────── */
   function updateCartBadge() {
