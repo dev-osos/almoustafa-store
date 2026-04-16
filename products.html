@@ -1016,12 +1016,13 @@ document.addEventListener('DOMContentLoaded', () => {
       ic.style.fontVariationSettings = "'FILL' 0,'wght' 200,'GRAD' 0,'opsz' 24"; ic.textContent = 'shopping_cart';
       const p = document.createElement('p'); p.textContent = 'السلة فارغة';
       empty.append(ic, p); list.appendChild(empty);
-      totalEl.textContent = '0.00 ج.م'; countEl.textContent = ''; return;
+      totalEl.textContent = '0.00 ج.م'; countEl.textContent = ''; badge.style.display = 'none'; return;
     }
 
     const totalQty = cartItems.reduce((s, i) => s + i.qty, 0);
     countEl.textContent = '(' + toArabicNum(totalQty) + ' منتج)';
-    badge.textContent = toArabicNum(totalQty);
+    badge.textContent = totalQty;
+    badge.style.display = totalQty > 0 ? 'flex' : 'none';
     totalEl.textContent = formatPrice(cartItems.reduce((s, i) => s + i.price * i.qty, 0));
     cartItems.forEach((item, idx) => list.appendChild(buildCartRow(item, idx)));
   }
