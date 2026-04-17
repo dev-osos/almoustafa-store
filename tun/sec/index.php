@@ -206,9 +206,10 @@ tr:hover td { background:var(--surface-dim); }
 /* ── Modal ───────────────────────────────────────────── */
 .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200; display:flex; align-items:center; justify-content:center; padding:1rem; opacity:0; pointer-events:none; transition:opacity .2s; }
 .modal-backdrop.open { opacity:1; pointer-events:all; }
-.modal { background:var(--surface); border-radius:var(--radius); padding:1.75rem; width:100%; max-width:440px; box-shadow:var(--shadow-lg); transform:translateY(20px); transition:transform .25s; }
+.modal { background:var(--surface); border-radius:var(--radius); padding:1.75rem; width:100%; max-width:440px; box-shadow:var(--shadow-lg); transform:translateY(20px); transition:transform .25s; max-height:calc(100vh - 2rem); display:flex; flex-direction:column; overflow:hidden; }
 .modal-backdrop.open .modal { transform:translateY(0); }
-.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; }
+.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-shrink:0; }
+.modal-body { overflow-y:auto; flex:1; }
 .modal-title { font-size:1.1rem; font-weight:700; color:var(--primary); display:flex; align-items:center; gap:.5rem; }
 .modal-close { background:none; border:none; cursor:pointer; color:var(--on-surface-dim); font-size:1.4rem; line-height:1; padding:.25rem; transition:color .15s; }
 .modal-close:hover { color:var(--on-surface); }
@@ -218,7 +219,7 @@ tr:hover td { background:var(--surface-dim); }
 .form-input:focus, .form-select:focus { border-color:var(--primary); }
 .form-error { background:var(--red-bg); color:var(--red-text); border-radius:8px; padding:.6rem .9rem; font-size:.825rem; margin-bottom:1rem; display:none; }
 .form-error.show { display:block; }
-.modal-footer { display:flex; gap:.75rem; justify-content:flex-end; margin-top:1.5rem; }
+.modal-footer { display:flex; gap:.75rem; justify-content:flex-end; margin-top:1.5rem; flex-shrink:0; }
 .cancel-btn { padding:.7rem 1.25rem; border:1.5px solid var(--border); border-radius:10px; background:none; font-family:inherit; font-size:.875rem; font-weight:600; cursor:pointer; color:var(--on-surface); transition:all .15s; }
 .cancel-btn:hover { border-color:var(--primary); color:var(--primary); }
 .submit-btn { padding:.7rem 1.5rem; background:var(--primary); color:#fff; border:none; border-radius:10px; font-family:inherit; font-size:.875rem; font-weight:700; cursor:pointer; transition:background .2s; }
@@ -256,6 +257,38 @@ tr:hover td { background:var(--surface-dim); }
   .main { margin-right:0; }
   .charts-row { grid-template-columns:1fr; }
   .topbar-menu-btn { display:flex; }
+  .content { padding:1rem; }
+  .topbar { padding:.75rem 1rem; }
+  .stats-grid { grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.75rem; }
+}
+@media(max-width:600px){
+  .content { padding:.75rem; }
+  .topbar { padding:.65rem .75rem; gap:.5rem; }
+  .topbar-title { font-size:1rem; }
+  .topbar-meta { display:none; }
+  /* Stats */
+  .stats-grid { grid-template-columns:1fr 1fr; gap:.6rem; margin-bottom:1rem; }
+  .stat-value { font-size:1.5rem; }
+  .stat-card { padding:1rem .9rem .85rem; }
+  /* Table header toolbar */
+  .table-header { flex-direction:column; align-items:stretch; gap:.6rem; padding:.85rem 1rem; }
+  .table-header .search-box { width:100%; }
+  .search-box input { width:100%; }
+  /* Table scroll */
+  .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .data-table { min-width:700px; font-size:.8rem; }
+  .data-table th, .data-table td { padding:.55rem .65rem; }
+  /* Modal */
+  .modal-backdrop { padding:.5rem; align-items:flex-end; }
+  .modal { padding:1.25rem 1rem; border-radius:var(--radius) var(--radius) 0 0; max-width:100% !important; }
+  .modal-footer { flex-direction:column-reverse; }
+  .modal-footer .cancel-btn,
+  .modal-footer .primary-btn { width:100%; text-align:center; justify-content:center; }
+  /* Product form 2-col → 1-col */
+  #productForm > div[style*="grid-template-columns"] { grid-template-columns:1fr !important; }
+  #productForm .form-field[style*="grid-column"] { grid-column:auto !important; }
+  /* Chart */
+  .chart-wrap { height:160px; }
 }
 </style>
 </head>
@@ -314,62 +347,64 @@ const ADMIN = {
       <div class="modal-title"><span class="ms">inventory_2</span> <span id="productModalTitle">إضافة منتج</span></div>
       <button class="modal-close" onclick="closeProductModal()"><span class="ms">close</span></button>
     </div>
-    <div class="form-error" id="productModalErr"></div>
-    <form id="productForm" onsubmit="submitProduct(event)">
-      <input type="hidden" name="id" id="pf-id"/>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-        <div class="form-field">
-          <label class="form-label">رقم ERP</label>
-          <input class="form-input" type="number" name="erp_id" id="pf-erp_id" placeholder="مثال: 67"/>
+    <div class="modal-body">
+      <div class="form-error" id="productModalErr"></div>
+      <form id="productForm" onsubmit="submitProduct(event)">
+        <input type="hidden" name="id" id="pf-id"/>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-field">
+            <label class="form-label">رقم ERP</label>
+            <input class="form-input" type="number" name="erp_id" id="pf-erp_id" placeholder="مثال: 67"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">الحالة</label>
+            <select class="form-select" name="status" id="pf-status">
+              <option value="active">نشط</option>
+              <option value="inactive">معطل</option>
+            </select>
+          </div>
+          <div class="form-field" style="grid-column:1/-1">
+            <label class="form-label">اسم API <span style="color:#c62828">*</span></label>
+            <input class="form-input" type="text" name="api_name" id="pf-api_name" placeholder="اسم المنتج في نظام الـ ERP" required/>
+          </div>
+          <div class="form-field" style="grid-column:1/-1">
+            <label class="form-label">اسم المتجر (store_name)</label>
+            <input class="form-input" type="text" name="store_name" id="pf-store_name" placeholder="الاسم الذي يراه العميل"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">التصنيف</label>
+            <input class="form-input" type="text" name="category" id="pf-category" placeholder="عسل، صابون..."/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">الشارة (badge)</label>
+            <input class="form-input" type="text" name="badge" id="pf-badge" placeholder="جديد / الأكثر مبيعاً..."/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">الوزن</label>
+            <input class="form-input" type="text" name="wight" id="pf-wight" placeholder="300 جم"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">الكمية المباعة</label>
+            <input class="form-input" type="number" name="sold_q" id="pf-sold_q" placeholder="0" value="0"/>
+          </div>
+          <div class="form-field" style="grid-column:1/-1">
+            <label class="form-label">مسار الصورة (image_url)</label>
+            <input class="form-input" type="text" name="image_url" id="pf-image_url" placeholder="imgs/products/..."/>
+          </div>
+          <div class="form-field" style="grid-column:1/-1">
+            <label class="form-label">المصدر (source)</label>
+            <select class="form-select" name="source" id="pf-source">
+              <option value="products">products</option>
+              <option value="product_templates">product_templates</option>
+            </select>
+          </div>
         </div>
-        <div class="form-field">
-          <label class="form-label">الحالة</label>
-          <select class="form-select" name="status" id="pf-status">
-            <option value="active">نشط</option>
-            <option value="inactive">معطل</option>
-          </select>
+        <div class="modal-footer">
+          <button type="button" class="cancel-btn" onclick="closeProductModal()">إلغاء</button>
+          <button type="submit" class="submit-btn" id="productSubmitBtn">حفظ</button>
         </div>
-        <div class="form-field" style="grid-column:1/-1">
-          <label class="form-label">اسم API <span style="color:#c62828">*</span></label>
-          <input class="form-input" type="text" name="api_name" id="pf-api_name" placeholder="اسم المنتج في نظام الـ ERP" required/>
-        </div>
-        <div class="form-field" style="grid-column:1/-1">
-          <label class="form-label">اسم المتجر (store_name)</label>
-          <input class="form-input" type="text" name="store_name" id="pf-store_name" placeholder="الاسم الذي يراه العميل"/>
-        </div>
-        <div class="form-field">
-          <label class="form-label">التصنيف</label>
-          <input class="form-input" type="text" name="category" id="pf-category" placeholder="عسل، صابون..."/>
-        </div>
-        <div class="form-field">
-          <label class="form-label">الشارة (badge)</label>
-          <input class="form-input" type="text" name="badge" id="pf-badge" placeholder="جديد / الأكثر مبيعاً..."/>
-        </div>
-        <div class="form-field">
-          <label class="form-label">الوزن</label>
-          <input class="form-input" type="text" name="wight" id="pf-wight" placeholder="300 جم"/>
-        </div>
-        <div class="form-field">
-          <label class="form-label">الكمية المباعة</label>
-          <input class="form-input" type="number" name="sold_q" id="pf-sold_q" placeholder="0" value="0"/>
-        </div>
-        <div class="form-field" style="grid-column:1/-1">
-          <label class="form-label">مسار الصورة (image_url)</label>
-          <input class="form-input" type="text" name="image_url" id="pf-image_url" placeholder="imgs/products/..."/>
-        </div>
-        <div class="form-field" style="grid-column:1/-1">
-          <label class="form-label">المصدر (source)</label>
-          <select class="form-select" name="source" id="pf-source">
-            <option value="products">products</option>
-            <option value="product_templates">product_templates</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="cancel-btn" onclick="closeProductModal()">إلغاء</button>
-        <button type="submit" class="submit-btn" id="productSubmitBtn">حفظ</button>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -1662,7 +1697,7 @@ function renderProdTable(page) {
         </td>
         <td style="font-size:.72rem;color:var(--on-surface-dim)">${escHtml(p.source || '—')}</td>
         <td style="text-align:center">
-          <button class="action-btn toggle-off" onclick="openProductModal(${JSON.stringify(JSON.stringify(p))})" style="border-color:#b6ccf7;color:#1a56d6;margin-left:.25rem">
+          <button class="action-btn toggle-off" onclick="openProductModal(${escHtml(JSON.stringify(JSON.stringify(p)))})" style="border-color:#b6ccf7;color:#1a56d6;margin-left:.25rem">
             <span class="ms">edit</span>
           </button>
           <button class="action-btn del" onclick="deleteProduct(${p.id}, this)">
