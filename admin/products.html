@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>إدارة المنتجات | المصطفى</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Manrope:wght@300..800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#3c0004;--primary-c:#5d0e12;--gold:#fed65b;--gold-dim:#f5c400;
+  --surface:#f7f3ea;--surface-hi:#ece8df;--card:#fff;
+  --on-surface:#1c1c17;--outline:rgba(60,0,4,0.15);
+  --active-bg:rgba(46,125,50,0.08);--active-text:#2e7d32;
+  --inactive-bg:rgba(198,40,40,0.08);--inactive-text:#c62828;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Manrope',sans-serif;background:var(--surface);color:var(--on-surface);min-height:100vh;direction:rtl}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;line-height:1;direction:ltr;display:inline-block}
+
+/* ── AUTH SCREEN ── */
+#auth-screen{
+  position:fixed;inset:0;background:var(--primary);
+  display:flex;align-items:center;justify-content:center;z-index:9999;
+}
+.auth-box{
+  background:#fff;border-radius:20px;padding:40px 36px;width:100%;max-width:360px;
+  box-shadow:0 16px 48px rgba(0,0,0,0.25);text-align:center;
+}
+.auth-logo{font-family:'Amiri',serif;font-size:1.6rem;font-weight:700;color:var(--primary);margin-bottom:6px}
+.auth-sub{font-size:0.78rem;color:#897270;margin-bottom:28px}
+.auth-input{
+  width:100%;padding:12px 16px;border:1.5px solid var(--outline);border-radius:10px;
+  font-family:'Manrope',sans-serif;font-size:0.9rem;color:var(--on-surface);
+  background:var(--surface);outline:none;transition:border-color 0.2s;margin-bottom:12px;text-align:center;letter-spacing:0.12em;
+}
+.auth-input:focus{border-color:var(--primary)}
+.auth-btn{
+  width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:10px;
+  font-family:'Amiri',serif;font-size:1rem;font-weight:700;cursor:pointer;transition:background 0.2s;
+}
+.auth-btn:hover{background:var(--primary-c)}
+.auth-err{font-size:0.78rem;color:#c62828;margin-top:8px;min-height:18px}
+
+/* ── NAV ── */
+.top-nav{
+  background:var(--primary);padding:14px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(60,0,4,0.25);
+}
+.nav-brand{font-family:'Amiri',serif;font-size:1.15rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:10px}
+.nav-brand .material-symbols-outlined{color:var(--gold);font-size:20px}
+.nav-stats{display:flex;gap:20px}
+.nav-stat{font-size:0.72rem;color:rgba(255,255,255,0.55);display:flex;align-items:center;gap:5px}
+.nav-stat strong{color:var(--gold)}
+
+/* ── TOOLBAR ── */
+.toolbar{
+  padding:20px 28px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.search-wrap{
+  flex:1;min-width:220px;position:relative;
+}
+.search-wrap .material-symbols-outlined{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  font-size:18px;color:rgba(60,0,4,0.35);pointer-events:none;
+}
+#search-input{
+  width:100%;padding:10px 40px 10px 14px;
+  border:1.5px solid var(--outline);border-radius:10px;
+  font-family:'Manrope',sans-serif;font-size:0.85rem;color:var(--on-surface);
+  background:#fff;outline:none;transition:border-color 0.2s;
+}
+#search-input:focus{border-color:var(--primary)}
+.filter-sel{
+  padding:10px 14px;border:1.5px solid var(--outline);border-radius:10px;
+  font-family:'Manrope',sans-serif;font-size:0.82rem;color:var(--on-surface);
+  background:#fff;outline:none;cursor:pointer;
+}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border:none;border-radius:10px;
+  font-family:'Manrope',sans-serif;font-size:0.83rem;font-weight:700;cursor:pointer;transition:all 0.15s;white-space:nowrap;
+}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-c)}
+.btn .material-symbols-outlined{font-size:17px}
+
+/* ── TABLE WRAPPER ── */
+.table-wrapper{
+  margin:16px 28px 40px;
+  background:var(--card);border-radius:16px;overflow:hidden;
+  border:1px solid var(--outline);box-shadow:0 2px 12px rgba(60,0,4,0.06);
+}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:1100px}
+thead{background:rgba(60,0,4,0.04)}
+th{
+  padding:11px 12px;font-size:0.7rem;font-weight:700;
+  color:rgba(60,0,4,0.45);letter-spacing:0.06em;text-transform:uppercase;
+  border-bottom:2px solid var(--outline);text-align:right;white-space:nowrap;
+}
+th.center{text-align:center}
+td{
+  padding:10px 12px;font-size:0.83rem;border-bottom:1px solid rgba(60,0,4,0.05);
+  vertical-align:middle;
+}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(60,0,4,0.015)}
+
+/* Editable cells */
+td[contenteditable]{
+  outline:none;cursor:text;
+  transition:background 0.15s,box-shadow 0.15s;
+  border-radius:6px;
+}
+td[contenteditable]:focus{
+  background:rgba(60,0,4,0.04);
+  box-shadow:inset 0 0 0 1.5px rgba(60,0,4,0.25);
+}
+td[contenteditable].dirty{background:rgba(254,214,91,0.15)}
+td[contenteditable].saving{background:rgba(46,125,50,0.08);animation:pulse 0.6s ease}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+
+/* Status badge */
+.badge-status{
+  display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+  border-radius:20px;font-size:0.72rem;font-weight:700;cursor:pointer;
+  border:none;transition:all 0.2s;
+}
+.badge-status.active{background:var(--active-bg);color:var(--active-text)}
+.badge-status.inactive{background:var(--inactive-bg);color:var(--inactive-text)}
+.badge-status .material-symbols-outlined{font-size:12px;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 20}
+
+/* Image cell */
+.img-cell{display:flex;align-items:center;gap:8px}
+.img-thumb{
+  width:36px;height:36px;border-radius:7px;object-fit:cover;flex-shrink:0;
+  border:1px solid rgba(60,0,4,0.1);background:#f0ece3;
+}
+.img-placeholder{
+  width:36px;height:36px;border-radius:7px;flex-shrink:0;
+  background:rgba(60,0,4,0.05);display:flex;align-items:center;justify-content:center;
+}
+.img-placeholder .material-symbols-outlined{font-size:16px;color:rgba(60,0,4,0.3)}
+
+/* Actions column */
+.row-actions{display:flex;align-items:center;gap:6px;justify-content:center}
+.icon-btn{
+  width:30px;height:30px;border-radius:8px;border:none;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;
+}
+.icon-btn .material-symbols-outlined{font-size:16px}
+.icon-btn-save{background:rgba(46,125,50,0.1);color:#2e7d32;display:none}
+.icon-btn-save:hover{background:rgba(46,125,50,0.2)}
+.icon-btn-del{background:rgba(198,40,40,0.08);color:#c62828}
+.icon-btn-del:hover{background:rgba(198,40,40,0.18)}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 24px;color:rgba(60,0,4,0.35)}
+.empty-state .material-symbols-outlined{font-size:48px;display:block;margin-bottom:12px;color:rgba(60,0,4,0.15)}
+
+/* Toast */
+#toast{
+  position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:#1c1c17;color:#fff;font-size:0.82rem;font-weight:600;
+  padding:10px 20px;border-radius:30px;
+  opacity:0;transition:opacity 0.25s,transform 0.25s;z-index:9999;pointer-events:none;white-space:nowrap;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.ok{background:#2e7d32}
+#toast.err{background:#c62828}
+
+/* ADD ROW highlight */
+.new-row td{background:rgba(254,214,91,0.08)!important}
+
+@media(max-width:768px){
+  .top-nav{padding:12px 16px}
+  .toolbar{padding:14px 16px 0}
+  .table-wrapper{margin:12px 16px 32px}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">لوحة التحكم</div>
+    <div class="auth-sub">متجر المصطفى — إدارة المنتجات</div>
+    <input class="auth-input" id="auth-key-input" type="password" placeholder="مفتاح الدخول" autocomplete="current-password"/>
+    <button class="auth-btn" id="auth-btn">دخول</button>
+    <div class="auth-err" id="auth-err"></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="top-nav" id="main-nav" style="display:none">
+  <div class="nav-brand">
+    <span class="material-symbols-outlined">inventory_2</span>
+    إدارة المنتجات
+  </div>
+  <div class="nav-stats">
+    <div class="nav-stat"><span class="material-symbols-outlined">widgets</span>الكل: <strong id="stat-total">—</strong></div>
+    <div class="nav-stat"><span class="material-symbols-outlined">check_circle</span>نشط: <strong id="stat-active">—</strong></div>
+    <div class="nav-stat"><span class="material-symbols-outlined">cancel</span>معطل: <strong id="stat-inactive">—</strong></div>
+  </div>
+</nav>
+
+<!-- TOOLBAR -->
+<div class="toolbar" id="main-toolbar" style="display:none">
+  <div class="search-wrap">
+    <span class="material-symbols-outlined">search</span>
+    <input id="search-input" type="text" placeholder="بحث في الاسم، التصنيف، الكود..."/>
+  </div>
+  <select class="filter-sel" id="filter-status">
+    <option value="">كل الحالات</option>
+    <option value="active">نشط</option>
+    <option value="inactive">معطل</option>
+  </select>
+  <select class="filter-sel" id="filter-source">
+    <option value="">كل المصادر</option>
+    <option value="products">products</option>
+    <option value="product_templates">product_templates</option>
+  </select>
+  <button class="btn btn-primary" id="btn-add">
+    <span class="material-symbols-outlined">add</span>
+    إضافة منتج
+  </button>
+</div>
+
+<!-- TABLE -->
+<div class="table-wrapper" id="main-table-wrap" style="display:none">
+  <div class="table-scroll">
+    <table id="products-table">
+      <thead>
+        <tr>
+          <th style="width:52px" class="center">#</th>
+          <th style="width:64px" class="center">ERP ID</th>
+          <th style="width:220px">اسم API</th>
+          <th style="width:200px">اسم المتجر (store_name)</th>
+          <th style="width:130px">التصنيف</th>
+          <th style="width:90px" class="center">الحالة</th>
+          <th style="width:110px">الشارة (badge)</th>
+          <th style="width:100px">الوزن</th>
+          <th style="width:80px" class="center">مباع</th>
+          <th style="width:180px">رابط الصورة</th>
+          <th style="width:110px">المصدر</th>
+          <th style="width:80px" class="center">إجراء</th>
+        </tr>
+      </thead>
+      <tbody id="products-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  const API = '../apis/admin/products.php';
+  let adminKey = '';
+  let allProducts = [];
+  let toastTimer = null;
+
+  // ── Toast ───────────────────────────────────────────────────────────────
+  function toast(msg, type = 'ok') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'show ' + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = ''; }, 2500);
+  }
+
+  // ── Auth ────────────────────────────────────────────────────────────────
+  const authScreen  = document.getElementById('auth-screen');
+  const authInput   = document.getElementById('auth-key-input');
+  const authBtn     = document.getElementById('auth-btn');
+  const authErr     = document.getElementById('auth-err');
+
+  async function tryLogin() {
+    const key = authInput.value.trim();
+    if (!key) { authErr.textContent = 'أدخل مفتاح الدخول'; return; }
+    authBtn.textContent = '...';
+    try {
+      const r = await fetch(API + '?admin_key=' + encodeURIComponent(key));
+      if (r.status === 401) { authErr.textContent = 'مفتاح غير صحيح'; authBtn.textContent = 'دخول'; return; }
+      const data = await r.json();
+      adminKey = key;
+      authScreen.style.display = 'none';
+      document.getElementById('main-nav').style.display = '';
+      document.getElementById('main-toolbar').style.display = '';
+      document.getElementById('main-table-wrap').style.display = '';
+      allProducts = data.products || [];
+      renderTable(allProducts);
+      updateStats(allProducts);
+    } catch {
+      authErr.textContent = 'فشل الاتصال بالسيرفر';
+    }
+    authBtn.textContent = 'دخول';
+  }
+
+  authBtn.addEventListener('click', tryLogin);
+  authInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+
+  // ── API helpers ─────────────────────────────────────────────────────────
+  async function apiCall(method, body) {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(API, opts);
+    return r.json();
+  }
+
+  // ── Stats ────────────────────────────────────────────────────────────────
+  function updateStats(products) {
+    document.getElementById('stat-total').textContent    = products.length;
+    document.getElementById('stat-active').textContent   = products.filter(p => p.status === 'active').length;
+    document.getElementById('stat-inactive').textContent = products.filter(p => p.status !== 'active').length;
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────────
+  function renderTable(products) {
+    const tbody = document.getElementById('products-tbody');
+    tbody.innerHTML = '';
+    if (!products.length) {
+      tbody.innerHTML = '<tr><td colspan="12"><div class="empty-state"><span class="material-symbols-outlined">search_off</span>لا توجد نتائج</div></td></tr>';
+      return;
+    }
+    products.forEach(p => tbody.appendChild(buildRow(p)));
+  }
+
+  const EDITABLE = ['erp_id','api_name','store_name','category','badge','wight','sold_q','image_url','source'];
+
+  function buildRow(p, isNew = false) {
+    const tr = document.createElement('tr');
+    tr.dataset.id = p.id;
+    if (isNew) tr.classList.add('new-row');
+
+    // id
+    const tdId = document.createElement('td');
+    tdId.style.textAlign = 'center';
+    tdId.style.color = 'rgba(60,0,4,0.4)';
+    tdId.style.fontSize = '0.75rem';
+    tdId.style.fontFamily = "'Manrope',sans-serif";
+    tdId.textContent = p.id ?? '—';
+    tr.appendChild(tdId);
+
+    // erp_id
+    tr.appendChild(editableCell('erp_id', p.erp_id ?? '', tr));
+
+    // api_name
+    tr.appendChild(editableCell('api_name', p.api_name ?? '', tr));
+
+    // store_name
+    tr.appendChild(editableCell('store_name', p.store_name ?? '', tr));
+
+    // category
+    tr.appendChild(editableCell('category', p.category ?? '', tr));
+
+    // status toggle
+    const tdStatus = document.createElement('td');
+    tdStatus.style.textAlign = 'center';
+    const statusBtn = document.createElement('button');
+    statusBtn.className = 'badge-status ' + (p.status === 'active' ? 'active' : 'inactive');
+    statusBtn.innerHTML = p.status === 'active'
+      ? '<span class="material-symbols-outlined">check_circle</span>نشط'
+      : '<span class="material-symbols-outlined">cancel</span>معطل';
+    statusBtn.addEventListener('click', () => toggleStatus(p, statusBtn, tr));
+    tdStatus.appendChild(statusBtn);
+    tr.appendChild(tdStatus);
+
+    // badge
+    tr.appendChild(editableCell('badge', p.badge ?? '', tr));
+
+    // wight
+    tr.appendChild(editableCell('wight', p.wight ?? '', tr));
+
+    // sold_q
+    const tdSold = editableCell('sold_q', p.sold_q ?? '0', tr);
+    tdSold.style.textAlign = 'center';
+    tr.appendChild(tdSold);
+
+    // image_url
+    const tdImg = document.createElement('td');
+    const imgWrap = document.createElement('div');
+    imgWrap.className = 'img-cell';
+    const thumb = p.image_url
+      ? Object.assign(document.createElement('img'), { className:'img-thumb', src: p.image_url, alt:'' })
+      : (() => { const d=document.createElement('div');d.className='img-placeholder';d.innerHTML='<span class="material-symbols-outlined">image</span>';return d; })();
+    const imgCell = editableCell('image_url', p.image_url ?? '', tr);
+    imgCell.style.fontSize = '0.72rem';
+    imgCell.style.color = 'rgba(60,0,4,0.5)';
+    imgCell.style.wordBreak = 'break-all';
+    // update thumb on blur
+    imgCell.addEventListener('blur', () => {
+      const url = imgCell.textContent.trim();
+      if (url && thumb.tagName === 'IMG') thumb.src = url;
+    });
+    imgWrap.appendChild(thumb);
+    imgWrap.appendChild(imgCell);
+    tdImg.appendChild(imgWrap);
+    tr.appendChild(tdImg);
+
+    // source
+    tr.appendChild(editableCell('source', p.source ?? '', tr));
+
+    // actions
+    const tdAct = document.createElement('td');
+    tdAct.style.textAlign = 'center';
+    const actWrap = document.createElement('div');
+    actWrap.className = 'row-actions';
+
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'icon-btn icon-btn-save';
+    saveBtn.title = 'حفظ';
+    saveBtn.innerHTML = '<span class="material-symbols-outlined">save</span>';
+    saveBtn.addEventListener('click', () => saveRow(tr, p, saveBtn));
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'icon-btn icon-btn-del';
+    delBtn.title = 'حذف';
+    delBtn.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+    delBtn.addEventListener('click', () => deleteRow(p.id, tr));
+
+    actWrap.append(saveBtn, delBtn);
+    tdAct.appendChild(actWrap);
+    tr.appendChild(tdAct);
+
+    // watch dirtiness
+    tr._saveBtn = saveBtn;
+
+    return tr;
+  }
+
+  function editableCell(field, value, tr) {
+    const td = document.createElement('td');
+    td.contentEditable = 'true';
+    td.dataset.field = field;
+    td.textContent = value;
+    td.addEventListener('input', () => {
+      td.classList.add('dirty');
+      if (tr._saveBtn) tr._saveBtn.style.display = 'flex';
+    });
+    td.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); td.blur(); }
+    });
+    return td;
+  }
+
+  // ── Collect row data ─────────────────────────────────────────────────────
+  function collectRow(tr, original) {
+    const data = { id: original.id ?? null };
+    tr.querySelectorAll('td[data-field]').forEach(td => {
+      data[td.dataset.field] = td.textContent.trim();
+    });
+    return data;
+  }
+
+  // ── Save row ─────────────────────────────────────────────────────────────
+  async function saveRow(tr, original, saveBtn) {
+    const data = collectRow(tr, original);
+    tr.querySelectorAll('td[contenteditable]').forEach(td => td.classList.add('saving'));
+    try {
+      const action = data.id ? 'update' : 'create';
+      const res = await apiCall('POST', { action, ...data });
+      if (res.ok) {
+        if (!data.id && res.product) {
+          original.id = res.product.id;
+          tr.dataset.id = res.product.id;
+          tr.querySelector('td').textContent = res.product.id;
+          tr.classList.remove('new-row');
+          // update local store
+          allProducts.push(res.product);
+        } else {
+          Object.assign(original, data);
+        }
+        tr.querySelectorAll('td[contenteditable]').forEach(td => td.classList.remove('dirty','saving'));
+        saveBtn.style.display = 'none';
+        updateStats(allProducts);
+        toast('تم الحفظ بنجاح ✓');
+      } else {
+        toast(res.error || 'فشل الحفظ', 'err');
+        tr.querySelectorAll('td[contenteditable]').forEach(td => td.classList.remove('saving'));
+      }
+    } catch {
+      toast('خطأ في الاتصال', 'err');
+      tr.querySelectorAll('td[contenteditable]').forEach(td => td.classList.remove('saving'));
+    }
+  }
+
+  // ── Toggle status ─────────────────────────────────────────────────────────
+  async function toggleStatus(product, btn, tr) {
+    const newStatus = product.status === 'active' ? 'inactive' : 'active';
+    try {
+      const data = collectRow(tr, product);
+      data.status = newStatus;
+      const res = await apiCall('POST', { action: 'update', ...data });
+      if (res.ok) {
+        product.status = newStatus;
+        btn.className = 'badge-status ' + (newStatus === 'active' ? 'active' : 'inactive');
+        btn.innerHTML = newStatus === 'active'
+          ? '<span class="material-symbols-outlined">check_circle</span>نشط'
+          : '<span class="material-symbols-outlined">cancel</span>معطل';
+        updateStats(allProducts);
+        toast(newStatus === 'active' ? 'تم تفعيل المنتج' : 'تم تعطيل المنتج');
+      }
+    } catch { toast('فشل تغيير الحالة','err'); }
+  }
+
+  // ── Delete row ────────────────────────────────────────────────────────────
+  async function deleteRow(id, tr) {
+    if (!id) { tr.remove(); return; } // unsaved new row
+    if (!confirm('هل تريد حذف هذا المنتج نهائياً؟')) return;
+    try {
+      const res = await apiCall('DELETE', { id });
+      if (res.ok) {
+        tr.style.transition = 'opacity 0.3s';
+        tr.style.opacity = '0';
+        setTimeout(() => tr.remove(), 300);
+        allProducts = allProducts.filter(p => p.id !== id);
+        updateStats(allProducts);
+        toast('تم حذف المنتج');
+      } else { toast(res.error || 'فشل الحذف', 'err'); }
+    } catch { toast('خطأ في الاتصال','err'); }
+  }
+
+  // ── Add new row ───────────────────────────────────────────────────────────
+  document.getElementById('btn-add').addEventListener('click', () => {
+    const newP = { id: null, erp_id:'', api_name:'', store_name:'', category:'', status:'active', badge:'', wight:'', sold_q:'0', image_url:'', source:'products' };
+    const tr = buildRow(newP, true);
+    const tbody = document.getElementById('products-tbody');
+    tbody.insertBefore(tr, tbody.firstChild);
+    tr._saveBtn.style.display = 'flex';
+    tr.querySelector('td[data-field="api_name"]')?.focus();
+    toast('أضف بيانات المنتج ثم اضغط حفظ','ok');
+  });
+
+  // ── Search & filter ───────────────────────────────────────────────────────
+  function applyFilters() {
+    const q      = document.getElementById('search-input').value.trim().toLowerCase();
+    const status = document.getElementById('filter-status').value;
+    const source = document.getElementById('filter-source').value;
+
+    const filtered = allProducts.filter(p => {
+      const matchQ = !q || [p.id,p.erp_id,p.api_name,p.store_name,p.category,p.badge].some(v => String(v||'').toLowerCase().includes(q));
+      const matchS = !status || p.status === status;
+      const matchSrc = !source || p.source === source;
+      return matchQ && matchS && matchSrc;
+    });
+    renderTable(filtered);
+  }
+
+  document.getElementById('search-input').addEventListener('input', applyFilters);
+  document.getElementById('filter-status').addEventListener('change', applyFilters);
+  document.getElementById('filter-source').addEventListener('change', applyFilters);
+
+})();
+</script>
+</body>
+</html>
