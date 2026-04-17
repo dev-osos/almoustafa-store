@@ -618,10 +618,14 @@ body {
         </div>
       </div>
       <div class="field">
-        <label for="invitation-code">كود الدعوة (اختياري)</label>
+        <label for="invitation-code" id="invitation-code-label">كود الدعوة (اختياري)</label>
         <div class="field-wrap">
-          <span class="field-icon material-symbols-outlined">card_giftcard</span>
+          <span class="field-icon material-symbols-outlined" id="invitation-code-icon">card_giftcard</span>
           <input id="invitation-code" type="text" placeholder="أدخل كود الدعوة إن وجد" maxlength="6" dir="ltr"/>
+        </div>
+        <div id="referral-notice" style="display:none;margin-top:6px;font-size:0.75rem;color:#2e7d32;display:none;align-items:center;gap:4px;">
+          <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">verified</span>
+          <span>تم تطبيق كود الدعوة تلقائياً</span>
         </div>
       </div>
     </div>
@@ -744,6 +748,27 @@ body {
   if (session && session.invitationCode) {
     document.getElementById('invitation-code').value = session.invitationCode;
   }
+
+  // --- Apply referral code from URL (?ref=XXXXXX) ---
+  (function applyRefCode() {
+    const refCode = new URLSearchParams(window.location.search).get('ref');
+    if (!refCode) return;
+    const inp    = document.getElementById('invitation-code');
+    const notice = document.getElementById('referral-notice');
+    const icon   = document.getElementById('invitation-code-icon');
+    const label  = document.getElementById('invitation-code-label');
+
+    inp.value    = refCode;
+    inp.readOnly = true;
+    inp.style.color  = '#2e7d32';
+    inp.style.background = 'rgba(46,125,50,0.04)';
+    inp.style.borderColor = 'rgba(46,125,50,0.35)';
+    icon.textContent = 'check_circle';
+    icon.style.color = '#2e7d32';
+    icon.style.fontVariationSettings = "'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24";
+    label.textContent = 'كود الدعوة';
+    notice.style.display = 'flex';
+  })();
 
   // ── Geolocation & map ──────────────────────────────
   let leafletMap   = null;

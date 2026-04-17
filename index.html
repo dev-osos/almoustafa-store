@@ -2704,7 +2704,7 @@
 <h5 class="font-headline text-sm font-extrabold text-primary tracking-[0.2em] mb-3 uppercase">ساعات العمل</h5>
 <p class="text-on-surface-variant font-headline text-2xl">السبت – الخميس :      ٩:٠٠ ص – ٧:٠٠ م</p>
 </div>
-<button class="flex items-center gap-4 text-primary font-bold hover:text-secondary transition-colors group pt-6">
+<button class="flex items-center gap-4 text-primary font-bold hover:text-secondary transition-colors group pt-6" href="products.html">
 <span class="font-headline text-xl"> تسوق </span>
 <span class="material-symbols-outlined group-hover:-translate-x-3 transition-transform text-3xl">arrow_back</span>
 </button>
@@ -3610,6 +3610,17 @@
         const invitationBackdrop = document.getElementById('invitation-backdrop');
         const invitationCodeDisplay = document.getElementById('invitation-code-display');
 
+        function buildReferralLink(code) {
+            return new URL('onboarding.html?ref=' + encodeURIComponent(code), window.location.href).href;
+        }
+
+        function setReferralUI(code) {
+            invitationCodeDisplay.textContent = code;
+            document.getElementById('pdd-invite-code').textContent = code;
+            const linkEl = document.getElementById('referral-link-display');
+            if (linkEl) linkEl.textContent = buildReferralLink(code);
+        }
+
         function openInvitationModal() {
             closeProfileDropdown();
             invitationBackdrop.classList.add('open');
@@ -3618,8 +3629,7 @@
             // Show cached code immediately while API loads
             const session = getSession();
             const cached = session?.referral_code || session?.invitationCode || '…';
-            invitationCodeDisplay.textContent = cached;
-            document.getElementById('pdd-invite-code').textContent = cached;
+            setReferralUI(cached);
 
             // Always fetch fresh code from server
             fetch('apis/users/referral.php')
@@ -3627,9 +3637,7 @@
                 .then(data => {
                     if (data.ok && data.referral_code) {
                         const code = data.referral_code;
-                        invitationCodeDisplay.textContent = code;
-                        document.getElementById('pdd-invite-code').textContent = code;
-                        // Cache in session
+                        setReferralUI(code);
                         updateSessionField('referral_code', code);
                         updateSessionField('invitationCode', code);
                     }
@@ -5104,6 +5112,16 @@
         <span class="material-symbols-outlined">content_copy</span>
         نسخ الكود
       </button>
+
+      <!-- Referral link -->
+      <div style="margin-top:14px;background:rgba(0,0,0,0.2);border:1px solid rgba(254,214,91,0.12);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:8px;width:100%;">
+        <span class="material-symbols-outlined" style="font-size:16px;color:rgba(254,214,91,0.5);flex-shrink:0;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">link</span>
+        <div id="referral-link-display" style="flex:1;min-width:0;font-size:0.68rem;color:rgba(255,255,255,0.35);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr;text-align:left;font-family:'Manrope',sans-serif;letter-spacing:0.01em"></div>
+        <button id="btn-copy-referral-link" type="button" class="referral-copy-btn" style="flex-shrink:0;margin:0;padding:5px 10px;">
+          <span class="material-symbols-outlined" style="font-size:13px">content_copy</span>
+          نسخ الرابط
+        </button>
+      </div>
     </div>
 
     <div class="info-modal-content" style="padding:0 8px;">
