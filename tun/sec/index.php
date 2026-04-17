@@ -852,7 +852,6 @@ const ADMIN = {
             <table>
               <thead>
                 <tr>
-                  <th style="width:48px">#</th>
                   <th style="width:60px">ID</th>
                   <th style="width:60px">ERP</th>
                   <th>اسم API</th>
@@ -868,7 +867,7 @@ const ADMIN = {
                 </tr>
               </thead>
               <tbody id="prodBody">
-                <tr><td colspan="13" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
+                <tr><td colspan="12" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -1363,7 +1362,7 @@ async function loadCustomers(page = 1) {
         </td>
         <td>
           <span style="font-size:.78rem;font-weight:700;padding:.2rem .6rem;border-radius:999px;${balStyle}">
-            ${balFmt} ر.س
+            ${balFmt} ج.م
           </span>
         </td>
         <td><div class="date-text">${fmtDate(c.created_at)}</div></td>`;
@@ -1655,7 +1654,7 @@ function prodApiHeaders() {
 async function loadProducts() {
   if (!ADMIN.canProducts) return;
   const tbody = $id('prodBody');
-  tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>';
+  tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>';
   try {
     const res  = await fetch(PROD_API + '?admin_key=' + encodeURIComponent(ADMIN.adminKey));
     const data = await res.json();
@@ -1664,7 +1663,7 @@ async function loadProducts() {
     updateProdStats(allProds);
     renderProdTable(1);
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:2rem;color:#c00;">فشل التحميل: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:2rem;color:#c00;">فشل التحميل: ${e.message}</td></tr>`;
   }
 }
 
@@ -1703,7 +1702,6 @@ function renderProdTable(page) {
       const isActive = p.status === 'active';
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td style="color:var(--on-surface-dim);font-size:.75rem">${start + i + 1}</td>
         <td style="font-family:monospace;font-size:.78rem;color:var(--on-surface-dim)">${p.id}</td>
         <td style="font-family:monospace;font-size:.78rem">${p.erp_id ?? '—'}</td>
         <td style="font-size:.82rem;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(p.api_name ?? '')}">${escHtml(p.api_name ?? '—')}</td>
