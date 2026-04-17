@@ -489,7 +489,7 @@ const ADMIN = {
     <?php endif; ?>
     <?php if (can($adminRole, 'users')): ?>
     <div class="nav-item" id="nav-users" onclick="showSection('users')">
-      <span class="ms">manage_accounts</span> إدارة المستخدمين
+      <span class="ms">manage_accounts</span> مستخدموا لوحة التحكم
     </div>
     <?php endif; ?>
     <?php if (in_array($adminRole, ['super_admin', 'admin'])): ?>
@@ -672,7 +672,6 @@ const ADMIN = {
             ['icon'=>'date_range',   'label'=>'هذا الأسبوع',          'id'=>'csWeek',      'cls'=>'gold', 'g'=>'cgWeek'],
             ['icon'=>'task_alt',     'label'=>'ملفات مكتملة',          'id'=>'csComplete',  'cls'=>'green'],
             ['icon'=>'person_off',   'label'=>'ملفات غير مكتملة',      'id'=>'csInc',       'cls'=>''],
-            ['icon'=>'storefront',   'label'=>'عملاء الجملة',          'id'=>'csWholesale', 'cls'=>'gold'],
           ];
           foreach ($custCards as $c): ?>
           <div class="stat-card <?= $c['cls'] ?>">
@@ -953,7 +952,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
 });
 
 // ── Section switching ─────────────────────────────────────────────────────────
-const SECTION_TITLES = { visitors: 'إحصائيات الزوار', customers: 'عملاؤنا', users: 'إدارة المستخدمين', reviews: 'إدارة الآراء', invitations: 'الدعوات', products: 'إدارة المنتجات' };
+const SECTION_TITLES = { visitors: 'إحصائيات الزوار', customers: 'عملاؤنا', users: 'مستخدموا لوحة التحكم', reviews: 'إدارة الآراء', invitations: 'الدعوات', products: 'إدارة المنتجات' };
 
 function showSection(name) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
