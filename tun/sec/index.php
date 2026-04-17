@@ -418,7 +418,7 @@ const ADMIN = {
               <span id="pf-image_name" style="font-size:.8rem;color:var(--on-surface-variant)"></span>
             </div>
             <input type="hidden" name="image_url" id="pf-image_url"/>
-          </div>
+          </div> 
           <div class="form-field" style="grid-column:1/-1">
             <label class="form-label">المصدر (source)</label>
             <select class="form-select" name="source" id="pf-source">
