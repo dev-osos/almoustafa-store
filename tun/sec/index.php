@@ -88,8 +88,8 @@ function can(string $role, string $perm): bool
   --radius:         14px;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 15px; }
-body { font-family: 'Manrope','Amiri',sans-serif; background: var(--surface-dim); color: var(--on-surface); min-height: 100vh; }
+html { font-size: 15px; overflow-x: hidden; }
+body { font-family: 'Manrope','Amiri',sans-serif; background: var(--surface-dim); color: var(--on-surface); min-height: 100vh; overflow-x: hidden; }
 .ms { font-family:'Material Symbols Outlined'; font-weight:normal; font-style:normal; line-height:1; letter-spacing:normal; text-transform:none; display:inline-block; white-space:nowrap; direction:ltr; font-feature-settings:'liga'; -webkit-font-feature-settings:'liga'; -webkit-font-smoothing:antialiased; user-select:none; }
 
 /* ── Layout ─────────────────────────────────────────── */
@@ -242,52 +242,73 @@ tr:hover td { background:var(--surface-dim); }
 .topbar-menu-btn:hover { background:var(--border); }
 .topbar-menu-btn .ms { font-size:1.35rem; }
 
-@media(max-width:900px){
-  .sidebar {
-    transform: translateX(110%);
-    box-shadow: none;
-  }
-  .sidebar.open {
-    transform: translateX(0);
-    box-shadow: -4px 0 32px rgba(0,0,0,.28);
-  }
-  .sidebar-backdrop { display:block; pointer-events:none; }
-  .sidebar-backdrop.open { pointer-events:all; }
-  .main { margin-right:0; }
-  .charts-row { grid-template-columns:1fr; }
-  .topbar-menu-btn { display:flex; }
-  .content { padding:1rem; }
-  .topbar { padding:.75rem 1rem; }
-  .stats-grid { grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.75rem; }
+/* ── Tablet (≤900px) ─────────────────────────────────── */
+@media (max-width: 900px) {
+  /* Hide sidebar off-screen to the right, show hamburger */
+  .sidebar { transform: translateX(100%); box-shadow: none; }
+  .sidebar.open { transform: translateX(0); box-shadow: -6px 0 40px rgba(0,0,0,.35); }
+  .sidebar-backdrop { display: block; pointer-events: none; }
+  .sidebar-backdrop.open { pointer-events: all; }
+  /* Main takes full width */
+  .main { margin-right: 0; width: 100%; }
+  /* Show hamburger button */
+  .topbar-menu-btn { display: flex; }
+  /* Layout tweaks */
+  .charts-row { grid-template-columns: 1fr; }
+  .content { padding: 1.25rem; }
+  .topbar { padding: .85rem 1.25rem; }
+  /* Tables scroll horizontally */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 650px; }
 }
-@media(max-width:600px){
-  .content { padding:.75rem; }
-  .topbar { padding:.65rem .75rem; gap:.5rem; }
-  .topbar-title { font-size:1rem; }
-  .topbar-meta { display:none; }
-  /* Stats */
-  .stats-grid { grid-template-columns:1fr 1fr; gap:.6rem; margin-bottom:1rem; }
-  .stat-value { font-size:1.5rem; }
-  .stat-card { padding:1rem .9rem .85rem; }
-  /* Table header toolbar */
-  .table-header { flex-direction:column; align-items:stretch; gap:.6rem; padding:.85rem 1rem; }
-  .table-header .search-box { width:100%; }
-  .search-box input { width:100%; }
-  /* Table scroll */
-  .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  .data-table { min-width:700px; font-size:.8rem; }
-  .data-table th, .data-table td { padding:.55rem .65rem; }
-  /* Modal */
-  .modal-backdrop { padding:.5rem; align-items:flex-end; }
-  .modal { padding:1.25rem 1rem; border-radius:var(--radius) var(--radius) 0 0; max-width:100% !important; }
-  .modal-footer { flex-direction:column-reverse; }
+
+/* ── Mobile (≤600px) ─────────────────────────────────── */
+@media (max-width: 600px) {
+  /* Topbar */
+  .topbar { padding: .7rem .85rem; }
+  .topbar-title { font-size: 1rem; }
+  .topbar-meta { display: none; }
+  .online-badge { font-size: .72rem; padding: .28rem .6rem; }
+
+  /* Content */
+  .content { padding: .85rem; }
+
+  /* Stats grid: 2 columns */
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: .6rem; margin-bottom: 1rem; }
+  .stat-value { font-size: 1.45rem; }
+  .stat-card { padding: .9rem .85rem .75rem; }
+  .stat-label { font-size: .72rem; }
+
+  /* Charts */
+  .chart-wrap { height: 160px; }
+
+  /* Table toolbar: stack vertically */
+  .table-header { flex-direction: column; align-items: stretch; gap: .6rem; padding: .85rem; }
+  .search-wrap { max-width: 100%; }
+
+  /* Table font */
+  th { font-size: .72rem; padding: .6rem .7rem; }
+  td { font-size: .78rem; padding: .6rem .7rem; }
+
+  /* Pagination */
+  .pagination { flex-direction: column; align-items: flex-start; gap: .5rem; padding: .85rem; }
+
+  /* Modal: bottom sheet */
+  .modal-backdrop { padding: 0; align-items: flex-end; }
+  .modal {
+    max-width: 100% !important;
+    width: 100%;
+    border-radius: 18px 18px 0 0;
+    padding: 1.25rem 1rem 1.5rem;
+    max-height: 92vh;
+  }
+  .modal-footer { flex-direction: column-reverse; gap: .5rem; margin-top: 1rem; }
   .modal-footer .cancel-btn,
-  .modal-footer .primary-btn { width:100%; text-align:center; justify-content:center; }
-  /* Product form 2-col → 1-col */
-  #productForm > div[style*="grid-template-columns"] { grid-template-columns:1fr !important; }
-  #productForm .form-field[style*="grid-column"] { grid-column:auto !important; }
-  /* Chart */
-  .chart-wrap { height:160px; }
+  .modal-footer .submit-btn { width: 100%; text-align: center; justify-content: center; display: block; }
+
+  /* Product form: 1 column */
+  #productForm > div { grid-template-columns: 1fr !important; }
+  #productForm .form-field { grid-column: auto !important; }
 }
 </style>
 </head>
@@ -438,56 +459,56 @@ const ADMIN = {
 <!-- Sidebar backdrop (mobile) -->
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
 
-<div class="layout">
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+      <img src="../../logo.png" alt="المصطفى" style="width:64px;height:64px;border-radius:50%;object-fit:contain;border:2px solid rgba(254,214,91,0.3);">
+      <h1 style="margin:0;">لوحة التحكم</h1>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" id="nav-visitors" onclick="showSection('visitors')">
+      <span class="ms">group</span> إحصائيات الزوار
+    </div>
+    <div class="nav-item" id="nav-customers" onclick="showSection('customers')">
+      <span class="ms">storefront</span> عملاؤنا
+    </div>
+    <?php if (in_array($adminRole, ['super_admin', 'admin'])): ?>
+    <div class="nav-item" id="nav-reviews" onclick="showSection('reviews')">
+      <span class="ms">star</span> إدارة الآراء
+    </div>
+    <?php endif; ?>
+    <?php if (can($adminRole, 'users')): ?>
+    <div class="nav-item" id="nav-users" onclick="showSection('users')">
+      <span class="ms">manage_accounts</span> إدارة المستخدمين
+    </div>
+    <?php endif; ?>
+    <?php if (in_array($adminRole, ['super_admin', 'admin'])): ?>
+    <div class="nav-item" id="nav-invitations" onclick="showSection('invitations')">
+      <span class="ms">card_giftcard</span> الدعوات
+    </div>
+    <?php endif; ?>
+    <?php if (can($adminRole, 'products')): ?>
+    <div class="nav-item" id="nav-products" onclick="showSection('products')">
+      <span class="ms">inventory_2</span> المنتجات
+    </div>
+    <?php endif; ?>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-username"><?= htmlspecialchars($adminUsername) ?></div>
+      <span class="sidebar-role" style="<?= roleBadgeCss($adminRole) ?>"><?= roleLabelAr($adminRole) ?></span>
+    </div>
+    <form method="post">
+      <button class="logout-btn" name="logout" value="1">
+        <span class="ms">logout</span> تسجيل الخروج
+      </button>
+    </form>
+  </div>
+</aside>
 
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-        <img src="../../logo.png" alt="المصطفى" style="width:64px;height:64px;border-radius:50%;object-fit:contain;border:2px solid rgba(254,214,91,0.3);">
-        <h1 style="margin:0;">لوحة التحكم</h1>
-      </div>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-item active" id="nav-visitors" onclick="showSection('visitors')">
-        <span class="ms">group</span> إحصائيات الزوار
-      </div>
-      <div class="nav-item" id="nav-customers" onclick="showSection('customers')">
-        <span class="ms">storefront</span> عملاؤنا
-      </div>
-      <?php if (in_array($adminRole, ['super_admin', 'admin'])): ?>
-      <div class="nav-item" id="nav-reviews" onclick="showSection('reviews')">
-        <span class="ms">star</span> إدارة الآراء
-      </div>
-      <?php endif; ?>
-      <?php if (can($adminRole, 'users')): ?>
-      <div class="nav-item" id="nav-users" onclick="showSection('users')">
-        <span class="ms">manage_accounts</span> إدارة المستخدمين
-      </div>
-      <?php endif; ?>
-      <?php if (in_array($adminRole, ['super_admin', 'admin'])): ?>
-      <div class="nav-item" id="nav-invitations" onclick="showSection('invitations')">
-        <span class="ms">card_giftcard</span> الدعوات
-      </div>
-      <?php endif; ?>
-      <?php if (can($adminRole, 'products')): ?>
-      <div class="nav-item" id="nav-products" onclick="showSection('products')">
-        <span class="ms">inventory_2</span> المنتجات
-      </div>
-      <?php endif; ?>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="sidebar-user">
-        <div class="sidebar-username"><?= htmlspecialchars($adminUsername) ?></div>
-        <span class="sidebar-role" style="<?= roleBadgeCss($adminRole) ?>"><?= roleLabelAr($adminRole) ?></span>
-      </div>
-      <form method="post">
-        <button class="logout-btn" name="logout" value="1">
-          <span class="ms">logout</span> تسجيل الخروج
-        </button>
-      </form>
-    </div>
-  </aside>
+<div class="layout">
 
   <!-- Main -->
   <main class="main">
