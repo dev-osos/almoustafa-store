@@ -22,6 +22,7 @@ require_once __DIR__ . '/../../apis/bootstrap.php';
 $adminRole     = $_SESSION['admin_role']     ?? '';
 $adminUsername = $_SESSION['admin_username'] ?? '';
 $adminId       = (int) ($_SESSION['admin_id'] ?? 0);
+$adminKey      = api_env('ADMIN_KEY', '');
 
 // ── Role helpers ──────────────────────────────────────────────────────────────
 function roleLabelAr(string $role): string
@@ -45,8 +46,8 @@ function roleBadgeCss(string $role): string
 }
 
 const ROLE_PERMS = [
-    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users', 'customers'],
-    'admin'       => ['stats', 'chart', 'devices', 'visitors', 'customers'],
+    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users', 'customers', 'products'],
+    'admin'       => ['stats', 'chart', 'devices', 'visitors', 'customers', 'products'],
     'support'     => ['visitors', 'customers'],
 ];
 function can(string $role, string $perm): bool
@@ -263,11 +264,13 @@ tr:hover td { background:var(--surface-dim); }
 <!-- ══ DASHBOARD ══════════════════════════════════════════════════════════════ -->
 <script>
 const ADMIN = {
-  id:       <?= json_encode($adminId) ?>,
-  username: <?= json_encode($adminUsername) ?>,
-  role:     <?= json_encode($adminRole) ?>,
-  canUsers: <?= json_encode(can($adminRole, 'users')) ?>,
-  canStats: <?= json_encode(can($adminRole, 'stats')) ?>,
+  id:          <?= json_encode($adminId) ?>,
+  username:    <?= json_encode($adminUsername) ?>,
+  role:        <?= json_encode($adminRole) ?>,
+  canUsers:    <?= json_encode(can($adminRole, 'users')) ?>,
+  canStats:    <?= json_encode(can($adminRole, 'stats')) ?>,
+  canProducts: <?= json_encode(can($adminRole, 'products')) ?>,
+  adminKey:    <?= json_encode($adminKey) ?>,
 };
 </script>
 
@@ -299,6 +302,72 @@ const ADMIN = {
       <div class="modal-footer">
         <button type="button" class="cancel-btn" onclick="closeModal()">إلغاء</button>
         <button type="submit" class="submit-btn" id="createSubmitBtn">إنشاء الحساب</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: product add/edit -->
+<div class="modal-backdrop" id="productModal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <div class="modal-title"><span class="ms">inventory_2</span> <span id="productModalTitle">إضافة منتج</span></div>
+      <button class="modal-close" onclick="closeProductModal()"><span class="ms">close</span></button>
+    </div>
+    <div class="form-error" id="productModalErr"></div>
+    <form id="productForm" onsubmit="submitProduct(event)">
+      <input type="hidden" name="id" id="pf-id"/>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="form-field">
+          <label class="form-label">رقم ERP</label>
+          <input class="form-input" type="number" name="erp_id" id="pf-erp_id" placeholder="مثال: 67"/>
+        </div>
+        <div class="form-field">
+          <label class="form-label">الحالة</label>
+          <select class="form-select" name="status" id="pf-status">
+            <option value="active">نشط</option>
+            <option value="inactive">معطل</option>
+          </select>
+        </div>
+        <div class="form-field" style="grid-column:1/-1">
+          <label class="form-label">اسم API <span style="color:#c62828">*</span></label>
+          <input class="form-input" type="text" name="api_name" id="pf-api_name" placeholder="اسم المنتج في نظام الـ ERP" required/>
+        </div>
+        <div class="form-field" style="grid-column:1/-1">
+          <label class="form-label">اسم المتجر (store_name)</label>
+          <input class="form-input" type="text" name="store_name" id="pf-store_name" placeholder="الاسم الذي يراه العميل"/>
+        </div>
+        <div class="form-field">
+          <label class="form-label">التصنيف</label>
+          <input class="form-input" type="text" name="category" id="pf-category" placeholder="عسل، صابون..."/>
+        </div>
+        <div class="form-field">
+          <label class="form-label">الشارة (badge)</label>
+          <input class="form-input" type="text" name="badge" id="pf-badge" placeholder="جديد / الأكثر مبيعاً..."/>
+        </div>
+        <div class="form-field">
+          <label class="form-label">الوزن</label>
+          <input class="form-input" type="text" name="wight" id="pf-wight" placeholder="300 جم"/>
+        </div>
+        <div class="form-field">
+          <label class="form-label">الكمية المباعة</label>
+          <input class="form-input" type="number" name="sold_q" id="pf-sold_q" placeholder="0" value="0"/>
+        </div>
+        <div class="form-field" style="grid-column:1/-1">
+          <label class="form-label">مسار الصورة (image_url)</label>
+          <input class="form-input" type="text" name="image_url" id="pf-image_url" placeholder="imgs/products/..."/>
+        </div>
+        <div class="form-field" style="grid-column:1/-1">
+          <label class="form-label">المصدر (source)</label>
+          <select class="form-select" name="source" id="pf-source">
+            <option value="products">products</option>
+            <option value="product_templates">product_templates</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="cancel-btn" onclick="closeProductModal()">إلغاء</button>
+        <button type="submit" class="submit-btn" id="productSubmitBtn">حفظ</button>
       </div>
     </form>
   </div>
@@ -365,6 +434,11 @@ const ADMIN = {
       <?php if (in_array($adminRole, ['super_admin', 'admin'])): ?>
       <div class="nav-item" id="nav-invitations" onclick="showSection('invitations')">
         <span class="ms">card_giftcard</span> الدعوات
+      </div>
+      <?php endif; ?>
+      <?php if (can($adminRole, 'products')): ?>
+      <div class="nav-item" id="nav-products" onclick="showSection('products')">
+        <span class="ms">inventory_2</span> المنتجات
       </div>
       <?php endif; ?>
     </nav>
@@ -665,6 +739,85 @@ const ADMIN = {
       </div><!-- /invitationsSection -->
       <?php endif; ?>
 
+      <!-- ── PRODUCTS SECTION ──────────────────────────── -->
+      <?php if (can($adminRole, 'products')): ?>
+      <div class="section" id="productsSection">
+
+        <!-- Products Stats Bar -->
+        <div class="stats-grid" style="margin-bottom:1.5rem" id="prodStatsGrid">
+          <div class="stat-card">
+            <div class="stat-label"><span class="ms">widgets</span>إجمالي المنتجات</div>
+            <div class="stat-value" id="ps-total">—</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label"><span class="ms">check_circle</span>نشط</div>
+            <div class="stat-value" id="ps-active">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><span class="ms">cancel</span>معطل</div>
+            <div class="stat-value" id="ps-inactive">—</div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title"><span class="ms">inventory_2</span> قائمة المنتجات</div>
+            <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;flex:1;justify-content:flex-end;">
+              <select class="chart-select" id="prodStatusFilter" onchange="loadProducts()">
+                <option value="">كل الحالات</option>
+                <option value="active">نشط</option>
+                <option value="inactive">معطل</option>
+              </select>
+              <select class="chart-select" id="prodSourceFilter" onchange="loadProducts()">
+                <option value="">كل المصادر</option>
+                <option value="products">products</option>
+                <option value="product_templates">product_templates</option>
+              </select>
+              <div class="search-wrap" style="max-width:240px">
+                <span class="ms">search</span>
+                <input class="search-input" id="prodSearch" placeholder="بحث في الاسم، التصنيف..." type="search">
+              </div>
+              <button class="primary-btn" onclick="openProductModal()">
+                <span class="ms">add</span> إضافة منتج
+              </button>
+              <button class="primary-btn" style="background:var(--gold);color:var(--primary)" onclick="loadProducts()">
+                <span class="ms">refresh</span>
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:48px">#</th>
+                  <th style="width:60px">ID</th>
+                  <th style="width:60px">ERP</th>
+                  <th>اسم API</th>
+                  <th>اسم المتجر</th>
+                  <th>التصنيف</th>
+                  <th style="width:80px">الحالة</th>
+                  <th>الشارة</th>
+                  <th>الوزن</th>
+                  <th style="width:60px">مباع</th>
+                  <th>الصورة</th>
+                  <th>المصدر</th>
+                  <th style="width:90px;text-align:center">إجراء</th>
+                </tr>
+              </thead>
+              <tbody id="prodBody">
+                <tr><td colspan="13" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <div class="page-info" id="prodPageInfo">—</div>
+            <div class="page-btns" id="prodPageBtns"></div>
+          </div>
+        </div>
+
+      </div><!-- /productsSection -->
+      <?php endif; ?>
+
     </div><!-- /content -->
   </main>
 </div>
@@ -738,7 +891,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
 });
 
 // ── Section switching ─────────────────────────────────────────────────────────
-const SECTION_TITLES = { visitors: 'إحصائيات الزوار', customers: 'عملاؤنا', users: 'إدارة المستخدمين', reviews: 'إدارة الآراء', invitations: 'الدعوات' };
+const SECTION_TITLES = { visitors: 'إحصائيات الزوار', customers: 'عملاؤنا', users: 'إدارة المستخدمين', reviews: 'إدارة الآراء', invitations: 'الدعوات', products: 'إدارة المنتجات' };
 
 function showSection(name) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -754,6 +907,7 @@ function showSection(name) {
   if (name === 'customers')  { loadCustomerStats(); loadCustomers(1); }
   if (name === 'reviews')    loadReviews();
   if (name === 'invitations' && ADMIN.canUsers) loadInvitations();
+  if (name === 'products'   && ADMIN.canProducts) loadProducts();
 }
 
 // ── Restore last section on load — called at end of script after all vars ─────
@@ -1423,6 +1577,210 @@ function showInvitationUsers(code) {
 function closeInvitationModal() {
   const modal = $id('invitationUsersModal');
   if (modal) modal.classList.remove('open');
+}
+
+// ── Products ──────────────────────────────────────────────────────────────────
+const PROD_API    = '../../apis/admin/products.php';
+let allProds      = [];
+let prodPage      = 1;
+const PROD_LIMIT  = 50;
+
+function prodApiHeaders() {
+  return { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN.adminKey };
+}
+
+async function loadProducts() {
+  if (!ADMIN.canProducts) return;
+  const tbody = $id('prodBody');
+  tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>';
+  try {
+    const res  = await fetch(PROD_API + '?admin_key=' + encodeURIComponent(ADMIN.adminKey));
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    allProds = data.products || [];
+    updateProdStats(allProds);
+    renderProdTable(1);
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:2rem;color:#c00;">فشل التحميل: ${e.message}</td></tr>`;
+  }
+}
+
+function updateProdStats(prods) {
+  $id('ps-total').textContent   = prods.length;
+  $id('ps-active').textContent  = prods.filter(p => p.status === 'active').length;
+  $id('ps-inactive').textContent= prods.filter(p => p.status !== 'active').length;
+}
+
+function filteredProds() {
+  const q   = ($id('prodSearch')?.value ?? '').trim().toLowerCase();
+  const st  = $id('prodStatusFilter')?.value ?? '';
+  const src = $id('prodSourceFilter')?.value ?? '';
+  return allProds.filter(p => {
+    const mQ   = !q  || [p.id,p.erp_id,p.api_name,p.store_name,p.category,p.badge].some(v => String(v??'').toLowerCase().includes(q));
+    const mSt  = !st  || p.status === st;
+    const mSrc = !src || p.source === src;
+    return mQ && mSt && mSrc;
+  });
+}
+
+function renderProdTable(page) {
+  prodPage = page;
+  const prods  = filteredProds();
+  const total  = prods.length;
+  const pages  = Math.max(1, Math.ceil(total / PROD_LIMIT));
+  const start  = (page - 1) * PROD_LIMIT;
+  const slice  = prods.slice(start, start + PROD_LIMIT);
+  const tbody  = $id('prodBody');
+  tbody.innerHTML = '';
+
+  if (!slice.length) {
+    tbody.innerHTML = '<tr><td colspan="13"><div class="empty-state"><span class="ms">search_off</span>لا توجد نتائج</div></td></tr>';
+  } else {
+    slice.forEach((p, i) => {
+      const isActive = p.status === 'active';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="color:var(--on-surface-dim);font-size:.75rem">${start + i + 1}</td>
+        <td style="font-family:monospace;font-size:.78rem;color:var(--on-surface-dim)">${p.id}</td>
+        <td style="font-family:monospace;font-size:.78rem">${p.erp_id ?? '—'}</td>
+        <td style="font-size:.82rem;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(p.api_name ?? '')}">${escHtml(p.api_name ?? '—')}</td>
+        <td style="font-size:.82rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(p.store_name ?? '')}">${escHtml(p.store_name || '—')}</td>
+        <td style="font-size:.78rem;color:var(--on-surface-dim)">${escHtml(p.category || '—')}</td>
+        <td>
+          <span style="font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:999px;
+            ${isActive ? 'background:var(--green-bg);color:var(--green)' : 'background:#f0f0f0;color:#888'}">
+            ${isActive ? 'نشط' : 'معطل'}
+          </span>
+        </td>
+        <td style="font-size:.78rem">${escHtml(p.badge || '—')}</td>
+        <td style="font-size:.78rem;direction:ltr;text-align:right">${escHtml(p.wight || '—')}</td>
+        <td style="text-align:center;font-weight:700;font-size:.82rem">${p.sold_q ?? 0}</td>
+        <td>
+          ${p.image_url
+            ? `<img src="../../${p.image_url}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;border:1px solid var(--border);vertical-align:middle" onerror="this.style.display='none'">`
+            : '<span style="font-size:.72rem;color:#ccc">—</span>'}
+        </td>
+        <td style="font-size:.72rem;color:var(--on-surface-dim)">${escHtml(p.source || '—')}</td>
+        <td style="text-align:center">
+          <button class="action-btn toggle-off" onclick="openProductModal(${JSON.stringify(JSON.stringify(p))})" style="border-color:#b6ccf7;color:#1a56d6;margin-left:.25rem">
+            <span class="ms">edit</span>
+          </button>
+          <button class="action-btn del" onclick="deleteProduct(${p.id}, this)">
+            <span class="ms">delete</span>
+          </button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  $id('prodPageInfo').textContent = `عرض ${start+1}–${Math.min(start+PROD_LIMIT,total)} من ${total} منتج`;
+  renderProdPagination(page, pages);
+}
+
+function renderProdPagination(current, total) {
+  const wrap = $id('prodPageBtns');
+  wrap.innerHTML = '';
+  const btn = (label, page, disabled=false, active=false) => {
+    const b = document.createElement('button');
+    b.className = 'page-btn' + (active?' active':'');
+    b.innerHTML = label; b.disabled = disabled;
+    if (!disabled) b.onclick = () => renderProdTable(page);
+    wrap.appendChild(b);
+  };
+  btn('<span class="ms" style="font-size:.9rem">chevron_right</span>', current-1, current<=1);
+  const pages = [];
+  if (total<=7) { for(let i=1;i<=total;i++) pages.push(i); }
+  else {
+    pages.push(1);
+    if(current>3) pages.push('…');
+    for(let i=Math.max(2,current-1);i<=Math.min(total-1,current+1);i++) pages.push(i);
+    if(current<total-2) pages.push('…');
+    pages.push(total);
+  }
+  pages.forEach(p => {
+    if(p==='…'){const s=document.createElement('span');s.textContent='…';s.style.cssText='padding:0 .4rem;line-height:34px;color:var(--on-surface-dim)';wrap.appendChild(s);}
+    else btn(p,p,false,p===current);
+  });
+  btn('<span class="ms" style="font-size:.9rem">chevron_left</span>', current+1, current>=total);
+}
+
+// Search & filter
+let prodSearchTimer;
+$id('prodSearch')?.addEventListener('input', () => {
+  clearTimeout(prodSearchTimer);
+  prodSearchTimer = setTimeout(() => renderProdTable(1), 350);
+});
+
+// Modal open
+function openProductModal(jsonStr) {
+  const modal = $id('productModal');
+  const form  = $id('productForm');
+  const err   = $id('productModalErr');
+  const title = $id('productModalTitle');
+  if (err) err.classList.remove('show');
+  form.reset();
+
+  if (jsonStr) {
+    const p = JSON.parse(jsonStr);
+    title.textContent = 'تعديل منتج';
+    ['id','erp_id','api_name','store_name','category','status','badge','wight','sold_q','image_url','source'].forEach(f => {
+      const el = $id('pf-' + f);
+      if (el) el.value = p[f] ?? '';
+    });
+  } else {
+    title.textContent = 'إضافة منتج';
+    $id('pf-id').value = '';
+  }
+  modal.classList.add('open');
+}
+
+function closeProductModal() {
+  $id('productModal').classList.remove('open');
+}
+
+$id('productModal').addEventListener('click', e => { if (e.target === $id('productModal')) closeProductModal(); });
+
+async function submitProduct(e) {
+  e.preventDefault();
+  const btn = $id('productSubmitBtn');
+  const err = $id('productModalErr');
+  err.classList.remove('show');
+  btn.disabled = true;
+  btn.textContent = 'جارٍ الحفظ...';
+
+  const data = Object.fromEntries(new FormData($id('productForm')));
+  const action = data.id ? 'update' : 'create';
+  try {
+    const res = await fetch(PROD_API, { method:'POST', headers: prodApiHeaders(), body: JSON.stringify({ action, ...data }) });
+    const d   = await res.json();
+    if (d.ok) {
+      closeProductModal();
+      await loadProducts();
+    } else {
+      err.textContent = d.error || 'حدث خطأ';
+      err.classList.add('show');
+    }
+  } catch {
+    err.textContent = 'فشل الاتصال بالسيرفر';
+    err.classList.add('show');
+  }
+  btn.disabled = false;
+  btn.textContent = 'حفظ';
+}
+
+async function deleteProduct(id, btn) {
+  if (!confirm('هل تريد حذف هذا المنتج نهائياً؟')) return;
+  btn.disabled = true;
+  try {
+    const res = await fetch(PROD_API, { method:'DELETE', headers: prodApiHeaders(), body: JSON.stringify({ id }) });
+    const d   = await res.json();
+    if (d.ok) {
+      allProds = allProds.filter(p => p.id != id);
+      updateProdStats(allProds);
+      renderProdTable(prodPage);
+    } else { alert(d.error || 'فشل الحذف'); }
+  } catch { alert('فشل الاتصال'); }
+  btn.disabled = false;
 }
 
 // ── Run after all declarations ────────────────────────────────────────────────
