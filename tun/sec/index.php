@@ -967,7 +967,7 @@ function showSection(name) {
 
 // ── Restore last section on load — called at end of script after all vars ─────
 function restoreSection() {
-  const valid = ['visitors', 'customers', 'reviews', 'users', 'invitations'];
+  const valid = ['visitors', 'customers', 'reviews', 'users', 'invitations', 'products'];
   let saved;
   try { saved = localStorage.getItem('alm_admin_section'); } catch {}
   const section = valid.includes(saved) ? saved : 'visitors';
