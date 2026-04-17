@@ -408,8 +408,16 @@ const ADMIN = {
             <input class="form-input" type="number" name="sold_q" id="pf-sold_q" placeholder="0" value="0"/>
           </div>
           <div class="form-field" style="grid-column:1/-1">
-            <label class="form-label">مسار الصورة (image_url)</label>
-            <input class="form-input" type="text" name="image_url" id="pf-image_url" placeholder="imgs/products/..."/>
+            <label class="form-label">الصورة</label>
+            <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+              <label style="display:inline-flex;align-items:center;gap:.4rem;cursor:pointer;background:var(--surface-container);border:1px solid var(--border);border-radius:8px;padding:.45rem .85rem;font-size:.85rem;font-weight:600;color:var(--on-surface);transition:background .15s" onmouseenter="this.style.background='var(--surface-container-high)'" onmouseleave="this.style.background='var(--surface-container)'">
+                <span class="ms" style="font-size:1.1rem">upload</span> رفع صورة
+                <input type="file" id="pf-image_file" accept="image/*" style="display:none" onchange="handleProductImagePick(this)"/>
+              </label>
+              <img id="pf-image_preview" src="" alt="" style="display:none;width:48px;height:48px;border-radius:8px;object-fit:cover;border:1px solid var(--border)"/>
+              <span id="pf-image_name" style="font-size:.8rem;color:var(--on-surface-variant)"></span>
+            </div>
+            <input type="hidden" name="image_url" id="pf-image_url"/>
           </div>
           <div class="form-field" style="grid-column:1/-1">
             <label class="form-label">المصدر (source)</label>
@@ -1782,9 +1790,23 @@ function openProductModal(jsonStr) {
       const el = $id('pf-' + f);
       if (el) el.value = p[f] ?? '';
     });
+    // Show existing image preview
+    const prev = $id('pf-image_preview');
+    if (p.image_url) {
+      prev.src = '../../' + p.image_url;
+      prev.style.display = 'block';
+      $id('pf-image_name').textContent = p.image_url.split('/').pop();
+    } else {
+      prev.src = ''; prev.style.display = 'none';
+      $id('pf-image_name').textContent = '';
+    }
   } else {
     title.textContent = 'إضافة منتج';
     $id('pf-id').value = '';
+    $id('pf-image_preview').src = ''; $id('pf-image_preview').style.display = 'none';
+    $id('pf-image_name').textContent = '';
+    $id('pf-image_file').value = '';
+    $id('pf-image_url').value = '';
   }
   modal.classList.add('open');
 }
@@ -1795,6 +1817,15 @@ function closeProductModal() {
 
 $id('productModal').addEventListener('click', e => { if (e.target === $id('productModal')) closeProductModal(); });
 
+function handleProductImagePick(input) {
+  const file = input.files[0];
+  if (!file) return;
+  $id('pf-image_name').textContent = file.name;
+  const prev = $id('pf-image_preview');
+  prev.src = URL.createObjectURL(file);
+  prev.style.display = 'block';
+}
+
 async function submitProduct(e) {
   e.preventDefault();
   const btn = $id('productSubmitBtn');
@@ -1802,6 +1833,33 @@ async function submitProduct(e) {
   err.classList.remove('show');
   btn.disabled = true;
   btn.textContent = 'جارٍ الحفظ...';
+
+  // Upload image if a file was picked
+  const fileInput = $id('pf-image_file');
+  if (fileInput.files.length > 0) {
+    btn.textContent = 'جارٍ رفع الصورة...';
+    const fd = new FormData();
+    fd.append('image', fileInput.files[0]);
+    try {
+      const upRes = await fetch('upload.php', { method: 'POST', body: fd });
+      const upD   = await upRes.json();
+      if (!upD.ok) {
+        err.textContent = upD.error || 'فشل رفع الصورة';
+        err.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'حفظ';
+        return;
+      }
+      $id('pf-image_url').value = upD.path;
+    } catch {
+      err.textContent = 'فشل الاتصال أثناء رفع الصورة';
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'حفظ';
+      return;
+    }
+    btn.textContent = 'جارٍ الحفظ...';
+  }
 
   const data = Object.fromEntries(new FormData($id('productForm')));
   const action = data.id ? 'update' : 'create';
