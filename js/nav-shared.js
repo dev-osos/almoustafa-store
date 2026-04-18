@@ -158,7 +158,8 @@
     });
   }
 
-  document.getElementById('nav-pd-out').addEventListener('click', function () {
+  var pdOutBtn = document.getElementById('nav-pd-out');
+  if (pdOutBtn) pdOutBtn.addEventListener('click', function () {
     clearSession();
     window.location.href = 'index.html';
   });
