@@ -252,9 +252,8 @@
   .cart-qty-ctrl { display:flex; align-items:center; gap:6px; margin-right:auto; flex-shrink:0; }
   .cart-qty-btn { width:26px; height:26px; border-radius:50%; border:1px solid rgba(60,0,4,0.15); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; color:#3c0004; transition:background 0.2s; font-family:'Manrope',sans-serif; font-weight:700; }
   .cart-qty-btn:hover { background:rgba(60,0,4,0.07); }
-  .cart-qty-num { font-family:'Amiri',serif; font-size:0.95rem; font-weight:700; color:#3c0004; width:32px; text-align:center; border:none; background:transparent; outline:none; cursor:default; padding:0; -moz-appearance:textfield; appearance:textfield; }
-  .cart-qty-num::-webkit-inner-spin-button, .cart-qty-num::-webkit-outer-spin-button { -webkit-appearance:none; }
-  .cart-qty-num:focus { cursor:text; background:rgba(60,0,4,0.05); border-radius:6px; }
+  .cart-qty-num { font-family:'Amiri',serif; font-size:0.9rem; font-weight:700; color:#3c0004; width:36px; text-align:center; border:1px solid rgba(60,0,4,0.15); background:rgba(60,0,4,0.03); border-radius:6px; outline:none; cursor:default; padding:2px 4px; }
+  .cart-qty-num:focus { cursor:text; background:rgba(60,0,4,0.07); border-color:rgba(60,0,4,0.35); }
   .cart-row-remove { width:28px; height:28px; border-radius:50%; border:none; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; color:rgba(60,0,4,0.25); transition:color 0.2s; flex-shrink:0; }
   .cart-row-remove:hover { color:rgba(192,57,43,0.8); }
 
@@ -347,7 +346,7 @@
   <div class="flex items-center gap-6">
     <button id="cart-btn" class="relative text-primary hover:text-secondary transition-all scale-110">
       <span id="cart-icon" class="material-symbols-outlined" style="font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24">shopping_bag</span>
-      <span id="cart-count" class="absolute -top-1 -left-1 w-4 h-4 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none" style="display:none"></span>
+      <span id="cart-count" class="absolute -top-1 -left-1 min-w-[18px] h-[18px] px-[3px] bg-red-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none" style="display:none"></span>
     </button>
     <button id="btn-account" class="text-primary hover:text-secondary transition-all scale-110"><span class="material-symbols-outlined">person</span></button>
     <button id="btn-mobile-menu" class="md:hidden text-primary"><span class="material-symbols-outlined">menu</span></button>
@@ -776,14 +775,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctrl = document.createElement('div'); ctrl.className = 'cart-qty-ctrl';
     const dec = document.createElement('button'); dec.className = 'cart-qty-btn'; dec.dataset.action = 'dec'; dec.dataset.idx = idx; dec.textContent = '−';
     const num = document.createElement('input');
-    num.type = 'number'; num.className = 'cart-qty-num'; num.value = item.qty; num.min = 1; num.dataset.idx = idx;
+    num.type = 'text'; num.inputMode = 'numeric'; num.className = 'cart-qty-num';
+    num.value = toArabicNum(item.qty); num.dataset.idx = idx;
     num.addEventListener('focus', () => { num.select(); });
-    num.addEventListener('change', () => {
-      const val = parseInt(num.value, 10);
+    num.addEventListener('blur', () => {
+      const raw = num.value.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d]/g, '');
+      const val = parseInt(raw, 10);
       const i = +num.dataset.idx;
-      if (!isNaN(val) && val > 0) { cartItems[i].qty = val; }
-      else if (!isNaN(val) && val <= 0) { cartItems.splice(i, 1); }
-      renderCart(); saveCart();
+      if (!isNaN(val) && val > 0) { cartItems[i].qty = val; renderCart(); saveCart(); }
+      else if (!isNaN(val) && val <= 0) { cartItems.splice(i, 1); renderCart(); saveCart(); }
+      else { num.value = toArabicNum(cartItems[i]?.qty ?? 1); }
     });
     num.addEventListener('keydown', e => { if (e.key === 'Enter') num.blur(); });
     const inc = document.createElement('button'); inc.className = 'cart-qty-btn'; inc.dataset.action = 'inc'; inc.dataset.idx = idx; inc.textContent = '+';
@@ -827,14 +828,32 @@ document.addEventListener('DOMContentLoaded', () => {
     cartItems.forEach((item, idx) => list.appendChild(buildCartRow(item, idx)));
   }
 
-  // Cart list qty/remove
+  // Cart list qty/remove — partial update for inc/dec to avoid DOM rebuild lag
   document.getElementById('cart-items-list').addEventListener('click', e => {
     const btn = e.target.closest('[data-action]'); if (!btn) return;
     const idx = +btn.dataset.idx;
-    if (btn.dataset.action === 'inc') cartItems[idx].qty++;
-    else if (btn.dataset.action === 'dec') { cartItems[idx].qty--; if (cartItems[idx].qty <= 0) cartItems.splice(idx,1); }
-    else if (btn.dataset.action === 'remove') cartItems.splice(idx,1);
-    renderCart();
+    const action = btn.dataset.action;
+
+    if (action === 'remove') { cartItems.splice(idx, 1); renderCart(); saveCart(); return; }
+
+    if (action === 'inc') cartItems[idx].qty++;
+    else if (action === 'dec') {
+      cartItems[idx].qty--;
+      if (cartItems[idx].qty <= 0) { cartItems.splice(idx, 1); renderCart(); saveCart(); return; }
+    }
+
+    // Partial update: only update qty input + totals, no DOM rebuild
+    const row = btn.closest('.cart-row');
+    if (row) {
+      const numInput = row.querySelector('.cart-qty-num');
+      if (numInput) numInput.value = toArabicNum(cartItems[idx].qty);
+    }
+    const totalQty = cartItems.reduce((s, i) => s + i.qty, 0);
+    document.getElementById('cart-modal-count').textContent = '(' + toArabicNum(totalQty) + ' منتج)';
+    const badge = document.getElementById('cart-count');
+    badge.textContent = totalQty;
+    badge.style.display = 'flex';
+    document.getElementById('cart-total').textContent = formatPrice(cartItems.reduce((s, i) => s + i.price * i.qty, 0));
     saveCart();
   });
 
