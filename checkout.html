@@ -106,13 +106,16 @@
 
   /* Checkout address autocomplete */
   .co-ac-wrap { position: relative; }
+  .co-ac-hint { font-size:0.72rem; margin-top:4px; font-family:'Amiri',serif; line-height:1.5; display:none; }
+  .co-ac-hint.error { color:#c0392b; display:block; }
+  .co-ac-hint.warn  { color:#b07d00; display:block; }
   .co-ac-dropdown {
     position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 200;
     background: #fff;
     border: 1.5px solid rgba(60,0,4,0.15);
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(60,0,4,0.14);
-    max-height: 200px; overflow-y: auto;
+    max-height: calc(4 * 38px); overflow-y: auto;
     display: none;
     scrollbar-width: thin; scrollbar-color: rgba(60,0,4,0.15) transparent;
   }
@@ -313,6 +316,7 @@
               <input class="info-row-input" id="co-gov-input" type="text" placeholder="اكتب لاختيار المحافظة..." autocomplete="off" role="combobox" aria-expanded="false" aria-haspopup="listbox"/>
               <ul class="co-ac-dropdown" id="co-gov-list" role="listbox"></ul>
             </div>
+            <div class="co-ac-hint" id="co-gov-hint"></div>
           </div>
         </div>
 
@@ -326,6 +330,8 @@
               <input class="info-row-input" id="co-city-input" type="text" placeholder="اختر المحافظة أولاً..." autocomplete="off" role="combobox" aria-expanded="false" aria-haspopup="listbox" disabled/>
               <ul class="co-ac-dropdown" id="co-city-list" role="listbox"></ul>
             </div>
+            <div class="co-ac-hint" id="co-city-hint"></div>
+            <div style="font-size:0.72rem;color:rgba(60,0,4,0.45);margin-top:5px;font-family:'Amiri',serif;line-height:1.5">إن لم تجد اسم منطقتك في القائمة، كرر اسم المحافظة في هذا الحقل مرة أخرى</div>
           </div>
         </div>
 
@@ -418,11 +424,18 @@
   // --- Address Autocomplete ---
   function acNorm(s) { return s.replace(/[أإآا]/g,'ا').replace(/ى/g,'ي').trim(); }
 
-  function makeAC({ wrapId, inputId, listId, placeholder, fetchFn, onSelect }) {
+  function makeAC({ wrapId, inputId, listId, hintId, placeholder, fetchFn, onSelect }) {
     const wrap  = document.getElementById(wrapId);
     const input = document.getElementById(inputId);
     const list  = document.getElementById(listId);
+    const hint  = hintId ? document.getElementById(hintId) : null;
     let items = [], filtered = [], selected = null, focusIdx = -1;
+
+    function setHint(msg, type) {
+      if (!hint) return;
+      hint.textContent = msg || '';
+      hint.className = 'co-ac-hint' + (msg ? ' ' + type : '');
+    }
 
     function clearList() { while(list.firstChild) list.removeChild(list.firstChild); }
 
@@ -459,7 +472,8 @@
 
     function confirm(item) {
       selected = item; input.value = item.name;
-      input.style.borderBottomColor = 'transparent';
+      input.style.borderColor = '';
+      setHint('', '');
       close(); if (onSelect) onSelect(item);
     }
 
@@ -472,8 +486,8 @@
       els[focusIdx].scrollIntoView({block:'nearest'});
     }
 
-    input.addEventListener('focus', () => { if (items.length) open(); });
-    input.addEventListener('input', () => { selected = null; open(); });
+    input.addEventListener('focus', () => { if (items.length) open(); setHint('',''); });
+    input.addEventListener('input', () => { selected = null; setHint('',''); open(); });
     input.addEventListener('keydown', e => {
       if (!wrap.classList.contains('open')) { if (e.key==='ArrowDown'||e.key==='Enter') open(); return; }
       if (e.key==='ArrowDown')  { e.preventDefault(); moveFocus(1); }
@@ -481,31 +495,54 @@
       else if (e.key==='Enter') { e.preventDefault(); if (focusIdx>=0&&filtered[focusIdx]) confirm(filtered[focusIdx]); }
       else if (e.key==='Escape'||e.key==='Tab') close();
     });
-    input.addEventListener('blur', () => { setTimeout(close, 150); });
+    input.addEventListener('blur', () => {
+      setTimeout(() => {
+        close();
+        if (!items.length || !input.value.trim()) return;
+        if (!selected) {
+          const norm = acNorm(input.value.trim());
+          const exact = items.find(i => acNorm(i.name) === norm);
+          if (exact) { confirm(exact); setHint('',''); }
+          else { input.style.borderColor = '#c0392b'; setHint('هذه القيمة غير موجودة في القائمة، يرجى الاختيار من الخيارات المتاحة', 'error'); }
+        } else { setHint('',''); }
+      }, 150);
+    });
     document.addEventListener('click', e => { if (!wrap.contains(e.target)) close(); });
 
     return {
       load(data, ph) { items = data; input.placeholder = ph || placeholder || ''; input.disabled = false; },
       getSelected() { return selected; },
+      getItems() { return items; },
       getValue() { return input.value.trim(); },
       setInput(val) { input.value = val; },
-      highlight(bad) { input.style.borderBottomColor = bad ? '#c0392b' : 'transparent'; },
+      highlight(bad) { input.style.borderColor = bad ? '#c0392b' : ''; },
     };
   }
 
   // Governorate AC
   const govAC = makeAC({
-    wrapId: 'co-gov-wrap', inputId: 'co-gov-input', listId: 'co-gov-list',
+    wrapId: 'co-gov-wrap', inputId: 'co-gov-input', listId: 'co-gov-list', hintId: 'co-gov-hint',
     onSelect(gov) { cityACObj.reset(gov.id); }
   });
 
   // City AC
   const cityInput = document.getElementById('co-city-input');
   const cityACObj = makeAC({
-    wrapId: 'co-city-wrap', inputId: 'co-city-input', listId: 'co-city-list',
+    wrapId: 'co-city-wrap', inputId: 'co-city-input', listId: 'co-city-list', hintId: 'co-city-hint',
+  });
+
+  // Allow typing in city before gov selected — show warning on focus
+  cityInput.removeAttribute('disabled');
+  cityInput.addEventListener('focus', () => {
+    if (!cityACObj.getItems || !cityACObj.getItems().length) {
+      document.getElementById('co-city-hint').textContent = 'يرجى اختيار المحافظة أولاً';
+      document.getElementById('co-city-hint').className = 'co-ac-hint warn';
+      cityInput.blur();
+    }
   });
   cityACObj.reset = function(govId) {
-    cityInput.disabled = true; cityInput.value = ''; cityInput.placeholder = 'جاري التحميل...';
+    cityInput.value = ''; cityInput.placeholder = 'جاري التحميل...'; cityInput.style.borderColor = '';
+    document.getElementById('co-city-hint').textContent = ''; document.getElementById('co-city-hint').className = 'co-ac-hint';
     fetch('dat-docs/cities/' + govId + '.json')
       .then(r => r.json())
       .then(d => { cityACObj.load(d.data.listZonesDropdown || [], 'اكتب لاختيار المدينة...'); cityInput.focus(); })
