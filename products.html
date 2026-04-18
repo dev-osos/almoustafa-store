@@ -581,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res  = await fetch('apis/products/list.php');
       const data = await res.json();
-      const list = data.data?.products ?? [];
+      const list = data.products ?? [];
 
       const grids = {
         honey: document.getElementById('grid-honey'),
