@@ -205,21 +205,21 @@
                 <span class="material-symbols-outlined">phone</span>
             </div>
             <h2 class="contact-title">الهاتف</h2>
-            <p class="contact-info">01234567890<br>متاح من 9 صباحاً حتى 9 مساءً</p>
+            <p class="contact-info">01037966515<br>متاح من 9 صباحاً حتى 7 مساءً</p>
         </div>
         <div class="contact-card">
             <div class="contact-icon">
                 <span class="material-symbols-outlined">chat</span>
             </div>
             <h2 class="contact-title">واتساب</h2>
-            <p class="contact-info">01234567890<br>متاح على مدار 24 ساعة</p>
+            <p class="contact-info">01037966515<br>متاح على مدار 24 ساعة</p>
         </div>
         <div class="contact-card">
             <div class="contact-icon">
                 <span class="material-symbols-outlined">email</span>
             </div>
             <h2 class="contact-title">البريد الإلكتروني</h2>
-            <p class="contact-info">info@almustafa.com<br>نرد خلال 24 ساعة</p>
+            <p class="contact-info">support@almoustafa.store<br>نرد خلال 12 ساعة</p>
         </div>
     </div>
 </div>
@@ -247,9 +247,9 @@
 
 <script>
 (function () {
-    var WA_HREF  = 'https://wa.me/201234567890?text=' +
+    var WA_HREF  = 'https://wa.me/201037966515?text=' +
                    encodeURIComponent('مرحباً، أود الاستفسار عن منتجاتكم');
-    var PH_HREF  = 'tel:01234567890';
+    var PH_HREF  = 'tel:01037966515';
 
     var anchor  = document.getElementById('fab-anchor');
     var iconBox = document.getElementById('fab-icon');
@@ -274,14 +274,14 @@
                 anchor.href       = WA_HREF;
                 anchor.target     = '_blank';
                 iconBox.innerHTML = WA_ICON;
-                badge.textContent = 'واتساب';
+                badge.textContent = '';
                 pulse.style.background = '';          /* reset to CSS rule */
             } else {
                 anchor.className  = 'ph';
                 anchor.href       = PH_HREF;
                 anchor.target     = '_self';
                 iconBox.innerHTML = PH_ICON;
-                badge.textContent = 'اتصال';
+                badge.textContent = '';
                 pulse.style.background = '#42a5f5';
             }
 
