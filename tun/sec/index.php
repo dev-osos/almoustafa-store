@@ -409,7 +409,23 @@ const ADMIN = {
           </div>
           <div class="form-field">
             <label class="form-label">الوزن</label>
-            <input class="form-input" type="text" name="wight" id="pf-wight" placeholder="300 جم"/>
+            <div style="display:flex;gap:.5rem">
+              <input class="form-input" type="number" id="pf-wight-val" placeholder="300" min="0" step="any" style="flex:1;min-width:0"/>
+              <select class="form-select" id="pf-wight-unit" style="width:110px;flex-shrink:0">
+                <option value="جرام">جرام</option>
+                <option value="كيلوجرام">كيلوجرام</option>
+              </select>
+            </div>
+            <input type="hidden" name="wight" id="pf-wight"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">السعر (ج.م)</label>
+            <input class="form-input" type="number" name="price" id="pf-price" placeholder="0.00" min="0" step="0.01" oninput="updateDiscountPreview()"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">الخصم (%)</label>
+            <input class="form-input" type="number" name="discount" id="pf-discount" placeholder="0" min="0" max="99" step="1" oninput="updateDiscountPreview()"/>
+            <div id="pf-discount-preview" style="margin-top:.45rem;font-size:.82rem;font-weight:600;color:var(--primary);display:none"></div>
           </div>
           <div class="form-field">
             <label class="form-label">الكمية المباعة</label>
@@ -867,6 +883,7 @@ const ADMIN = {
                   <th style="width:80px">الحالة</th>
                   <th>الشارة</th>
                   <th>الوزن</th>
+                  <th>السعر / الخصم</th>
                   <th style="width:60px">مباع</th>
                   <th>الصورة</th>
                   <th>المصدر</th>
@@ -874,7 +891,7 @@ const ADMIN = {
                 </tr>
               </thead>
               <tbody id="prodBody">
-                <tr><td colspan="12" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
+                <tr><td colspan="13" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -1722,6 +1739,15 @@ function renderProdTable(page) {
         </td>
         <td style="font-size:.78rem">${escHtml(p.badge || '—')}</td>
         <td style="font-size:.78rem;direction:ltr;text-align:right">${escHtml(p.wight || '—')}</td>
+        <td style="font-size:.82rem;font-weight:700;color:var(--primary);text-align:right;direction:ltr">
+          ${p.price ? (() => {
+            const d = parseInt(p.discount) || 0;
+            const after = d > 0 ? (Number(p.price) * (1 - d/100)).toFixed(2) : null;
+            return after
+              ? `<span style="color:#c0392b">${after} ج.م</span> <span style="font-size:.7rem;color:#888;text-decoration:line-through">${Number(p.price).toFixed(2)}</span>`
+              : `${Number(p.price).toFixed(2)} ج.م`;
+          })() : '—'}
+        </td>
         <td style="text-align:center;font-weight:700;font-size:.82rem">${p.sold_q ?? 0}</td>
         <td>
           ${p.image_url
@@ -1791,10 +1817,23 @@ function openProductModal(jsonStr) {
   if (jsonStr) {
     const p = JSON.parse(jsonStr);
     title.textContent = 'تعديل منتج';
-    ['id','erp_id','api_name','store_name','category','status','badge','wight','sold_q','image_url','source'].forEach(f => {
+    ['id','erp_id','api_name','store_name','category','status','badge','wight','price','discount','sold_q','image_url','source'].forEach(f => {
       const el = $id('pf-' + f);
       if (el) el.value = p[f] ?? '';
     });
+    // Parse wight into value + unit
+    const wightRaw = (p.wight ?? '').trim();
+    const wightMatch = wightRaw.match(/^([\d.]+)\s*(.*)?$/);
+    if (wightMatch) {
+      $id('pf-wight-val').value = wightMatch[1];
+      const unit = wightMatch[2]?.trim();
+      if (unit === 'كيلوجرام') $id('pf-wight-unit').value = 'كيلوجرام';
+      else $id('pf-wight-unit').value = 'جرام';
+    } else {
+      $id('pf-wight-val').value = '';
+      $id('pf-wight-unit').value = 'جرام';
+    }
+    updateDiscountPreview();
     // Show existing image preview
     const prev = $id('pf-image_preview');
     if (p.image_url) {
@@ -1808,6 +1847,8 @@ function openProductModal(jsonStr) {
   } else {
     title.textContent = 'إضافة منتج';
     $id('pf-id').value = '';
+    $id('pf-wight-val').value = '';
+    $id('pf-wight-unit').value = 'جرام';
     $id('pf-image_preview').src = ''; $id('pf-image_preview').style.display = 'none';
     $id('pf-image_name').textContent = '';
     $id('pf-image_file').value = '';
@@ -1818,6 +1859,19 @@ function openProductModal(jsonStr) {
 
 function closeProductModal() {
   $id('productModal').classList.remove('open');
+}
+
+function updateDiscountPreview() {
+  const price    = parseFloat($id('pf-price').value) || 0;
+  const discount = parseInt($id('pf-discount').value) || 0;
+  const prev     = $id('pf-discount-preview');
+  if (price > 0 && discount > 0 && discount < 100) {
+    const after = price * (1 - discount / 100);
+    prev.style.display = '';
+    prev.textContent   = `السعر بعد الخصم: ${after.toFixed(2)} ج.م (وفر ${(price - after).toFixed(2)} ج.م)`;
+  } else {
+    prev.style.display = 'none';
+  }
 }
 
 $id('productModal').addEventListener('click', e => { if (e.target === $id('productModal')) closeProductModal(); });
@@ -1838,6 +1892,11 @@ async function submitProduct(e) {
   err.classList.remove('show');
   btn.disabled = true;
   btn.textContent = 'جارٍ الحفظ...';
+
+  // Combine wight value + unit into hidden field
+  const wVal = $id('pf-wight-val').value.trim();
+  const wUnit = $id('pf-wight-unit').value;
+  $id('pf-wight').value = wVal ? wVal + ' ' + wUnit : '';
 
   // Upload image if a file was picked
   const fileInput = $id('pf-image_file');

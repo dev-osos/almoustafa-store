@@ -9,7 +9,7 @@ api_require_method(['GET']);
 
 $pdo  = api_pdo();
 $stmt = $pdo->query(
-    "SELECT id, store_name, api_name, category, badge, wight, image_url
+    "SELECT id, store_name, api_name, category, badge, wight, price, discount, image_url
      FROM products
      WHERE status = 'active' AND category != ''
      ORDER BY category ASC, id ASC"

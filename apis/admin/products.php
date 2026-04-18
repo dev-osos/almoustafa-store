@@ -19,7 +19,7 @@ $pdo    = api_pdo();
 // ── GET: list all products ─────────────────────────────────────────────────
 if ($method === 'GET') {
     $stmt = $pdo->query(
-        'SELECT id, erp_id, api_name, store_name, category, status, badge, wight, sold_q, image_url, source
+        'SELECT id, erp_id, api_name, store_name, category, status, badge, wight, price, discount, sold_q, image_url, source
          FROM products
          ORDER BY id ASC'
     );
@@ -31,7 +31,7 @@ if ($method === 'POST') {
     $body = json_decode(file_get_contents('php://input'), true) ?? [];
     $action = $body['action'] ?? '';
 
-    $fields = ['erp_id','api_name','store_name','category','status','badge','wight','sold_q','image_url','source'];
+    $fields = ['erp_id','api_name','store_name','category','status','badge','wight','price','discount','sold_q','image_url','source'];
 
     if ($action === 'create') {
         $cols = implode(', ', $fields);
@@ -42,7 +42,7 @@ if ($method === 'POST') {
         }
         $stmt->execute();
         $newId = (int) $pdo->lastInsertId();
-        $row = $pdo->prepare('SELECT id, erp_id, api_name, store_name, category, status, badge, wight, sold_q, image_url, source FROM products WHERE id = ?');
+        $row = $pdo->prepare('SELECT id, erp_id, api_name, store_name, category, status, badge, wight, price, discount, sold_q, image_url, source FROM products WHERE id = ?');
         $row->execute([$newId]);
         api_ok(['product' => $row->fetch(PDO::FETCH_ASSOC)], 201);
     }

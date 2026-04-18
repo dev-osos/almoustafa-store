@@ -548,19 +548,46 @@ document.addEventListener('DOMContentLoaded', () => {
   function escHtml(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
   function buildCard(p) {
-    const name = p.store_name || p.api_name || '';
-    const img  = p.image_url ? p.image_url : PLACEHOLDER_IMG;
-    const badge = p.badge ? `<span class="product-badge badge-best">${escHtml(p.badge)}</span>` : '';
-    const sub   = p.wight ? `<p class="text-on-surface-variant text-xs mt-1">${escHtml(p.wight)}</p>` : '';
+    const name     = p.store_name || p.api_name || '';
+    const img      = p.image_url ? p.image_url : PLACEHOLDER_IMG;
+    const price    = p.price ? parseFloat(p.price) : 0;
+    const discount = p.discount ? parseInt(p.discount) : 0;
+    const hasDiscount = price > 0 && discount > 0 && discount < 100;
+    const finalPrice  = hasDiscount ? price * (1 - discount / 100) : price;
+
+    // Badge: discount overrides manual badge
+    let badgeHtml = '';
+    if (hasDiscount) {
+      badgeHtml = `<span class="product-badge badge-sale">خصم ${discount}٪</span>`;
+    } else if (p.badge) {
+      badgeHtml = `<span class="product-badge badge-best">${escHtml(p.badge)}</span>`;
+    }
+
+    const sub = p.wight ? `<p class="text-on-surface-variant text-xs mt-1">${escHtml(p.wight)}</p>` : '';
+
+    let priceHtml;
+    if (!price) {
+      priceHtml = `<span style="font-size:0.8rem;color:var(--on-surface-variant)">اتصل للسعر</span>`;
+    } else if (hasDiscount) {
+      priceHtml = `
+        <div class="flex flex-col gap-0.5">
+          <span class="font-headline text-xl font-bold" style="color:#c0392b">${finalPrice.toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})} ج.م</span>
+          <span class="font-headline text-sm text-on-surface-variant line-through">${price.toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})} ج.م</span>
+        </div>`;
+    } else {
+      priceHtml = `<span class="font-headline text-xl text-primary font-bold">${price.toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})} ج.م</span>`;
+    }
 
     const card = document.createElement('div');
     card.className = 'product-card';
-    card.dataset.cat  = p.category;
-    card.dataset.name = name;
+    card.dataset.cat      = p.category;
+    card.dataset.name     = name;
+    card.dataset.price    = finalPrice.toFixed(2);
+    if (hasDiscount) card.dataset.discount = 'true';
     card.innerHTML = `
       <div class="relative overflow-hidden">
         <img src="${escAttr(img)}" alt="${escAttr(name)}" loading="lazy" onerror="this.src='${PLACEHOLDER_IMG}'"/>
-        ${badge}
+        ${badgeHtml}
       </div>
       <div class="p-4 flex flex-col gap-3 flex-1">
         <div>
@@ -568,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ${sub}
         </div>
         <div class="flex items-center justify-between mt-auto">
-          <span class="font-headline text-xl text-primary font-bold" style="font-size:0.85rem;color:var(--on-surface-variant)">اتصل للسعر</span>
+          ${priceHtml}
           <button class="add-to-cart" style="width:auto;padding:8px 14px;border-radius:8px;font-size:0.8rem;">
             <span class="material-symbols-outlined" style="font-size:16px">add_shopping_cart</span> أضف
           </button>
@@ -834,7 +861,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const card  = btn.closest('.product-card');
     const name  = card.dataset.name;
     const img   = card.querySelector('img')?.src ?? '';
-    const price = parsePrice(card.querySelector('.font-headline.text-xl')?.textContent ?? '0');
+    const price = parseFloat(card.dataset.price) || parsePrice(card.querySelector('.font-headline.text-xl')?.textContent ?? '0');
     flyToCart(btn, () => {
       const ex = cartItems.find(i => i.name === name);
       if (ex) ex.qty++; else cartItems.push({ name, img, price, qty: 1 });
