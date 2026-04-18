@@ -733,13 +733,13 @@ document.addEventListener('DOMContentLoaded', () => {
   applyHash();
   window.addEventListener('hashchange', applyHash);
 
-  // Load products from API then apply filters
-  renderCart();
-  loadProducts();
-
   // --- Cart state ---
   const arabicNums = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
   let cartItems = JSON.parse(localStorage.getItem('alm_cart') || '[]');
+
+  // Load products from API then apply filters
+  renderCart();
+  loadProducts();
 
   function toArabicNum(n) { return String(n).split('').map(d => arabicNums[+d] ?? d).join(''); }
   function parsePrice(str) { return parseFloat(str.replace(/[^\d.]/g, '')) || 0; }
