@@ -122,7 +122,7 @@
   @media(min-width:768px){.product-card{border-radius:20px;}}
   .product-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(60,0,4,0.1)}
   @media(min-width:768px){.product-card:hover{transform:translateY(-6px);box-shadow:0 24px 60px rgba(60,0,4,0.12);}}
-  .product-card img{width:100%;aspect-ratio:4/3;object-fit:contain;background:#faf5f5;transition:transform 0.6s ease}
+  .product-card img{width:100%;aspect-ratio:1/1;object-fit:cover;transition:transform 0.6s ease}
   .product-card:hover img{transform:scale(1.05)}
   .product-card .p-4{padding:10px;}
   @media(min-width:768px){.product-card .p-4{padding:16px;}}
@@ -734,11 +734,12 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('hashchange', applyHash);
 
   // Load products from API then apply filters
+  renderCart();
   loadProducts();
 
   // --- Cart state ---
   const arabicNums = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
-  let cartItems = [];
+  let cartItems = JSON.parse(localStorage.getItem('alm_cart') || '[]');
 
   function toArabicNum(n) { return String(n).split('').map(d => arabicNums[+d] ?? d).join(''); }
   function parsePrice(str) { return parseFloat(str.replace(/[^\d.]/g, '')) || 0; }
