@@ -49,7 +49,7 @@
     backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
     border-bottom:1px solid rgba(60,0,4,0.08);
   }
-  @media(min-width:768px){.filter-bar{top:104px;}}
+  @media(min-width:768px){.filter-bar{top:var(--nav-h,104px);}}
   /* Mobile collapse toggle */
   #filter-toggle{
     display:none;
@@ -152,7 +152,7 @@
 
   /* Section header */
   .section-anchor{scroll-margin-top:220px;margin-bottom:2.5rem;}
-  @media(min-width:768px){.section-anchor{scroll-margin-top:340px;margin-bottom:5rem;}}
+  @media(min-width:768px){.section-anchor{scroll-margin-top:var(--sticky-h,200px);margin-bottom:5rem;}}
   .section-anchor h2{font-size:2.2rem;}
   @media(min-width:768px){.section-anchor h2{font-size:4.5rem;}}
   .section-anchor .flex.items-end{margin-bottom:1rem;}
@@ -526,6 +526,21 @@
 </div>
 
 <script>
+// Fix sticky offsets dynamically
+function updateStickyOffsets() {
+  const nav = document.querySelector('nav');
+  const filterBar = document.querySelector('.filter-bar');
+  if (!nav || !filterBar) return;
+  const navH = nav.getBoundingClientRect().height;
+  const filterH = filterBar.getBoundingClientRect().height;
+  document.documentElement.style.setProperty('--nav-h', navH + 'px');
+  document.documentElement.style.setProperty('--sticky-h', (navH + filterH + 24) + 'px');
+}
+document.addEventListener('DOMContentLoaded', updateStickyOffsets);
+window.addEventListener('resize', updateStickyOffsets);
+// Re-measure after fonts load (Amiri can shift heights)
+document.fonts?.ready.then(updateStickyOffsets);
+
 document.addEventListener('DOMContentLoaded', () => {
 
   // Skeleton
