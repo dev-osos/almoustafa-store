@@ -229,6 +229,118 @@
   </a>
   <span class="fab-text" id="fab-text">تواصل معنا</span>
 </div>
+
+<style>
+  #contact-fab {
+    position: fixed;
+    bottom: 36px;
+    left: 36px;
+    z-index: 9999;
+    direction: ltr;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  #contact-fab::before {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--fab-color, #25d366);
+    opacity: 0;
+    animation: fabPulse 2.8s ease-out infinite;
+    pointer-events: none;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  @keyframes fabPulse {
+    0% { transform: translateY(-50%) scale(1); opacity: 0.6; }
+    70% { transform: translateY(-50%) scale(2); opacity: 0; }
+    100% { transform: translateY(-50%) scale(2); opacity: 0; }
+  }
+  #contact-fab a.fab-link {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--fab-color, #25d366);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 0 2px rgba(254,214,91,0.25);
+    transition: background 0.5s ease, box-shadow 0.4s ease, transform 0.2s ease;
+    text-decoration: none;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  #contact-fab a.fab-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(254,214,91,0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  #contact-fab a.fab-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: rgba(255,255,255,0.2);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  #contact-fab a.fab-link:active::after { opacity: 1; }
+  #contact-fab a.fab-link:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 28px rgba(0,0,0,0.5), 0 0 0 2.5px rgba(254,214,91,0.5);
+  }
+  #contact-fab .fab-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease;
+  }
+  #contact-fab .fab-icon.flip { transform: rotateY(90deg); opacity: 0; }
+  #contact-fab .fab-icon svg { display: block; }
+  #contact-fab .fab-text {
+    overflow: hidden;
+    max-width: 0;
+    opacity: 0;
+    font-family: 'Amiri', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fed65b;
+    white-space: nowrap;
+    margin-left: 10px;
+    padding: 7px 18px;
+    border-radius: 22px;
+    border: 1.5px solid rgba(254,214,91,0.5);
+    background: rgba(60,0,4,0.85);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 16px rgba(60,0,4,0.5), inset 0 1px 0 rgba(254,214,91,0.15);
+    transition: max-width 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+    pointer-events: none;
+    letter-spacing: 0.02em;
+  }
+  #contact-fab .fab-text.open { max-width: 180px; opacity: 1; }
+  @media (max-width: 768px) {
+    #contact-fab {
+      bottom: 20px;
+      left: 20px;
+    }
+    #contact-fab a.fab-link {
+      width: 52px;
+      height: 52px;
+    }
+    #contact-fab .fab-text { font-size: 13px; }
+  }
+</style>
 <script>
   (function () {
     var WA_HREF = 'https://wa.me/201037966515?text=' + encodeURIComponent('مرحباً، أود الاستفسار عن منتجاتكم');
