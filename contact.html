@@ -194,33 +194,39 @@
 <body>
 
 <div class="container">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+      <a href="products.html" style="display:inline-flex;align-items:center;gap:6px;font-family:'Amiri',serif;font-size:0.9rem;font-weight:700;color:#3c0004;background:rgba(60,0,4,0.06);border:1px solid rgba(60,0,4,0.12);border-radius:30px;padding:6px 16px;text-decoration:none;transition:background 0.2s" onmouseenter="this.style.background='rgba(60,0,4,0.11)'" onmouseleave="this.style.background='rgba(60,0,4,0.06)'">
+        <span style="font-family:'Material Symbols Outlined';font-size:18px;line-height:1;font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24">storefront</span>
+        العودة إلى المتجر
+      </a>
+    </div>
     <div class="header">
         <h1 class="title">تواصل معنا</h1>
         <p class="subtitle">نحن هنا لمساعدتك على مدار الساعة</p>
     </div>
 
     <div class="contact-grid">
-        <div class="contact-card">
+        <a href="tel:01037966515" class="contact-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;cursor:pointer">
             <div class="contact-icon">
                 <span class="material-symbols-outlined">phone</span>
             </div>
             <h2 class="contact-title">الهاتف</h2>
             <p class="contact-info">01037966515<br>متاح من 9 صباحاً حتى 7 مساءً</p>
-        </div>
-        <div class="contact-card">
+        </a>
+        <a href="https://wa.me/201037966515" target="_blank" rel="noopener" class="contact-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;cursor:pointer">
             <div class="contact-icon">
                 <span class="material-symbols-outlined">chat</span>
             </div>
             <h2 class="contact-title">واتساب</h2>
             <p class="contact-info">01037966515<br>متاح على مدار 24 ساعة</p>
-        </div>
-        <div class="contact-card">
+        </a>
+        <a href="mailto:support@almoustafa.store" class="contact-card" style="text-decoration:none;display:flex;flex-direction:column;align-items:center;cursor:pointer">
             <div class="contact-icon">
                 <span class="material-symbols-outlined">email</span>
             </div>
             <h2 class="contact-title">البريد الإلكتروني</h2>
             <p class="contact-info">support@almoustafa.store<br>نرد خلال 12 ساعة</p>
-        </div>
+        </a>
     </div>
 </div>
 <div id="contact-fab">
