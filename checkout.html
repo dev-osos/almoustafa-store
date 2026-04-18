@@ -394,7 +394,7 @@
   const orderId = Math.floor(100000 + Math.random() * 900000);  
   const now = new Date();
   const dateStr = now.toLocaleDateString('ar-EG', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  document.getElementById('order-id-display').textContent = orderId;
+  document.getElementById('order-id-display').textContent = 'رقم الأوردر : ' + orderId;
   document.getElementById('success-order-id').textContent = orderId;
   document.getElementById('order-date').textContent = dateStr;
 
