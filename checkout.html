@@ -365,8 +365,8 @@
         <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">verified</span>
         </button>
         <p class="text-center text-on-surface-variant text-xs mt-3 font-body">
-          <i class="bi bi-shield-check text-secondary"></i>
           جميع المعاملات آمنة ومشفرة
+        <i class="bi bi-shield-check text-secondary"></i>
         </p>
       </div>
 
@@ -391,7 +391,7 @@
   try { session = JSON.parse(localStorage.getItem('alm_session')) || {}; } catch {}
 
   // --- Order ID & date ---
-  const orderId = 'ALM-' + Date.now().toString(36).toUpperCase().slice(-6);
+  const orderId = Math.floor(100000 + Math.random() * 900000);  
   const now = new Date();
   const dateStr = now.toLocaleDateString('ar-EG', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   document.getElementById('order-id-display').textContent = orderId;
