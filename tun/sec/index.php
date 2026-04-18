@@ -393,7 +393,15 @@ const ADMIN = {
           </div>
           <div class="form-field">
             <label class="form-label">التصنيف</label>
-            <input class="form-input" type="text" name="category" id="pf-category" placeholder="عسل، صابون..."/>
+            <select class="form-input" name="category" id="pf-category">
+              <option value="">— اختر قسماً —</option>
+              <option value="honey">العسل</option>
+              <option value="derivatives">المشتقات</option>
+              <option value="beauty">التجميل</option>
+              <option value="dates">التمور</option>
+              <option value="nuts">المكسرات</option>
+              <option value="offers">العروض</option>
+            </select>
           </div>
           <div class="form-field">
             <label class="form-label">الشارة (badge)</label>
