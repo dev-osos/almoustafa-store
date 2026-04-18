@@ -773,19 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ctrl = document.createElement('div'); ctrl.className = 'cart-qty-ctrl';
     const dec = document.createElement('button'); dec.className = 'cart-qty-btn'; dec.dataset.action = 'dec'; dec.dataset.idx = idx; dec.textContent = '−';
-    const num = document.createElement('input');
-    num.type = 'text'; num.inputMode = 'numeric'; num.className = 'cart-qty-num';
-    num.value = toArabicNum(item.qty); num.dataset.idx = idx;
-    num.addEventListener('focus', () => { num.select(); });
-    num.addEventListener('blur', () => {
-      const raw = num.value.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d]/g, '');
-      const val = parseInt(raw, 10);
-      const i = +num.dataset.idx;
-      if (!isNaN(val) && val > 0) { cartItems[i].qty = val; renderCart(); saveCart(); }
-      else if (!isNaN(val) && val <= 0) { cartItems.splice(i, 1); renderCart(); saveCart(); }
-      else { num.value = toArabicNum(cartItems[i]?.qty ?? 1); }
-    });
-    num.addEventListener('keydown', e => { if (e.key === 'Enter') num.blur(); });
+    const num = document.createElement('span'); num.className = 'cart-qty-num'; num.textContent = toArabicNum(item.qty);
     const inc = document.createElement('button'); inc.className = 'cart-qty-btn'; inc.dataset.action = 'inc'; inc.dataset.idx = idx; inc.textContent = '+';
     ctrl.append(dec, num, inc);
 
@@ -845,7 +833,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const row = btn.closest('.cart-row');
     if (row) {
       const numInput = row.querySelector('.cart-qty-num');
-      if (numInput) numInput.value = toArabicNum(cartItems[idx].qty);
+      if (numInput) numInput.textContent = toArabicNum(cartItems[idx].qty);
     }
     const totalQty = cartItems.reduce((s, i) => s + i.qty, 0);
     document.getElementById('cart-modal-count').textContent = '(' + toArabicNum(totalQty) + ' منتج)';
