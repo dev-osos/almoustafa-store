@@ -450,6 +450,34 @@ const ADMIN = {
               <option value="product_templates">product_templates</option>
             </select>
           </div>
+
+          <!-- ── Rich content fields ── -->
+          <div class="form-field" style="grid-column:1/-1">
+            <label class="form-label">وصف المنتج</label>
+            <textarea class="form-input" id="pf-description" rows="3" placeholder="وصف مختصر يظهر في صفحة المنتج..." style="resize:vertical;min-height:72px"></textarea>
+          </div>
+
+          <div class="form-field" style="grid-column:1/-1">
+            <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+              فوائد المنتج
+              <button type="button" onclick="addBenefit()" style="font-size:.78rem;background:var(--primary);color:#fff;border:none;border-radius:6px;padding:.2rem .65rem;cursor:pointer;font-family:inherit">+ إضافة فائدة</button>
+            </label>
+            <div id="pf-benefits-list" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.5rem"></div>
+          </div>
+
+          <div class="form-field" style="grid-column:1/-1">
+            <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+              القيمة الغذائية
+              <button type="button" onclick="addNutrition()" style="font-size:.78rem;background:var(--primary);color:#fff;border:none;border-radius:6px;padding:.2rem .65rem;cursor:pointer;font-family:inherit">+ إضافة عنصر</button>
+            </label>
+            <div id="pf-nutrition-list" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.5rem"></div>
+          </div>
+
+          <div class="form-field" style="grid-column:1/-1">
+            <label class="form-label">معلومات إضافية</label>
+            <textarea class="form-input" id="pf-extra_info" rows="3" placeholder="أي معلومات إضافية مهمة للعميل..." style="resize:vertical;min-height:72px"></textarea>
+          </div>
+
         </div>
         <div class="modal-footer">
           <button type="button" class="cancel-btn" onclick="closeProductModal()">إلغاء</button>
@@ -1821,6 +1849,12 @@ function openProductModal(jsonStr) {
       const el = $id('pf-' + f);
       if (el) el.value = p[f] ?? '';
     });
+    $id('pf-description').value = p.description ?? '';
+    $id('pf-extra_info').value  = p.extra_info ?? '';
+    // Benefits
+    renderBenefitsList(Array.isArray(p.benefits) ? p.benefits : (typeof p.benefits === 'string' ? JSON.parse(p.benefits || '[]') : []));
+    // Nutrition
+    renderNutritionList(Array.isArray(p.nutrition) ? p.nutrition : (typeof p.nutrition === 'string' ? JSON.parse(p.nutrition || '[]') : []));
     // Parse wight into value + unit
     const wightRaw = (p.wight ?? '').trim();
     const wightMatch = wightRaw.match(/^([\d.]+)\s*(.*)?$/);
@@ -1853,6 +1887,10 @@ function openProductModal(jsonStr) {
     $id('pf-image_name').textContent = '';
     $id('pf-image_file').value = '';
     $id('pf-image_url').value = '';
+    $id('pf-description').value = '';
+    $id('pf-extra_info').value = '';
+    renderBenefitsList([]);
+    renderNutritionList([]);
   }
   modal.classList.add('open');
 }
@@ -1883,6 +1921,53 @@ function handleProductImagePick(input) {
   const prev = $id('pf-image_preview');
   prev.src = URL.createObjectURL(file);
   prev.style.display = 'block';
+}
+
+// ── Benefits helpers ──────────────────────────────────────────────────────────
+function renderBenefitsList(items) {
+  const list = $id('pf-benefits-list');
+  list.innerHTML = '';
+  (items || []).forEach((item, i) => addBenefitRow(typeof item === 'string' ? item : item.text || '', i));
+}
+function addBenefit() {
+  addBenefitRow('', $id('pf-benefits-list').children.length);
+}
+function addBenefitRow(val, idx) {
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;gap:.5rem;align-items:center';
+  row.innerHTML = `<input class="form-input" type="text" value="${escHtml(val)}" placeholder="أدخل الفائدة..." style="flex:1"/>
+    <button type="button" onclick="this.parentElement.remove()" style="width:32px;height:32px;border:none;background:rgba(198,40,40,0.1);color:#c62828;border-radius:7px;cursor:pointer;font-size:1rem;flex-shrink:0">×</button>`;
+  $id('pf-benefits-list').appendChild(row);
+  row.querySelector('input').focus();
+}
+function getBenefits() {
+  return [...$id('pf-benefits-list').querySelectorAll('input')].map(i => i.value.trim()).filter(Boolean);
+}
+
+// ── Nutrition helpers ─────────────────────────────────────────────────────────
+function renderNutritionList(items) {
+  const list = $id('pf-nutrition-list');
+  list.innerHTML = '';
+  (items || []).forEach(item => addNutritionRow(item.label || '', item.value || ''));
+}
+function addNutrition() {
+  addNutritionRow('', '');
+}
+function addNutritionRow(label, value) {
+  const row = document.createElement('div');
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:.5rem;align-items:center';
+  row.innerHTML = `<input class="form-input" type="text" value="${escHtml(label)}" placeholder="العنصر (مثال: بروتين)"/>
+    <input class="form-input" type="text" value="${escHtml(value)}" placeholder="القيمة (مثال: 3.2 جرام)"/>
+    <button type="button" onclick="this.parentElement.remove()" style="width:32px;height:32px;border:none;background:rgba(198,40,40,0.1);color:#c62828;border-radius:7px;cursor:pointer;font-size:1rem;flex-shrink:0">×</button>`;
+  $id('pf-nutrition-list').appendChild(row);
+}
+function getNutrition() {
+  return [...$id('pf-nutrition-list').querySelectorAll('div, [style*="grid"]')].length === 0
+    ? []
+    : [...$id('pf-nutrition-list').children].map(row => {
+        const inputs = row.querySelectorAll('input');
+        return { label: inputs[0]?.value.trim() || '', value: inputs[1]?.value.trim() || '' };
+      }).filter(r => r.label || r.value);
 }
 
 async function submitProduct(e) {
@@ -1926,6 +2011,10 @@ async function submitProduct(e) {
   }
 
   const data = Object.fromEntries(new FormData($id('productForm')));
+  data.description = $id('pf-description').value.trim();
+  data.extra_info  = $id('pf-extra_info').value.trim();
+  data.benefits    = getBenefits();
+  data.nutrition   = getNutrition();
   const action = data.id ? 'update' : 'create';
   try {
     const res = await fetch(PROD_API, { method:'POST', headers: prodApiHeaders(), body: JSON.stringify({ action, ...data }) });

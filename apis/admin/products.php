@@ -31,7 +31,14 @@ if ($method === 'POST') {
     $body = json_decode(file_get_contents('php://input'), true) ?? [];
     $action = $body['action'] ?? '';
 
-    $fields = ['erp_id','api_name','store_name','category','status','badge','wight','price','discount','sold_q','image_url','source'];
+    $fields = ['erp_id','api_name','store_name','category','status','badge','wight','price','discount','sold_q','image_url','source','description','benefits','nutrition','extra_info'];
+
+    // Encode JSON fields
+    foreach (['benefits', 'nutrition'] as $jf) {
+        if (isset($body[$jf]) && is_array($body[$jf])) {
+            $body[$jf] = json_encode($body[$jf], JSON_UNESCAPED_UNICODE);
+        }
+    }
 
     if ($action === 'create') {
         $cols = implode(', ', $fields);
@@ -42,7 +49,7 @@ if ($method === 'POST') {
         }
         $stmt->execute();
         $newId = (int) $pdo->lastInsertId();
-        $row = $pdo->prepare('SELECT id, erp_id, api_name, store_name, category, status, badge, wight, price, discount, sold_q, image_url, source FROM products WHERE id = ?');
+        $row = $pdo->prepare('SELECT id, erp_id, api_name, store_name, category, status, badge, wight, price, discount, sold_q, image_url, source, description, benefits, nutrition, extra_info FROM products WHERE id = ?');
         $row->execute([$newId]);
         api_ok(['product' => $row->fetch(PDO::FETCH_ASSOC)], 201);
     }

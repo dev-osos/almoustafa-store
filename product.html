@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" dir="rtl" lang="ar">
+<head>
+<script src="js/no-double-tap-zoom.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link rel="icon" href="fav.ico" sizes="any"/>
+<link rel="apple-touch-icon" href="logo.png"/>
+<title>المصطفى | تفاصيل المنتج</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Manrope:wght@200..800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="icons/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      colors: {
+        "secondary":"#735c00","on-surface":"#1c1c17","surface-container-high":"#ece8df",
+        "on-background":"#1c1c17","primary-container":"#5d0e12","surface":"#fdf9f0",
+        "on-primary":"#ffffff","on-secondary":"#ffffff","on-surface-variant":"#564241",
+        "background":"#fdf9f0","secondary-container":"#fed65b","primary":"#3c0004",
+        "outline":"#897270","outline-variant":"#dcc0be","surface-container-low":"#f7f3ea",
+        "surface-container":"#f1eee5",
+      },
+      fontFamily: { "headline":["Amiri","serif"], "body":["Manrope","sans-serif"] },
+    }}
+  }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24 }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .fade-up   { animation: fadeUp 0.5s cubic-bezier(0.4,0,0.2,1) both; }
+  .fade-up-2 { animation: fadeUp 0.5s cubic-bezier(0.4,0,0.2,1) 0.1s both; }
+  .fade-up-3 { animation: fadeUp 0.5s cubic-bezier(0.4,0,0.2,1) 0.2s both; }
+
+  /* Image zoom */
+  #product-img-wrap { overflow:hidden; border-radius:20px; background:#f1eee5; aspect-ratio:1/1; }
+  #product-img { width:100%; height:100%; object-fit:cover; transition:transform 0.4s ease; cursor:zoom-in; }
+  #product-img:hover { transform:scale(1.06); }
+
+  /* Badge */
+  .product-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    padding:4px 12px; border-radius:30px; font-size:0.72rem; font-weight:700;
+    font-family:'Manrope',sans-serif; letter-spacing:0.04em;
+  }
+
+  /* Tab system */
+  .tab-btn {
+    padding:8px 18px; border-radius:30px; font-family:'Amiri',serif;
+    font-size:0.9rem; font-weight:700; cursor:pointer; border:none;
+    background:transparent; color:rgba(60,0,4,0.45);
+    transition: background 0.2s, color 0.2s;
+  }
+  .tab-btn.active { background:#3c0004; color:#fff; }
+  .tab-pane { display:none; }
+  .tab-pane.active { display:block; }
+
+  /* Benefits list */
+  .benefit-item {
+    display:flex; align-items:flex-start; gap:12px;
+    padding:14px 0; border-bottom:1px solid rgba(60,0,4,0.06);
+  }
+  .benefit-item:last-child { border-bottom:none; }
+  .benefit-dot {
+    width:32px; height:32px; border-radius:10px; flex-shrink:0;
+    background:rgba(115,92,0,0.1); display:flex; align-items:center; justify-content:center;
+  }
+
+  /* Nutrition table */
+  .nutrition-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:11px 16px; border-bottom:1px solid rgba(60,0,4,0.05);
+  }
+  .nutrition-row:last-child { border-bottom:none; }
+  .nutrition-row:nth-child(even) { background:rgba(60,0,4,0.02); }
+
+  /* Add to cart button */
+  .add-cart-btn {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; padding:15px; border-radius:14px; border:none; cursor:pointer;
+    background:linear-gradient(135deg,#3c0004,#5d0e12);
+    color:#fff; font-family:'Amiri',serif; font-size:1.1rem; font-weight:700;
+    box-shadow:0 8px 28px rgba(60,0,4,0.28);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .add-cart-btn:hover { transform:translateY(-2px); box-shadow:0 12px 36px rgba(60,0,4,0.4); }
+  .add-cart-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+  .add-cart-btn.added { background:linear-gradient(135deg,#1a5e20,#2e7d32); }
+
+  /* Skeleton */
+  .sk { background:linear-gradient(90deg,#ece8df 25%,#f7f3ea 50%,#ece8df 75%); background-size:200% 100%; animation:sk 1.4s ease infinite; border-radius:8px; }
+  @keyframes sk { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  /* Qty stepper */
+  .qty-stepper { display:flex; align-items:center; gap:0; border:1.5px solid rgba(60,0,4,0.18); border-radius:10px; overflow:hidden; }
+  .qty-step-btn { width:36px; height:36px; border:none; background:#fff; color:#3c0004; font-size:1.1rem; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; justify-content:center; }
+  .qty-step-btn:hover { background:rgba(60,0,4,0.06); }
+  .qty-step-btn:disabled { opacity:0.35; cursor:not-allowed; }
+  .qty-num { min-width:36px; text-align:center; font-family:'Manrope',sans-serif; font-size:0.9rem; font-weight:700; color:#3c0004; }
+
+  /* Price display */
+  .price-main { font-family:'Amiri',serif; font-size:2rem; font-weight:700; color:#3c0004; line-height:1.1; }
+  .price-old  { font-family:'Amiri',serif; font-size:1rem; color:rgba(60,0,4,0.4); text-decoration:line-through; }
+  .discount-pill { background:rgba(192,57,43,0.1); color:#c0392b; border-radius:20px; padding:3px 10px; font-size:0.72rem; font-weight:700; font-family:'Manrope',sans-serif; }
+
+  /* Section card */
+  .detail-card { background:#fff; border-radius:16px; border:1px solid rgba(60,0,4,0.07); box-shadow:0 2px 12px rgba(60,0,4,0.05); overflow:hidden; }
+</style>
+</head>
+<body class="bg-background text-on-background font-body overflow-x-hidden">
+
+<!-- Nav -->
+<nav class="sticky top-0 w-full z-50 bg-[#fdf9f0]/95 backdrop-blur-md shadow-sm border-b border-primary/5 flex justify-between items-center px-4 md:px-12 py-4 md:py-6">
+  <div class="flex items-center gap-3">
+    <a href="products.html" class="flex items-center gap-2 text-primary/60 hover:text-primary transition-colors text-sm font-headline">
+      <i class="bi bi-arrow-right"></i> العودة
+    </a>
+    <span class="text-outline-variant">|</span>
+    <a href="index.html" class="flex items-center gap-3">
+      <img src="logo.png" class="h-8 w-auto" alt="logo"/>
+      <span class="font-headline font-bold text-primary text-lg tracking-widest hidden md:block">متجر المصطفى</span>
+    </a>
+  </div>
+  <button id="cart-btn" class="relative text-primary hover:text-secondary transition-all">
+    <span class="material-symbols-outlined" style="font-size:26px;font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24">shopping_bag</span>
+    <span id="cart-count" class="absolute -top-1 -left-1 min-w-[18px] h-[18px] px-[3px] bg-red-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none" style="display:none"></span>
+  </button>
+</nav>
+
+<div class="container mx-auto px-4 md:px-12 py-8 max-w-5xl">
+
+  <!-- Loading skeleton -->
+  <div id="skeleton" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="sk" style="aspect-ratio:1/1;border-radius:20px;"></div>
+    <div class="flex flex-col gap-4 pt-4">
+      <div class="sk h-5 w-24 rounded-full"></div>
+      <div class="sk h-10 w-3/4"></div>
+      <div class="sk h-6 w-1/2"></div>
+      <div class="sk h-8 w-1/3 mt-2"></div>
+      <div class="sk h-12 w-full mt-4 rounded-xl"></div>
+    </div>
+  </div>
+
+  <!-- Product content -->
+  <div id="product-content" style="display:none">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+
+      <!-- Image -->
+      <div class="fade-up">
+        <div id="product-img-wrap">
+          <img id="product-img" src="" alt="" loading="lazy"/>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div class="flex flex-col gap-5 fade-up-2">
+
+        <!-- Badge + category -->
+        <div class="flex items-center gap-2 flex-wrap" id="badges-wrap"></div>
+
+        <!-- Name -->
+        <h1 class="font-headline text-4xl md:text-5xl text-primary leading-tight" id="product-name">—</h1>
+
+        <!-- Weight -->
+        <p class="text-on-surface-variant text-sm font-body" id="product-weight"></p>
+
+        <!-- Price -->
+        <div class="flex items-end gap-3 flex-wrap" id="price-wrap"></div>
+
+        <!-- Description -->
+        <p class="text-on-surface-variant font-body text-sm leading-relaxed" id="product-description" style="display:none"></p>
+
+        <!-- Qty + Add to cart -->
+        <div class="flex items-center gap-3 mt-2">
+          <div class="qty-stepper">
+            <button class="qty-step-btn" id="qty-minus" disabled>−</button>
+            <span class="qty-num" id="qty-num">١</span>
+            <button class="qty-step-btn" id="qty-plus">+</button>
+          </div>
+          <button class="add-cart-btn flex-1" id="add-cart-btn">
+            <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">add_shopping_cart</span>
+            أضف للسلة
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tabs: Benefits / Nutrition / Details -->
+    <div id="tabs-section" class="fade-up-3" style="display:none">
+      <div class="flex gap-2 mb-5 flex-wrap" id="tab-btns"></div>
+
+      <!-- Benefits -->
+      <div class="tab-pane detail-card" id="tab-benefits">
+        <div class="px-5 py-4 border-b border-outline-variant/30 flex items-center gap-2">
+          <span class="material-symbols-outlined text-secondary" style="font-size:20px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">eco</span>
+          <span class="font-headline font-bold text-primary">فوائد المنتج</span>
+        </div>
+        <div class="px-5 py-2" id="benefits-list"></div>
+      </div>
+
+      <!-- Nutrition -->
+      <div class="tab-pane detail-card" id="tab-nutrition">
+        <div class="px-5 py-4 border-b border-outline-variant/30 flex items-center gap-2">
+          <span class="material-symbols-outlined text-secondary" style="font-size:20px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">nutrition</span>
+          <span class="font-headline font-bold text-primary">القيمة الغذائية</span>
+        </div>
+        <div id="nutrition-table"></div>
+      </div>
+
+      <!-- Extra info -->
+      <div class="tab-pane detail-card" id="tab-extra">
+        <div class="px-5 py-4 border-b border-outline-variant/30 flex items-center gap-2">
+          <span class="material-symbols-outlined text-secondary" style="font-size:20px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">info</span>
+          <span class="font-headline font-bold text-primary">معلومات إضافية</span>
+        </div>
+        <div class="px-5 py-4 font-body text-sm text-on-surface leading-relaxed whitespace-pre-line" id="extra-info-content"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Error state -->
+  <div id="error-state" style="display:none" class="text-center py-24">
+    <span class="material-symbols-outlined text-outline" style="font-size:56px">error_outline</span>
+    <p class="font-headline text-2xl text-primary mt-4">تعذّر تحميل المنتج</p>
+    <a href="products.html" class="inline-block mt-6 text-secondary font-headline underline">العودة للمتجر</a>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  const arabicNums = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+  function toAr(n) { return String(n).split('').map(d => arabicNums[+d] ?? d).join(''); }
+  function fmtPrice(n) { const w = n%1===0; return n.toLocaleString('ar-EG',{minimumFractionDigits:w?0:2,maximumFractionDigits:w?0:2}) + ' ج.م'; }
+
+  // Cart
+  let cart = [];
+  try { cart = JSON.parse(localStorage.getItem('alm_cart')) || []; } catch {}
+  function saveCart() { try { localStorage.setItem('alm_cart', JSON.stringify(cart)); } catch {} }
+  function updateCartBadge() {
+    const total = cart.reduce((s,i) => s+i.qty, 0);
+    const el = document.getElementById('cart-count');
+    if (total > 0) { el.textContent = toAr(total); el.style.display = 'flex'; }
+    else el.style.display = 'none';
+  }
+  updateCartBadge();
+  document.getElementById('cart-btn').addEventListener('click', () => { window.location.href = 'checkout.html'; });
+
+  // Get product ID from URL
+  const params = new URLSearchParams(location.search);
+  const productId = parseInt(params.get('id'));
+  if (!productId) { showError(); return; }
+
+  // Fetch product
+  fetch('apis/products/detail.php?id=' + productId)
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok || !data.product) { showError(); return; }
+      render(data.product);
+    })
+    .catch(() => showError());
+
+  function showError() {
+    document.getElementById('skeleton').style.display = 'none';
+    document.getElementById('error-state').style.display = 'block';
+  }
+
+  function render(p) {
+    document.getElementById('skeleton').style.display = 'none';
+    document.getElementById('product-content').style.display = 'block';
+
+    // Title
+    document.title = 'المصطفى | ' + p.store_name;
+
+    // Image
+    const img = document.getElementById('product-img');
+    img.src = p.image_url || 'logo.png';
+    img.alt = p.store_name;
+    img.addEventListener('click', () => {
+      const win = window.open(p.image_url, '_blank'); if (win) win.focus();
+    });
+
+    // Badges
+    const badgesWrap = document.getElementById('badges-wrap');
+    const catLabels = {honey:'عسل',derivatives:'مشتقات',beauty:'عناية',dates:'تمور',nuts:'مكسرات'};
+    if (p.category) {
+      const cat = document.createElement('span');
+      cat.className = 'product-badge';
+      cat.style.cssText = 'background:rgba(60,0,4,0.08);color:#3c0004';
+      cat.textContent = catLabels[p.category] || p.category;
+      badgesWrap.appendChild(cat);
+    }
+    if (p.badge) {
+      const b = document.createElement('span');
+      b.className = 'product-badge';
+      b.style.cssText = 'background:rgba(254,214,91,0.25);color:#735c00;border:1px solid rgba(115,92,0,0.2)';
+      b.textContent = p.badge;
+      badgesWrap.appendChild(b);
+    }
+
+    // Name
+    document.getElementById('product-name').textContent = p.store_name;
+
+    // Weight
+    if (p.wight) document.getElementById('product-weight').textContent = p.wight;
+
+    // Price
+    const price = parseFloat(p.price) || 0;
+    const disc  = parseFloat(p.discount) || 0;
+    const final = disc > 0 && disc < 100 ? price * (1 - disc/100) : price;
+    const priceWrap = document.getElementById('price-wrap');
+    if (price) {
+      const mainEl = document.createElement('span');
+      mainEl.className = 'price-main';
+      mainEl.textContent = fmtPrice(final);
+      priceWrap.appendChild(mainEl);
+      if (disc > 0 && disc < 100) {
+        const oldEl = document.createElement('span');
+        oldEl.className = 'price-old';
+        oldEl.textContent = fmtPrice(price);
+        priceWrap.appendChild(oldEl);
+        const pill = document.createElement('span');
+        pill.className = 'discount-pill';
+        pill.textContent = toAr(disc) + '% خصم';
+        priceWrap.appendChild(pill);
+      }
+    } else {
+      const callEl = document.createElement('span');
+      callEl.style.cssText = 'font-family:Amiri,serif;font-size:1rem;color:rgba(60,0,4,0.5)';
+      callEl.textContent = 'اتصل للسعر';
+      priceWrap.appendChild(callEl);
+    }
+
+    // Description
+    if (p.description) {
+      const descEl = document.getElementById('product-description');
+      descEl.textContent = p.description;
+      descEl.style.display = 'block';
+    }
+
+    // Qty stepper
+    let qty = 1;
+    const minusBtn = document.getElementById('qty-minus');
+    const plusBtn  = document.getElementById('qty-plus');
+    const qtyNum   = document.getElementById('qty-num');
+    minusBtn.addEventListener('click', () => {
+      if (qty <= 1) return;
+      qty--; qtyNum.textContent = toAr(qty); minusBtn.disabled = qty <= 1;
+    });
+    plusBtn.addEventListener('click', () => {
+      qty++; qtyNum.textContent = toAr(qty); minusBtn.disabled = false;
+    });
+
+    // Add to cart
+    const addBtn = document.getElementById('add-cart-btn');
+    if (!price) { addBtn.disabled = true; addBtn.querySelector('span').textContent = 'phone_in_talk'; addBtn.childNodes[1].textContent = ' اتصل للسعر'; }
+    addBtn.addEventListener('click', () => {
+      if (!price) return;
+      const ex = cart.find(i => i.name === p.store_name);
+      if (ex) ex.qty += qty; else cart.push({ name: p.store_name, img: p.image_url || 'logo.png', price: final, qty });
+      saveCart(); updateCartBadge();
+      addBtn.classList.add('added');
+      const icon = addBtn.querySelector('.material-symbols-outlined');
+      icon.textContent = 'check_circle';
+      addBtn.childNodes[2].textContent = ' تمت الإضافة';
+      setTimeout(() => {
+        addBtn.classList.remove('added');
+        icon.textContent = 'add_shopping_cart';
+        addBtn.childNodes[2].textContent = ' أضف للسلة';
+      }, 2000);
+    });
+
+    // Tabs
+    const tabs = [];
+    if (p.benefits && p.benefits.length) tabs.push({ id:'benefits', label:'الفوائد', icon:'eco' });
+    if (p.nutrition && p.nutrition.length) tabs.push({ id:'nutrition', label:'القيمة الغذائية', icon:'nutrition' });
+    if (p.extra_info) tabs.push({ id:'extra', label:'معلومات إضافية', icon:'info' });
+
+    if (tabs.length) {
+      document.getElementById('tabs-section').style.display = 'block';
+      const tabBtns = document.getElementById('tab-btns');
+      tabs.forEach((t, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn' + (i===0?' active':'');
+        btn.dataset.tab = t.id;
+        btn.innerHTML = `<i class="bi bi-${t.icon==='eco'?'flower1':t.icon==='nutrition'?'bar-chart':' info-circle'}"></i> ${t.label}`;
+        btn.addEventListener('click', () => {
+          tabBtns.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById('tab-' + t.id).classList.add('active');
+        });
+        tabBtns.appendChild(btn);
+      });
+      // Activate first tab
+      if (tabs[0]) document.getElementById('tab-' + tabs[0].id).classList.add('active');
+
+      // Render benefits
+      if (p.benefits && p.benefits.length) {
+        const list = document.getElementById('benefits-list');
+        p.benefits.forEach(b => {
+          const item = document.createElement('div');
+          item.className = 'benefit-item';
+          item.innerHTML = `
+            <div class="benefit-dot">
+              <span class="material-symbols-outlined text-secondary" style="font-size:16px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">check_circle</span>
+            </div>
+            <span class="font-body text-sm text-on-surface leading-relaxed pt-1">${escHtml(typeof b==='string'?b:b.text||'')}</span>`;
+          list.appendChild(item);
+        });
+      }
+
+      // Render nutrition
+      if (p.nutrition && p.nutrition.length) {
+        const table = document.getElementById('nutrition-table');
+        p.nutrition.forEach(row => {
+          const div = document.createElement('div');
+          div.className = 'nutrition-row';
+          div.innerHTML = `
+            <span class="font-body text-sm text-on-surface-variant">${escHtml(row.label||'')}</span>
+            <span class="font-headline text-sm font-bold text-primary">${escHtml(row.value||'')}</span>`;
+          table.appendChild(div);
+        });
+      }
+
+      // Render extra
+      if (p.extra_info) {
+        document.getElementById('extra-info-content').textContent = p.extra_info;
+      }
+    }
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+})();
+</script>
+
+<style>
+  #contact-fab{position:fixed;bottom:36px;left:36px;z-index:9999;direction:ltr;display:flex;align-items:center;gap:0}
+  #contact-fab::before{content:'';position:absolute;width:60px;height:60px;border-radius:50%;background:var(--fab-color,#25d366);opacity:0;animation:fabPulse 2.8s ease-out infinite;pointer-events:none;left:0;top:50%;transform:translateY(-50%)}
+  @keyframes fabPulse{0%{transform:translateY(-50%) scale(1);opacity:.6}70%{transform:translateY(-50%) scale(2);opacity:0}100%{transform:translateY(-50%) scale(2);opacity:0}}
+  #contact-fab a.fab-link{width:60px;height:60px;border-radius:50%;background:var(--fab-color,#25d366);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.4),0 0 0 2px rgba(254,214,91,.25);transition:background .5s ease,box-shadow .4s ease,transform .2s ease;text-decoration:none;flex-shrink:0;position:relative;overflow:hidden}
+  #contact-fab a.fab-link:hover{transform:scale(1.1)}
+  #contact-fab .fab-icon{width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .25s ease}
+  #contact-fab .fab-icon.flip{transform:rotateY(90deg);opacity:0}
+  #contact-fab .fab-text{overflow:hidden;max-width:0;opacity:0;font-family:'Amiri',serif;font-size:15px;font-weight:700;color:#fed65b;white-space:nowrap;margin-left:10px;padding:7px 18px;border-radius:22px;border:1.5px solid rgba(254,214,91,.5);background:rgba(60,0,4,.85);backdrop-filter:blur(10px);transition:max-width .5s cubic-bezier(.4,0,.2,1),opacity .3s ease;pointer-events:none}
+  #contact-fab .fab-text.open{max-width:180px;opacity:1}
+  @media(max-width:768px){#contact-fab{bottom:20px;left:20px}#contact-fab a.fab-link{width:52px;height:52px}}
+</style>
+<div id="contact-fab">
+  <a class="fab-link" id="fab-anchor" href="#" aria-label="تواصل معنا" rel="noopener">
+    <span class="fab-icon" id="fab-icon"></span>
+  </a>
+  <span class="fab-text" id="fab-text">تواصل معنا</span>
+</div>
+<script>
+(function(){
+  var WA_HREF='https://wa.me/201037966515?text='+encodeURIComponent('مرحباً، أود الاستفسار عن منتجاتكم');
+  var PH_HREF='tel:01037966515';
+  var WA_COLOR='#25d366',PH_COLOR='#6b0008';
+  var WA_ICON='<svg viewBox="0 0 24 24" width="26" height="26" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+  var PH_ICON='<svg viewBox="0 0 24 24" width="26" height="26" fill="white"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.3 21 3 13.7 3 4a1 1 0 011-1h3.49a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.24 1.01z"/></svg>';
+  function init(){
+    var fab=document.getElementById('contact-fab'),link=document.getElementById('fab-anchor'),iconBox=document.getElementById('fab-icon'),text=document.getElementById('fab-text');
+    if(!fab||!link||!iconBox||!text)return;
+    var isWA=true,labelVisible=false;
+    function applyMode(){fab.style.setProperty('--fab-color',isWA?WA_COLOR:PH_COLOR);link.href=isWA?WA_HREF:PH_HREF;link.target=isWA?'_blank':'_self';iconBox.innerHTML=isWA?WA_ICON:PH_ICON;}
+    function switchMode(){iconBox.classList.add('flip');setTimeout(function(){isWA=!isWA;applyMode();iconBox.classList.remove('flip');},200);}
+    function toggleLabel(){labelVisible=!labelVisible;text.classList.toggle('open',labelVisible);}
+    setTimeout(function(){text.classList.add('open');labelVisible=true;},800);
+    setInterval(toggleLabel,3500);setInterval(switchMode,4000);
+    link.addEventListener('mouseenter',function(){text.classList.add('open');labelVisible=true;});
+    applyMode();
+  }
+  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
+}());
+</script>
+<script src="js/v_id_bootstrap.js"></script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
+</body>
+</html>
