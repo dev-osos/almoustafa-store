@@ -150,6 +150,22 @@
     background: rgba(115,92,0,0.1); display:flex; align-items:center; justify-content:center;
   }
 
+  /* Wallet toggle */
+  .wallet-toggle { position:relative; display:inline-flex; align-items:center; cursor:pointer; flex-shrink:0; }
+  .wallet-toggle input { opacity:0; width:0; height:0; position:absolute; }
+  .wallet-slider {
+    width:40px; height:22px; background:rgba(60,0,4,0.15); border-radius:11px;
+    transition: background 0.2s; position:relative; display:block;
+  }
+  .wallet-slider::after {
+    content:''; position:absolute; top:3px; right:3px;
+    width:16px; height:16px; border-radius:50%; background:#fff;
+    box-shadow:0 1px 4px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+  }
+  .wallet-toggle input:checked + .wallet-slider { background:#735c00; }
+  .wallet-toggle input:checked + .wallet-slider::after { transform: translateX(-18px); }
+
   /* Confirm button */
   .confirm-btn {
     width:100%; padding:15px;
@@ -256,6 +272,23 @@
             <span class="text-on-surface-variant text-sm font-body">رسوم الشحن</span>
             <span class="font-body text-sm font-bold text-secondary" id="shipping-val"></span>
           </div>
+          <div class="info-row" id="wallet-row">
+            <div class="info-row-icon" style="background:rgba(115,92,0,0.1)">
+              <span class="material-symbols-outlined text-secondary" style="font-size:18px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">account_balance_wallet</span>
+            </div>
+            <div style="flex:1">
+              <div class="info-row-label">رصيد المحفظة</div>
+              <div class="info-row-value" id="user-wallet" style="color:#735c00">—</div>
+            </div>
+            <label class="wallet-toggle" id="wallet-toggle-wrap" title="استخدام رصيد المحفظة">
+              <input type="checkbox" id="wallet-use-cb">
+              <span class="wallet-slider"></span>
+            </label>
+          </div>
+          <div class="total-row" id="wallet-discount-row" style="display:none">
+            <span class="text-on-surface-variant text-sm font-body">خصم المحفظة</span>
+            <span class="font-body text-sm font-bold" style="color:#735c00" id="wallet-discount-val"></span>
+          </div>
           <div class="total-row grand">
             <span class="font-headline text-lg text-primary font-bold">الإجمالي</span>
             <span class="font-headline text-xl text-primary font-bold" id="total-val"></span>
@@ -346,16 +379,6 @@
             <input class="info-row-input" id="user-address-detail" type="text" placeholder="الحي، الشارع، رقم المبنى..."/>
           </div>
         </div>
-
-        <div class="info-row">
-          <div class="info-row-icon" style="background:rgba(115,92,0,0.1)">
-            <span class="material-symbols-outlined text-secondary" style="font-size:18px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">account_balance_wallet</span>
-          </div>
-          <div>
-            <div class="info-row-label">رصيد المحفظة</div>
-            <div class="info-row-value" id="user-wallet" style="color:#735c00">—</div>
-          </div>
-        </div>
       </div>
 
       <!-- Note -->
@@ -363,7 +386,7 @@
         <div class="card-section-title" style="padding:0 0 10px;border-bottom:none">
           <i class="bi bi-chat-square-text"></i> ملاحظة للطلب
         </div>
-        <textarea id="order-note" rows="3" placeholder="أي تعليمات خاصة للتوصيل..." style="width:100%;padding:10px 12px;border:1.5px solid rgba(60,0,4,0.12);border-radius:10px;font-family:'Manrope',sans-serif;font-size:0.82rem;color:#1c1c17;outline:none;resize:none;background:#fdf9f0" onfocus="this.style.borderColor='rgba(60,0,4,0.4)'" onblur="this.style.borderColor='rgba(60,0,4,0.12)'"></textarea>
+        <textarea id="order-note" rows="3" placeholder="أي تعليمات خاصة للتوصيل ، رقم هاتف اضافي او اي ملاحظات..." style="width:100%;padding:10px 12px;border:1.5px solid rgba(60,0,4,0.12);border-radius:10px;font-family:'Manrope',sans-serif;font-size:0.82rem;color:#1c1c17;outline:none;resize:none;background:#fdf9f0" onfocus="this.style.borderColor='rgba(60,0,4,0.4)'" onblur="this.style.borderColor='rgba(60,0,4,0.12)'"></textarea>
       </div>
 
       <!-- Confirm button -->
@@ -386,7 +409,7 @@
 (function() {
   const arabicNums = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
   function toAr(n) { return String(n).split('').map(d => arabicNums[+d] ?? d).join(''); }
-  function fmtPrice(n) { return n.toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' ج.م'; }
+  function fmtPrice(n) { const w = n % 1 === 0; return n.toLocaleString('ar-EG',{minimumFractionDigits:w?0:2,maximumFractionDigits:w?0:2}) + ' ج.م'; }
 
   // --- Load cart ---
   let cart = [];
@@ -420,8 +443,11 @@
   if (session.name)           nameInput.value        = session.name;
   if (session.phone)          phoneInput.value       = session.phone;
   if (session.addressDetails) addressDetailInp.value = session.addressDetails;
-  const balance = session.wallet ?? 0;
-  document.getElementById('user-wallet').textContent = Number(balance).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' ج.م';
+  const balance = parseFloat(session.wallet) || 0;
+  document.getElementById('user-wallet').textContent = fmtPrice(balance);
+  if (!balance) {
+    document.getElementById('wallet-row').style.display = 'none';
+  }
 
   // --- Address Autocomplete ---
   function acNorm(s) { return s.replace(/[أإآا]/g,'ا').replace(/ى/g,'ي').trim(); }
@@ -576,9 +602,18 @@
   function updateTotals() {
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
     const shipping = subtotal >= 500 ? 0 : 50;
+    const useWallet = balance > 0 && document.getElementById('wallet-use-cb').checked;
+    const walletDeduct = useWallet ? Math.min(balance, subtotal + shipping) : 0;
     document.getElementById('subtotal-val').textContent = fmtPrice(subtotal);
     document.getElementById('shipping-val').textContent = shipping === 0 ? 'مجاني' : fmtPrice(shipping);
-    document.getElementById('total-val').textContent    = fmtPrice(subtotal + shipping);
+    const walletRow = document.getElementById('wallet-discount-row');
+    if (walletDeduct > 0) {
+      walletRow.style.display = '';
+      document.getElementById('wallet-discount-val').textContent = '−' + fmtPrice(walletDeduct);
+    } else {
+      walletRow.style.display = 'none';
+    }
+    document.getElementById('total-val').textContent = fmtPrice(subtotal + shipping - walletDeduct);
   }
 
   function renderItem(item, idx) {
@@ -664,6 +699,8 @@
     while (listEl.firstChild) listEl.removeChild(listEl.firstChild);
     cart.forEach((item, idx) => listEl.appendChild(renderItem(item, idx)));
   }
+
+  document.getElementById('wallet-use-cb').addEventListener('change', updateTotals);
 
   renderAll();
   updateTotals();
