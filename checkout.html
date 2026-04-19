@@ -272,6 +272,10 @@
             <span class="text-on-surface-variant text-sm font-body">رسوم الشحن</span>
             <span class="font-body text-sm font-bold text-secondary" id="shipping-val"></span>
           </div>
+          <div id="wholesale-shipping-note" style="display:none;margin:4px 20px 8px;padding:10px 14px;border-radius:10px;background:rgba(115,92,0,0.08);border:1px solid rgba(115,92,0,0.2);display:none;align-items:flex-start;gap:8px">
+            <span class="material-symbols-outlined text-secondary" style="font-size:18px;flex-shrink:0;margin-top:1px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">support_agent</span>
+            <span style="font-family:'Amiri',serif;font-size:0.85rem;color:#735c00;line-height:1.6">سيتواصل معكم فريق المبيعات لتحديد تكلفة الشحن بناءً على طلبكم</span>
+          </div>
           <div class="info-row" id="wallet-row">
             <div class="info-row-icon" style="background:rgba(115,92,0,0.1)">
               <span class="material-symbols-outlined text-secondary" style="font-size:18px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">account_balance_wallet</span>
@@ -443,6 +447,12 @@
   if (session.name)           nameInput.value        = session.name;
   if (session.phone)          phoneInput.value       = session.phone;
   if (session.addressDetails) addressDetailInp.value = session.addressDetails;
+  const isWholesale = ['wholesale', 'corporate', 'جملة'].includes(session.segment);
+  if (isWholesale) {
+    const note = document.getElementById('wholesale-shipping-note');
+    note.style.display = 'flex';
+  }
+
   const balance = parseFloat(session.wallet) || 0;
   document.getElementById('user-wallet').textContent = fmtPrice(balance);
   if (!balance) {
