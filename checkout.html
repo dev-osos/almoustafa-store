@@ -331,7 +331,7 @@
           </div>
           <div style="flex:1;min-width:0">
             <div class="info-row-label">الاسم</div>
-            <input class="info-row-input" id="user-name" type="text" placeholder="أدخل اسمك الكامل" autocomplete="name"/>
+            <input class="info-row-input" id="user-name" type="text" placeholder="أدخل اسمك الكامل" autocomplete="name" required/>
           </div>
         </div>
 
@@ -341,7 +341,7 @@
           </div>
           <div style="flex:1;min-width:0">
             <div class="info-row-label">رقم الهاتف</div>
-            <input class="info-row-input" id="user-phone" type="tel" placeholder="01XXXXXXXXX" style="direction:ltr;text-align:right" autocomplete="tel"/>
+            <input class="info-row-input" id="user-phone" type="tel" placeholder="01XXXXXXXXX" style="direction:ltr;text-align:right" autocomplete="tel" required/>
           </div>
         </div>
 
@@ -352,7 +352,7 @@
           <div style="flex:1;min-width:0">
             <div class="info-row-label">المحافظة</div>
             <div class="co-ac-wrap" id="co-gov-wrap">
-              <input class="info-row-input" id="co-gov-input" type="text" placeholder="اكتب لاختيار المحافظة..." autocomplete="off" role="combobox" aria-expanded="false" aria-haspopup="listbox"/>
+              <input class="info-row-input" id="co-gov-input" type="text" placeholder="اكتب لاختيار المحافظة..." autocomplete="off" role="combobox" aria-expanded="false" aria-haspopup="listbox" required>
               <ul class="co-ac-dropdown" id="co-gov-list" role="listbox"></ul>
             </div>
             <div class="co-ac-hint" id="co-gov-hint"></div>
@@ -366,7 +366,7 @@
           <div style="flex:1;min-width:0">
             <div class="info-row-label">المدينة / المنطقة</div>
             <div class="co-ac-wrap" id="co-city-wrap">
-              <input class="info-row-input" id="co-city-input" type="text" placeholder="اختر المحافظة أولاً..." autocomplete="off" role="combobox" aria-expanded="false" aria-haspopup="listbox" disabled/>
+              <input class="info-row-input" id="co-city-input" type="text" placeholder="اختر المحافظة أولاً..." autocomplete="off" role="combobox" aria-expanded="false" aria-haspopup="listbox" disabled required>
               <ul class="co-ac-dropdown" id="co-city-list" role="listbox"></ul>
             </div>
             <div class="co-ac-hint" id="co-city-hint"></div>
@@ -380,7 +380,7 @@
           </div>
           <div style="flex:1;min-width:0">
             <div class="info-row-label">العنوان التفصيلي</div>
-            <input class="info-row-input" id="user-address-detail" type="text" placeholder="الحي، الشارع، رقم المبنى..."/>
+            <input class="info-row-input" id="user-address-detail" type="text" placeholder="الحي، الشارع، رقم المبنى..." required/>
           </div>
         </div>
       </div>
