@@ -557,16 +557,20 @@
     };
   }
 
+  // shippingCost: null = pending (address not selected), number = fetched fee from TG API
+  let shippingCost = null;
+
   // Governorate AC
   const govAC = makeAC({
     wrapId: 'co-gov-wrap', inputId: 'co-gov-input', listId: 'co-gov-list', hintId: 'co-gov-hint',
-    onSelect(gov) { cityACObj.reset(gov.id); }
+    onSelect(gov) { shippingCost = null; updateTotals(); cityACObj.reset(gov.id); }
   });
 
   // City AC
   const cityInput = document.getElementById('co-city-input');
   const cityACObj = makeAC({
     wrapId: 'co-city-wrap', inputId: 'co-city-input', listId: 'co-city-list', hintId: 'co-city-hint',
+    onSelect() { if (!isWholesale) fetchShipping(); }
   });
 
   // Allow typing in city before gov selected — show warning on focus
@@ -579,6 +583,7 @@
     }
   });
   cityACObj.reset = function(govId) {
+    shippingCost = null; updateTotals();
     cityInput.value = ''; cityInput.placeholder = 'جاري التحميل...'; cityInput.style.borderColor = '';
     document.getElementById('co-city-hint').textContent = ''; document.getElementById('co-city-hint').className = 'co-ac-hint';
     fetch('dat-docs/cities/' + govId + '.json')
@@ -609,13 +614,47 @@
   // --- Render order items ---
   const listEl = document.getElementById('order-items-list');
 
+  function calcWeightKg() {
+    const totalGrams = cart.reduce((s, i) => s + (parseFloat(i.weight) || 0) * i.qty, 0);
+    return Math.max(1, Math.floor(totalGrams / 1000));
+  }
+
+  async function fetchShipping() {
+    const govSelected  = govAC.getSelected();
+    const citySelected = cityACObj.getSelected();
+    if (!govSelected || !citySelected) return;
+    const subtotal  = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const weightKg  = calcWeightKg();
+    document.getElementById('shipping-val').textContent = '...';
+    try {
+      const res  = await fetch('apis/shippeng/TG/del-cost.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ govId: govSelected.id, cityId: citySelected.id, price: subtotal, weight: weightKg }),
+      });
+      const data = await res.json();
+      shippingCost = data.ok ? (data.delivery || 0) : null;
+    } catch { shippingCost = null; }
+    updateTotals();
+  }
+
   function updateTotals() {
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const shipping = subtotal >= 500 ? 0 : 50;
-    const useWallet = balance > 0 && document.getElementById('wallet-use-cb').checked;
+    let shipping = 0, shippingText;
+    if (isWholesale) {
+      shippingText = '—';
+    } else if (shippingCost === null) {
+      shippingText = 'تحدد تلقائيا بعد ادخال العنوان';
+    } else if (shippingCost === 0) {
+      shippingText = 'مجاني';
+    } else {
+      shipping     = shippingCost;
+      shippingText = fmtPrice(shippingCost);
+    }
+    const useWallet    = balance > 0 && document.getElementById('wallet-use-cb').checked;
     const walletDeduct = useWallet ? Math.min(balance, subtotal + shipping) : 0;
-    document.getElementById('subtotal-val').textContent = fmtPrice(subtotal);
-    document.getElementById('shipping-val').textContent = shipping === 0 ? 'مجاني' : fmtPrice(shipping);
+    document.getElementById('subtotal-val').textContent  = fmtPrice(subtotal);
+    document.getElementById('shipping-val').textContent  = shippingText;
     const walletRow = document.getElementById('wallet-discount-row');
     if (walletDeduct > 0) {
       walletRow.style.display = '';

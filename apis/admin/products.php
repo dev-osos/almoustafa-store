@@ -19,7 +19,7 @@ $pdo    = api_pdo();
 // ── GET: list all products ─────────────────────────────────────────────────
 if ($method === 'GET') {
     $stmt = $pdo->query(
-        'SELECT id, erp_id, api_name, store_name, category, status, badge, wight, price, discount, sold_q, image_url, source
+        'SELECT id, erp_id, api_name, store_name, category, status, badge, wight, price, discount, sold_q, image_url, source, description, benefits, nutrition, extra_info
          FROM products
          ORDER BY id ASC'
     );

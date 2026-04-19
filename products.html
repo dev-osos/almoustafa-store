@@ -953,7 +953,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const disc  = parseFloat(p.discount)||0;
       const final = disc>0 && disc<100 ? price*(1-disc/100) : price;
       const ex = cart.find(i => i.name === p.store_name);
-      if (ex) ex.qty += qty; else cartItems.push({ name: p.store_name, img: p.image_url||'logo.png', price: final, qty });
+      if (ex) ex.qty += qty; else cartItems.push({ name: p.store_name, img: p.image_url||'logo.png', price: final, qty, weight: parseFloat(p.wight)||0 });
       added++;
     };
 
