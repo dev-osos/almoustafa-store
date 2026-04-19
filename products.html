@@ -1240,18 +1240,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = 'checkout.html';
   });
 
-  // Contact modal
-  const contactBackdrop = document.getElementById('contact-backdrop');
-  document.getElementById('btn-contact').addEventListener('click', () => {
-    contactBackdrop.classList.add('open'); document.body.style.overflow = 'hidden';
-  });
-  document.getElementById('btn-contact-close').addEventListener('click', () => {
-    contactBackdrop.classList.remove('open'); document.body.style.overflow = '';
-  });
-  contactBackdrop.addEventListener('click', e => {
-    if (e.target === contactBackdrop) { contactBackdrop.classList.remove('open'); document.body.style.overflow = ''; }
-  });
-
 });
 </script>
 <style>.dev-badge{display:inline-flex;align-items:center;gap:.75rem;padding:.55rem 1.25rem .55rem 1rem;background:rgba(60,0,4,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:9999px;border:1px solid rgba(254,214,91,.25);box-shadow:0 4px 24px rgba(60,0,4,.35),inset 0 1px 0 rgba(254,214,91,.15);white-space:nowrap;text-decoration:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease,border-color .3s ease}.dev-badge:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 8px 32px rgba(60,0,4,.5),inset 0 1px 0 rgba(254,214,91,.3);border-color:rgba(254,214,91,.5)}.dev-badge:hover .badge-icon{animation:spark .5s ease forwards}@keyframes spark{0%{transform:rotate(0) scale(1)}30%{transform:rotate(-15deg) scale(1.2)}60%{transform:rotate(10deg) scale(.95)}100%{transform:rotate(0) scale(1)}}.badge-icon{width:1.75rem;height:1.75rem;background:linear-gradient(135deg,#fed65b,#b88a00);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}.badge-icon i{font-size:.8rem;color:#3c0004;line-height:1}.badge-text{display:flex;flex-direction:column;gap:.05rem;line-height:1}.badge-label{font-family:'Manrope',sans-serif;font-size:.6rem;font-weight:300;color:rgba(254,214,91,.55);letter-spacing:.08em;text-transform:uppercase}.badge-name{font-family:'Amiri',serif;font-size:.95rem;font-weight:700;color:#fed65b;letter-spacing:.02em}.dev-badge::before{content:'';position:absolute;inset:0;border-radius:9999px;padding:1px;background:linear-gradient(90deg,transparent,rgba(254,214,91,.4),transparent);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}.dev-badge-wrap{display:flex;justify-content:center;padding:2.5rem 0 3rem;}</style>
