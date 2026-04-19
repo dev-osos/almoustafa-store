@@ -58,4 +58,5 @@ if (!is_array($fees)) {
     api_error('invalid_response', 502);
 }
 
-api_ok(['delivery' => (float) ($fees['delivery'] ?? 0)]);
+$delivery = (float) ($fees['delivery'] ?? 0) + (float) ($fees['weight'] ?? 0) + (float) ($fees['collection'] ?? 0);
+api_ok(['delivery' => $delivery]);
