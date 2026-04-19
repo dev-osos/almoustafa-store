@@ -531,8 +531,10 @@
 function updateStickyOffsets() {
   const nav = document.querySelector('nav');
   const filterBar = document.querySelector('.filter-bar');
-  if (!nav || !filterBar) return;
+  const mainContent = document.getElementById('main-content');
+  if (!nav || !filterBar || !mainContent) return;
   const navH = nav.getBoundingClientRect().height;
+  mainContent.style.paddingTop = navH + 'px';
   const filterH = filterBar.getBoundingClientRect().height;
   document.documentElement.style.setProperty('--nav-h', navH + 'px');
   document.documentElement.style.setProperty('--sticky-h', (navH + filterH + 48) + 'px');
