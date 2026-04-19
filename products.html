@@ -537,7 +537,7 @@ function updateStickyOffsets() {
   mainContent.style.paddingTop = navH + 'px';
   const filterH = filterBar.getBoundingClientRect().height;
   document.documentElement.style.setProperty('--nav-h', navH + 'px');
-  document.documentElement.style.setProperty('--sticky-h', (navH + filterH + 48) + 'px');
+  document.documentElement.style.setProperty('--sticky-h', (navH + filterH + 16) + 'px');
 }
 document.addEventListener('DOMContentLoaded', () => { updateStickyOffsets(); setTimeout(updateStickyOffsets, 300); });
 window.addEventListener('resize', updateStickyOffsets);
