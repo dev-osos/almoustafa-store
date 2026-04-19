@@ -191,6 +191,23 @@ tr:hover td { background:var(--surface-dim); }
 /* ── Role badge ──────────────────────────────────────── */
 .role-badge { display:inline-block; font-size:.72rem; font-weight:700; padding:.2rem .65rem; border-radius:999px; }
 
+/* ── Product picker ──────────────────────────────────── */
+.prod-picker { position:relative; }
+.prod-picker-tags { display:flex; flex-wrap:wrap; gap:.35rem; align-items:center; min-height:38px; padding:.35rem .75rem; border:1.5px solid var(--border); border-radius:10px; background:var(--surface); cursor:text; transition:border-color .2s; }
+.prod-picker-tags:focus-within { border-color:var(--primary); }
+.prod-picker-tag { display:inline-flex; align-items:center; gap:.3rem; background:rgba(60,0,4,.08); color:var(--primary); border-radius:6px; padding:.15rem .5rem; font-size:.78rem; font-weight:600; }
+.prod-picker-tag button { border:none; background:none; cursor:pointer; color:var(--primary); font-size:.9rem; line-height:1; padding:0; }
+.prod-picker-input { border:none; outline:none; background:transparent; font-family:inherit; font-size:.875rem; color:var(--on-surface); min-width:120px; flex:1; padding:.1rem 0; }
+.prod-picker-dropdown { position:absolute; top:calc(100% + 4px); right:0; left:0; z-index:500; background:var(--surface); border:1.5px solid var(--border); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.12); max-height:220px; overflow-y:auto; display:none; scrollbar-width:thin; }
+.prod-picker.open .prod-picker-dropdown { display:block; }
+.prod-picker-item { display:flex; align-items:center; gap:.6rem; padding:.55rem .9rem; cursor:pointer; transition:background .1s; font-size:.85rem; }
+.prod-picker-item:hover, .prod-picker-item.focused { background:rgba(60,0,4,.05); }
+.prod-picker-item.selected { background:rgba(60,0,4,.08); font-weight:600; }
+.prod-picker-item img { width:28px; height:28px; border-radius:6px; object-fit:cover; border:1px solid var(--border); flex-shrink:0; }
+.prod-picker-item .pi-name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--primary); }
+.prod-picker-item .pi-id { font-size:.72rem; color:var(--on-surface-dim); flex-shrink:0; }
+.prod-picker-empty { padding:.75rem 1rem; font-size:.82rem; color:var(--on-surface-dim); text-align:center; }
+
 /* ── Users table specific ────────────────────────────── */
 .status-active   { color:var(--green); font-weight:700; }
 .status-inactive { color:var(--red-text); font-weight:700; }
@@ -2198,8 +2215,8 @@ const PROMO_CONFIG_HTML = {
       </select>
     </div>
     <div class="form-field" id="pc-products-wrap" style="display:none">
-      <label class="form-label">IDs المنتجات (مفصولة بفاصلة)</label>
-      <input class="form-input" type="text" id="pc-product_ids" placeholder="1, 5, 12"/>
+      <label class="form-label">المنتجات المشمولة بالخصم</label>
+      <div class="prod-picker" id="pp-product_ids" data-multi="true"></div>
     </div>
     <div class="form-field">
       <label class="form-label">نوع الخصم</label>
@@ -2215,9 +2232,9 @@ const PROMO_CONFIG_HTML = {
 
   bundle: `
     <div class="form-field" style="grid-column:1/-1">
-      <label class="form-label">IDs المنتجات في الباكدج (مفصولة بفاصلة) <span style="color:#c62828">*</span></label>
-      <input class="form-input" type="text" id="pc-product_ids" placeholder="1, 5, 12" required/>
-      <div style="font-size:.76rem;color:var(--on-surface-dim);margin-top:.3rem">أدخل معرّفات المنتجات التي تشكّل الباكدج</div>
+      <label class="form-label">منتجات الباكدج <span style="color:#c62828">*</span></label>
+      <div class="prod-picker" id="pp-product_ids" data-multi="true"></div>
+      <div style="font-size:.76rem;color:var(--on-surface-dim);margin-top:.3rem">اختر المنتجات التي تشكّل الباكدج</div>
     </div>
     <div class="form-field">
       <label class="form-label">نوع الخصم على الإجمالي</label>
@@ -2232,9 +2249,9 @@ const PROMO_CONFIG_HTML = {
     </div>`,
 
   quantity_discount: `
-    <div class="form-field">
-      <label class="form-label">ID المنتج <span style="color:#c62828">*</span></label>
-      <input class="form-input" type="number" id="pc-product_id" placeholder="مثال: 7" min="1" required/>
+    <div class="form-field" style="grid-column:1/-1">
+      <label class="form-label">المنتج <span style="color:#c62828">*</span></label>
+      <div class="prod-picker" id="pp-product_id" data-multi="false"></div>
     </div>
     <div class="form-field">
       <label class="form-label">الحد الأدنى للكمية <span style="color:#c62828">*</span></label>
@@ -2254,13 +2271,13 @@ const PROMO_CONFIG_HTML = {
 
   gift_product: `
     <div class="form-field" style="grid-column:1/-1">
-      <label class="form-label">IDs المنتجات المشتراة (مفصولة بفاصلة) <span style="color:#c62828">*</span></label>
-      <input class="form-input" type="text" id="pc-product_ids" placeholder="1, 5" required/>
+      <label class="form-label">المنتجات المشتراة <span style="color:#c62828">*</span></label>
+      <div class="prod-picker" id="pp-product_ids" data-multi="true"></div>
       <div style="font-size:.76rem;color:var(--on-surface-dim);margin-top:.3rem">عند شراء هذه المنتجات يحصل العميل على الهدية</div>
     </div>
     <div class="form-field">
-      <label class="form-label">ID المنتج الهدية <span style="color:#c62828">*</span></label>
-      <input class="form-input" type="number" id="pc-gift_product_id" placeholder="مثال: 9" min="1" required/>
+      <label class="form-label">المنتج الهدية <span style="color:#c62828">*</span></label>
+      <div class="prod-picker" id="pp-gift_product_id" data-multi="false"></div>
     </div>
     <div class="form-field">
       <label class="form-label">الحد الأدنى للكمية المشتراة</label>
@@ -2277,6 +2294,95 @@ const PROMO_CONFIG_HTML = {
     </div>`,
 };
 
+// ── Product Picker ────────────────────────────────────────────────────────────
+// pickerInstances[elementId] = { getIds(), setIds([...]) }
+const pickerInstances = {};
+
+function initPicker(el) {
+  if (!el) return;
+  const id    = el.id;
+  const multi = el.dataset.multi !== 'false';
+  let selected = []; // array of {id, name, image_url}
+
+  el.innerHTML = `
+    <div class="prod-picker-tags" id="${id}-tags">
+      <input class="prod-picker-input" id="${id}-input" type="text" placeholder="ابحث عن منتج..." autocomplete="off"/>
+    </div>
+    <div class="prod-picker-dropdown" id="${id}-drop"></div>`;
+
+  const tagsEl = el.querySelector('.prod-picker-tags');
+  const input  = el.querySelector('.prod-picker-input');
+  const drop   = el.querySelector('.prod-picker-dropdown');
+
+  function norm(s) { return String(s||'').replace(/[أإآا]/g,'ا').replace(/ى/g,'ي').toLowerCase(); }
+
+  function renderTags() {
+    tagsEl.querySelectorAll('.prod-picker-tag').forEach(t => t.remove());
+    selected.forEach(p => {
+      const tag = document.createElement('span');
+      tag.className = 'prod-picker-tag';
+      tag.innerHTML = `${escHtml(p.store_name||p.name||'#'+p.id)}<button type="button" data-id="${p.id}">×</button>`;
+      tag.querySelector('button').addEventListener('click', e => { e.stopPropagation(); removeItem(p.id); });
+      tagsEl.insertBefore(tag, input);
+    });
+  }
+
+  function removeItem(pid) {
+    selected = selected.filter(p => p.id != pid);
+    renderTags(); renderDrop();
+  }
+
+  function renderDrop() {
+    const q = norm(input.value);
+    let items = allProds.filter(p => p.status === 'active');
+    if (q) items = items.filter(p => norm(p.store_name).includes(q) || norm(p.api_name).includes(q) || String(p.id).includes(q));
+    drop.innerHTML = '';
+    if (!items.length) { drop.innerHTML = `<div class="prod-picker-empty">لا توجد نتائج</div>`; return; }
+    items.slice(0, 40).forEach(p => {
+      const isSel = selected.some(s => s.id == p.id);
+      const div = document.createElement('div');
+      div.className = 'prod-picker-item' + (isSel ? ' selected' : '');
+      div.innerHTML = `<img src="../../${escHtml(p.image_url||'')}" onerror="this.style.display='none'"/>
+        <span class="pi-name">${escHtml(p.store_name||p.api_name)}</span>
+        <span class="pi-id">#${p.id}</span>`;
+      div.addEventListener('mousedown', e => {
+        e.preventDefault();
+        if (isSel) { removeItem(p.id); return; }
+        if (!multi) selected = [];
+        selected.push(p);
+        input.value = '';
+        renderTags(); renderDrop();
+        if (!multi) { el.classList.remove('open'); }
+      });
+      drop.appendChild(div);
+    });
+  }
+
+  input.addEventListener('focus', () => { renderDrop(); el.classList.add('open'); });
+  input.addEventListener('input', renderDrop);
+  input.addEventListener('keydown', e => { if (e.key === 'Escape') el.classList.remove('open'); });
+  document.addEventListener('click', e => { if (!el.contains(e.target)) el.classList.remove('open'); }, true);
+  tagsEl.addEventListener('click', () => input.focus());
+
+  pickerInstances[id] = {
+    getIds:  () => selected.map(p => p.id),
+    getSingle: () => selected[0]?.id ?? null,
+    setIds: (ids) => {
+      selected = (ids||[]).map(pid => allProds.find(p => p.id == pid)).filter(Boolean);
+      renderTags(); renderDrop();
+    },
+    setSingle: (pid) => {
+      selected = pid ? [allProds.find(p => p.id == pid)].filter(Boolean) : [];
+      renderTags(); renderDrop();
+    },
+    clear: () => { selected = []; renderTags(); },
+  };
+}
+
+function initConfigPickers() {
+  document.querySelectorAll('#pr-config-wrap .prod-picker').forEach(el => initPicker(el));
+}
+
 function toggleProductsList() {
   const scope = document.getElementById('pc-scope')?.value;
   const wrap  = document.getElementById('pc-products-wrap');
@@ -2287,6 +2393,7 @@ function onPromoTypeChange() {
   const type = $id('pr-type').value;
   const wrap = $id('pr-config-wrap');
   wrap.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">${PROMO_CONFIG_HTML[type] || ''}</div>`;
+  initConfigPickers();
 }
 
 function getPromoConfig() {
@@ -2297,20 +2404,20 @@ function getPromoConfig() {
     cfg.scope          = v('pc-scope') || 'all';
     cfg.discount_type  = v('pc-discount_type') || 'percent';
     cfg.discount_value = parseFloat(v('pc-discount_value')) || 0;
-    if (cfg.scope === 'specific') cfg.product_ids = v('pc-product_ids').split(',').map(s=>parseInt(s.trim())).filter(Boolean);
+    if (cfg.scope === 'specific') cfg.product_ids = pickerInstances['pp-product_ids']?.getIds() || [];
   } else if (type === 'bundle') {
-    cfg.product_ids    = v('pc-product_ids').split(',').map(s=>parseInt(s.trim())).filter(Boolean);
+    cfg.product_ids    = pickerInstances['pp-product_ids']?.getIds() || [];
     cfg.discount_type  = v('pc-discount_type') || 'percent';
     cfg.discount_value = parseFloat(v('pc-discount_value')) || 0;
   } else if (type === 'quantity_discount') {
-    cfg.product_id     = parseInt(v('pc-product_id')) || 0;
+    cfg.product_id     = pickerInstances['pp-product_id']?.getSingle() || 0;
     cfg.min_qty        = parseInt(v('pc-min_qty')) || 1;
     cfg.discount_type  = v('pc-discount_type') || 'percent';
     cfg.discount_value = parseFloat(v('pc-discount_value')) || 0;
   } else if (type === 'gift_product') {
-    cfg.product_ids    = v('pc-product_ids').split(',').map(s=>parseInt(s.trim())).filter(Boolean);
-    cfg.gift_product_id= parseInt(v('pc-gift_product_id')) || 0;
-    cfg.min_qty        = parseInt(v('pc-min_qty')) || 1;
+    cfg.product_ids     = pickerInstances['pp-product_ids']?.getIds() || [];
+    cfg.gift_product_id = pickerInstances['pp-gift_product_id']?.getSingle() || 0;
+    cfg.min_qty         = parseInt(v('pc-min_qty')) || 1;
   }
   // free_shipping: no extra config needed
   return cfg;
@@ -2319,6 +2426,7 @@ function getPromoConfig() {
 function fillPromoConfig(type, cfg) {
   const wrap = $id('pr-config-wrap');
   wrap.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">${PROMO_CONFIG_HTML[type] || ''}</div>`;
+  initConfigPickers();
   if (!cfg) return;
   const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
   if (type === 'product_discount') {
@@ -2326,27 +2434,36 @@ function fillPromoConfig(type, cfg) {
     set('pc-discount_type', cfg.discount_type || 'percent');
     set('pc-discount_value', cfg.discount_value ?? '');
     if (cfg.scope === 'specific' && cfg.product_ids) {
-      set('pc-product_ids', cfg.product_ids.join(', '));
-      const wrap = document.getElementById('pc-products-wrap');
-      if (wrap) wrap.style.display = '';
+      const pw = document.getElementById('pc-products-wrap');
+      if (pw) pw.style.display = '';
+      pickerInstances['pp-product_ids']?.setIds(cfg.product_ids);
     }
   } else if (type === 'bundle') {
-    set('pc-product_ids', (cfg.product_ids||[]).join(', '));
+    pickerInstances['pp-product_ids']?.setIds(cfg.product_ids || []);
     set('pc-discount_type', cfg.discount_type || 'percent');
     set('pc-discount_value', cfg.discount_value ?? '');
   } else if (type === 'quantity_discount') {
-    set('pc-product_id', cfg.product_id ?? '');
+    pickerInstances['pp-product_id']?.setSingle(cfg.product_id);
     set('pc-min_qty', cfg.min_qty ?? '');
     set('pc-discount_type', cfg.discount_type || 'percent');
     set('pc-discount_value', cfg.discount_value ?? '');
   } else if (type === 'gift_product') {
-    set('pc-product_ids', (cfg.product_ids||[]).join(', '));
-    set('pc-gift_product_id', cfg.gift_product_id ?? '');
+    pickerInstances['pp-product_ids']?.setIds(cfg.product_ids || []);
+    pickerInstances['pp-gift_product_id']?.setSingle(cfg.gift_product_id);
     set('pc-min_qty', cfg.min_qty ?? 1);
   }
 }
 
-function openPromoModal(jsonStr) {
+async function openPromoModal(jsonStr) {
+  // Ensure products are loaded for the picker
+  if (!allProds.length) {
+    try {
+      const res = await fetch(PROD_API + '?admin_key=' + encodeURIComponent(ADMIN.adminKey));
+      const d   = await res.json();
+      if (d.ok) allProds = d.products || [];
+    } catch {}
+  }
+
   const err = $id('promoModalErr');
   err.classList.remove('show');
   $id('promoForm').reset();
