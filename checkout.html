@@ -615,8 +615,8 @@
   const listEl = document.getElementById('order-items-list');
 
   function calcWeightKg() {
-    const totalGrams = cart.reduce((s, i) => s + (parseFloat(i.weight) || 0) * i.qty, 0);
-    return Math.max(1, Math.floor(totalGrams / 1000));
+    const totalKg = cart.reduce((s, i) => s + (parseFloat(i.weight) || 0) * i.qty, 0);
+    return Math.max(1, Math.floor(totalKg));
   }
 
   async function fetchShipping() {
