@@ -535,7 +535,7 @@ function updateStickyOffsets() {
   const navH = nav.getBoundingClientRect().height;
   const filterH = filterBar.getBoundingClientRect().height;
   document.documentElement.style.setProperty('--nav-h', navH + 'px');
-  document.documentElement.style.setProperty('--sticky-h', (navH + filterH + 24) + 'px');
+  document.documentElement.style.setProperty('--sticky-h', (navH + filterH + 48) + 'px');
 }
 document.addEventListener('DOMContentLoaded', updateStickyOffsets);
 window.addEventListener('resize', updateStickyOffsets);
