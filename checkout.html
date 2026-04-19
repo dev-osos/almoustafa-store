@@ -421,6 +421,18 @@
 
   if (!cart.length) { window.location.href = 'products.html'; return; }
 
+  // Enrich cart items with weight if missing (cart saved before weight field was added)
+  if (cart.some(i => i.weight == null)) {
+    fetch('apis/products/list.php')
+      .then(r => r.json())
+      .then(d => {
+        const map = {};
+        (d.products || []).forEach(p => { map[p.store_name] = parseFloat(p.wight) || 0; });
+        cart.forEach(i => { if (i.weight == null) i.weight = map[i.name] ?? 0; });
+      })
+      .catch(() => {});
+  }
+
   // --- Load session ---
   let session = {};
   try { session = JSON.parse(localStorage.getItem('alm_session')) || {}; } catch {}
