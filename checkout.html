@@ -716,13 +716,17 @@
     removeBtn.innerHTML = '<span class="material-symbols-outlined">delete</span>';
 
     // Events
+    function refreshAfterQtyChange() {
+      if (!isWholesale && shippingCost !== null) fetchShipping(); else updateTotals();
+    }
+
     minusBtn.addEventListener('click', () => {
       if (item.qty <= 1) return;
       item.qty--;
       numEl.textContent = toAr(item.qty);
       priceEl.textContent = fmtPrice(item.price * item.qty);
       minusBtn.disabled = item.qty <= 1;
-      updateTotals();
+      refreshAfterQtyChange();
     });
 
     plusBtn.addEventListener('click', () => {
@@ -730,14 +734,14 @@
       numEl.textContent = toAr(item.qty);
       priceEl.textContent = fmtPrice(item.price * item.qty);
       minusBtn.disabled = false;
-      updateTotals();
+      refreshAfterQtyChange();
     });
 
     removeBtn.addEventListener('click', () => {
       cart.splice(idx, 1);
       if (!cart.length) { window.location.href = 'products.html'; return; }
       renderAll();
-      updateTotals();
+      if (!isWholesale && shippingCost !== null) fetchShipping(); else updateTotals();
     });
 
     row.append(img, info, priceEl, removeBtn);
