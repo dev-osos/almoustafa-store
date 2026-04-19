@@ -46,8 +46,8 @@ function roleBadgeCss(string $role): string
 }
 
 const ROLE_PERMS = [
-    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users', 'customers', 'products'],
-    'admin'       => ['stats', 'chart', 'devices', 'visitors', 'customers', 'products'],
+    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users', 'customers', 'products', 'promotions'],
+    'admin'       => ['stats', 'chart', 'devices', 'visitors', 'customers', 'products', 'promotions'],
     'support'     => ['visitors', 'customers'],
 ];
 function can(string $role, string $perm): bool
@@ -488,6 +488,81 @@ const ADMIN = {
   </div>
 </div>
 
+<!-- Modal: promotion add/edit -->
+<div class="modal-backdrop" id="promoModal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <div class="modal-title"><span class="ms">local_offer</span> <span id="promoModalTitle">عرض جديد</span></div>
+      <button class="modal-close" onclick="closePromoModal()"><span class="ms">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-error" id="promoModalErr"></div>
+      <form id="promoForm" onsubmit="submitPromo(event)">
+        <input type="hidden" id="pr-id"/>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+
+          <div class="form-field" style="grid-column:1/-1">
+            <label class="form-label">اسم العرض <span style="color:#c62828">*</span></label>
+            <input class="form-input" type="text" id="pr-name" placeholder="مثال: عرض رمضان الخاص" required/>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">نوع العرض <span style="color:#c62828">*</span></label>
+            <select class="form-select" id="pr-type" onchange="onPromoTypeChange()">
+              <option value="product_discount">خصم على منتجات</option>
+              <option value="bundle">باكدج منتجات</option>
+              <option value="quantity_discount">خصم بالكمية</option>
+              <option value="gift_product">منتج هدية</option>
+              <option value="free_shipping">شحن مجاني</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">الحالة</label>
+            <select class="form-select" id="pr-status">
+              <option value="active">نشط</option>
+              <option value="inactive">معطل</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">تاريخ البداية</label>
+            <input class="form-input" type="date" id="pr-start_date"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">تاريخ الانتهاء</label>
+            <input class="form-input" type="date" id="pr-end_date"/>
+          </div>
+
+          <div class="form-field" style="grid-column:1/-1">
+            <label class="form-label">يسري على (اتركه فارغاً = الجميع)</label>
+            <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+              <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.875rem">
+                <input type="checkbox" class="promo-seg-cb" value="consumer"> مستهلك
+              </label>
+              <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.875rem">
+                <input type="checkbox" class="promo-seg-cb" value="wholesale"> جملة
+              </label>
+              <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.875rem">
+                <input type="checkbox" class="promo-seg-cb" value="corporate"> جملة الجملة
+              </label>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── Dynamic config by type ── -->
+        <div id="pr-config-wrap" style="margin-top:.5rem;border-top:1px solid var(--border);padding-top:1rem"></div>
+
+        <div class="modal-footer">
+          <button type="button" class="cancel-btn" onclick="closePromoModal()">إلغاء</button>
+          <button type="submit" class="submit-btn" id="promoSubmitBtn">حفظ العرض</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: invitation users -->
 <div class="modal-backdrop" id="invitationUsersModal">
   <div class="modal" style="max-width:600px;">
@@ -552,6 +627,11 @@ const ADMIN = {
     <?php if (can($adminRole, 'products')): ?>
     <div class="nav-item" id="nav-products" onclick="showSection('products')">
       <span class="ms">inventory_2</span> المنتجات
+    </div>
+    <?php endif; ?>
+    <?php if (can($adminRole, 'promotions')): ?>
+    <div class="nav-item" id="nav-promotions" onclick="showSection('promotions')">
+      <span class="ms">local_offer</span> العروض والخصومات
     </div>
     <?php endif; ?>
   </nav>
@@ -932,6 +1012,40 @@ const ADMIN = {
       </div><!-- /productsSection -->
       <?php endif; ?>
 
+      <!-- ── PROMOTIONS SECTION ─────────────────────────── -->
+      <?php if (can($adminRole, 'promotions')): ?>
+      <div class="section" id="promotionsSection">
+
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title"><span class="ms">local_offer</span> العروض والخصومات</div>
+            <button class="add-btn" onclick="openPromoModal()">
+              <span class="ms">add</span> عرض جديد
+            </button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>الاسم</th>
+                  <th>النوع</th>
+                  <th>الحالة</th>
+                  <th>يسري على</th>
+                  <th>تاريخ الانتهاء</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="promotionsBody">
+                <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--on-surface-dim)">جارٍ التحميل...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /promotionsSection -->
+      <?php endif; ?>
+
     </div><!-- /content -->
   </main>
 </div>
@@ -1005,7 +1119,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
 });
 
 // ── Section switching ─────────────────────────────────────────────────────────
-const SECTION_TITLES = { visitors: 'إحصائيات الزوار', customers: 'عملاؤنا', users: 'مستخدموا لوحة التحكم', reviews: 'إدارة الآراء', invitations: 'الدعوات', products: 'إدارة المنتجات' };
+const SECTION_TITLES = { visitors: 'إحصائيات الزوار', customers: 'عملاؤنا', users: 'مستخدموا لوحة التحكم', reviews: 'إدارة الآراء', invitations: 'الدعوات', products: 'إدارة المنتجات', promotions: 'العروض والخصومات' };
 
 function showSection(name) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1022,11 +1136,12 @@ function showSection(name) {
   if (name === 'reviews')    loadReviews();
   if (name === 'invitations' && ADMIN.canUsers) loadInvitations();
   if (name === 'products'   && ADMIN.canProducts) loadProducts();
+  if (name === 'promotions') loadPromotions();
 }
 
 // ── Restore last section on load — called at end of script after all vars ─────
 function restoreSection() {
-  const valid = ['visitors', 'customers', 'reviews', 'users', 'invitations', 'products'];
+  const valid = ['visitors', 'customers', 'reviews', 'users', 'invitations', 'products', 'promotions'];
   let saved;
   try { saved = localStorage.getItem('alm_admin_section'); } catch {}
   const section = valid.includes(saved) ? saved : 'visitors';
@@ -2047,6 +2162,298 @@ async function deleteProduct(id, btn) {
     } else { alert(d.error || 'فشل الحذف'); }
   } catch { alert('فشل الاتصال'); }
   btn.disabled = false;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PROMOTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+const PROMO_API = '../../apis/admin/promotions.php';
+
+const PROMO_TYPE_LABELS = {
+  product_discount: 'خصم على منتجات',
+  bundle:           'باكدج منتجات',
+  quantity_discount:'خصم بالكمية',
+  gift_product:     'منتج هدية',
+  free_shipping:    'شحن مجاني',
+};
+
+const PROMO_TYPE_ICONS = {
+  product_discount: 'percent',
+  bundle:           'inventory_2',
+  quantity_discount:'production_quantity_limits',
+  gift_product:     'card_giftcard',
+  free_shipping:    'local_shipping',
+};
+
+const SEG_LABELS = { consumer:'مستهلك', wholesale:'جملة', corporate:'جملة الجملة' };
+
+// Config templates per type
+const PROMO_CONFIG_HTML = {
+  product_discount: `
+    <div class="form-field">
+      <label class="form-label">نطاق الخصم</label>
+      <select class="form-select" id="pc-scope" onchange="toggleProductsList()">
+        <option value="all">جميع المنتجات</option>
+        <option value="specific">منتجات محددة</option>
+      </select>
+    </div>
+    <div class="form-field" id="pc-products-wrap" style="display:none">
+      <label class="form-label">IDs المنتجات (مفصولة بفاصلة)</label>
+      <input class="form-input" type="text" id="pc-product_ids" placeholder="1, 5, 12"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">نوع الخصم</label>
+      <select class="form-select" id="pc-discount_type">
+        <option value="percent">نسبة مئوية %</option>
+        <option value="fixed">مبلغ ثابت ج.م</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label">قيمة الخصم <span style="color:#c62828">*</span></label>
+      <input class="form-input" type="number" id="pc-discount_value" placeholder="مثال: 10" min="0" step="0.01" required/>
+    </div>`,
+
+  bundle: `
+    <div class="form-field" style="grid-column:1/-1">
+      <label class="form-label">IDs المنتجات في الباكدج (مفصولة بفاصلة) <span style="color:#c62828">*</span></label>
+      <input class="form-input" type="text" id="pc-product_ids" placeholder="1, 5, 12" required/>
+      <div style="font-size:.76rem;color:var(--on-surface-dim);margin-top:.3rem">أدخل معرّفات المنتجات التي تشكّل الباكدج</div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">نوع الخصم على الإجمالي</label>
+      <select class="form-select" id="pc-discount_type">
+        <option value="percent">نسبة مئوية %</option>
+        <option value="fixed">خصم مبلغ ثابت ج.م</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label">قيمة الخصم <span style="color:#c62828">*</span></label>
+      <input class="form-input" type="number" id="pc-discount_value" placeholder="مثال: 15" min="0" step="0.01" required/>
+    </div>`,
+
+  quantity_discount: `
+    <div class="form-field">
+      <label class="form-label">ID المنتج <span style="color:#c62828">*</span></label>
+      <input class="form-input" type="number" id="pc-product_id" placeholder="مثال: 7" min="1" required/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">الحد الأدنى للكمية <span style="color:#c62828">*</span></label>
+      <input class="form-input" type="number" id="pc-min_qty" placeholder="مثال: 3" min="1" required/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">نوع الخصم</label>
+      <select class="form-select" id="pc-discount_type">
+        <option value="percent">نسبة مئوية %</option>
+        <option value="fixed">مبلغ ثابت ج.م</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label">قيمة الخصم <span style="color:#c62828">*</span></label>
+      <input class="form-input" type="number" id="pc-discount_value" placeholder="مثال: 10" min="0" step="0.01" required/>
+    </div>`,
+
+  gift_product: `
+    <div class="form-field" style="grid-column:1/-1">
+      <label class="form-label">IDs المنتجات المشتراة (مفصولة بفاصلة) <span style="color:#c62828">*</span></label>
+      <input class="form-input" type="text" id="pc-product_ids" placeholder="1, 5" required/>
+      <div style="font-size:.76rem;color:var(--on-surface-dim);margin-top:.3rem">عند شراء هذه المنتجات يحصل العميل على الهدية</div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">ID المنتج الهدية <span style="color:#c62828">*</span></label>
+      <input class="form-input" type="number" id="pc-gift_product_id" placeholder="مثال: 9" min="1" required/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">الحد الأدنى للكمية المشتراة</label>
+      <input class="form-input" type="number" id="pc-min_qty" placeholder="1" min="1" value="1"/>
+    </div>`,
+
+  free_shipping: `
+    <div class="form-field" style="grid-column:1/-1">
+      <div style="padding:.85rem 1rem;background:rgba(115,92,0,0.07);border-radius:10px;border:1px solid rgba(115,92,0,0.18);font-size:.875rem;color:var(--gold)">
+        <span class="ms" style="font-size:1rem;vertical-align:middle">info</span>
+        سيُطبَّق الشحن المجاني على الشرائح المحددة في حقل "يسري على" أعلاه.
+        إذا تركته فارغاً سيسري على الجميع.
+      </div>
+    </div>`,
+};
+
+function toggleProductsList() {
+  const scope = document.getElementById('pc-scope')?.value;
+  const wrap  = document.getElementById('pc-products-wrap');
+  if (wrap) wrap.style.display = scope === 'specific' ? '' : 'none';
+}
+
+function onPromoTypeChange() {
+  const type = $id('pr-type').value;
+  const wrap = $id('pr-config-wrap');
+  wrap.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">${PROMO_CONFIG_HTML[type] || ''}</div>`;
+}
+
+function getPromoConfig() {
+  const type = $id('pr-type').value;
+  const cfg  = {};
+  const v = id => document.getElementById(id)?.value?.trim() ?? '';
+  if (type === 'product_discount') {
+    cfg.scope          = v('pc-scope') || 'all';
+    cfg.discount_type  = v('pc-discount_type') || 'percent';
+    cfg.discount_value = parseFloat(v('pc-discount_value')) || 0;
+    if (cfg.scope === 'specific') cfg.product_ids = v('pc-product_ids').split(',').map(s=>parseInt(s.trim())).filter(Boolean);
+  } else if (type === 'bundle') {
+    cfg.product_ids    = v('pc-product_ids').split(',').map(s=>parseInt(s.trim())).filter(Boolean);
+    cfg.discount_type  = v('pc-discount_type') || 'percent';
+    cfg.discount_value = parseFloat(v('pc-discount_value')) || 0;
+  } else if (type === 'quantity_discount') {
+    cfg.product_id     = parseInt(v('pc-product_id')) || 0;
+    cfg.min_qty        = parseInt(v('pc-min_qty')) || 1;
+    cfg.discount_type  = v('pc-discount_type') || 'percent';
+    cfg.discount_value = parseFloat(v('pc-discount_value')) || 0;
+  } else if (type === 'gift_product') {
+    cfg.product_ids    = v('pc-product_ids').split(',').map(s=>parseInt(s.trim())).filter(Boolean);
+    cfg.gift_product_id= parseInt(v('pc-gift_product_id')) || 0;
+    cfg.min_qty        = parseInt(v('pc-min_qty')) || 1;
+  }
+  // free_shipping: no extra config needed
+  return cfg;
+}
+
+function fillPromoConfig(type, cfg) {
+  const wrap = $id('pr-config-wrap');
+  wrap.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">${PROMO_CONFIG_HTML[type] || ''}</div>`;
+  if (!cfg) return;
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
+  if (type === 'product_discount') {
+    set('pc-scope', cfg.scope || 'all');
+    set('pc-discount_type', cfg.discount_type || 'percent');
+    set('pc-discount_value', cfg.discount_value ?? '');
+    if (cfg.scope === 'specific' && cfg.product_ids) {
+      set('pc-product_ids', cfg.product_ids.join(', '));
+      const wrap = document.getElementById('pc-products-wrap');
+      if (wrap) wrap.style.display = '';
+    }
+  } else if (type === 'bundle') {
+    set('pc-product_ids', (cfg.product_ids||[]).join(', '));
+    set('pc-discount_type', cfg.discount_type || 'percent');
+    set('pc-discount_value', cfg.discount_value ?? '');
+  } else if (type === 'quantity_discount') {
+    set('pc-product_id', cfg.product_id ?? '');
+    set('pc-min_qty', cfg.min_qty ?? '');
+    set('pc-discount_type', cfg.discount_type || 'percent');
+    set('pc-discount_value', cfg.discount_value ?? '');
+  } else if (type === 'gift_product') {
+    set('pc-product_ids', (cfg.product_ids||[]).join(', '));
+    set('pc-gift_product_id', cfg.gift_product_id ?? '');
+    set('pc-min_qty', cfg.min_qty ?? 1);
+  }
+}
+
+function openPromoModal(jsonStr) {
+  const err = $id('promoModalErr');
+  err.classList.remove('show');
+  $id('promoForm').reset();
+  document.querySelectorAll('.promo-seg-cb').forEach(cb => cb.checked = false);
+
+  if (jsonStr) {
+    const p = JSON.parse(jsonStr);
+    $id('pr-id').value       = p.id;
+    $id('pr-name').value     = p.name;
+    $id('pr-type').value     = p.type;
+    $id('pr-status').value   = p.status;
+    $id('pr-start_date').value = p.start_date || '';
+    $id('pr-end_date').value   = p.end_date   || '';
+    if (Array.isArray(p.applies_to)) {
+      p.applies_to.forEach(seg => {
+        const cb = document.querySelector(`.promo-seg-cb[value="${seg}"]`);
+        if (cb) cb.checked = true;
+      });
+    }
+    fillPromoConfig(p.type, p.config || {});
+    $id('promoModalTitle').textContent = 'تعديل العرض';
+  } else {
+    $id('pr-id').value = '';
+    $id('promoModalTitle').textContent = 'عرض جديد';
+    onPromoTypeChange();
+  }
+  $id('promoModal').classList.add('open');
+}
+
+function closePromoModal() { $id('promoModal').classList.remove('open'); }
+$id('promoModal').addEventListener('click', e => { if (e.target === $id('promoModal')) closePromoModal(); });
+
+async function submitPromo(e) {
+  e.preventDefault();
+  const btn = $id('promoSubmitBtn');
+  const err = $id('promoModalErr');
+  err.classList.remove('show');
+  btn.disabled = true; btn.textContent = 'جارٍ الحفظ...';
+
+  const id     = $id('pr-id').value;
+  const segs   = [...document.querySelectorAll('.promo-seg-cb:checked')].map(cb => cb.value);
+  const payload = {
+    action:     id ? 'update' : 'create',
+    id:         id ? parseInt(id) : undefined,
+    name:       $id('pr-name').value.trim(),
+    type:       $id('pr-type').value,
+    status:     $id('pr-status').value,
+    start_date: $id('pr-start_date').value || null,
+    end_date:   $id('pr-end_date').value   || null,
+    applies_to: segs.length ? segs : null,
+    config:     getPromoConfig(),
+  };
+
+  try {
+    const res = await fetch(PROMO_API, { method:'POST', headers: prodApiHeaders(), body: JSON.stringify(payload) });
+    const d   = await res.json();
+    if (d.ok) { closePromoModal(); loadPromotions(); }
+    else { err.textContent = d.error || 'حدث خطأ'; err.classList.add('show'); }
+  } catch { err.textContent = 'تعذّر الاتصال'; err.classList.add('show'); }
+  btn.disabled = false; btn.textContent = 'حفظ العرض';
+}
+
+async function loadPromotions() {
+  const tbody = $id('promotionsBody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--on-surface-dim)">جارٍ التحميل...</td></tr>';
+  try {
+    const res = await fetch(PROMO_API + '?' + new URLSearchParams({ admin_key: ADMIN.adminKey }));
+    const d   = await res.json();
+    if (!d.ok) throw new Error();
+    if (!d.promotions.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2.5rem;color:var(--on-surface-dim)">لا توجد عروض بعد — أنشئ أول عرض!</td></tr>';
+      return;
+    }
+    tbody.innerHTML = d.promotions.map(p => {
+      const icon  = PROMO_TYPE_ICONS[p.type] || 'local_offer';
+      const label = PROMO_TYPE_LABELS[p.type] || p.type;
+      const seg   = Array.isArray(p.applies_to) ? p.applies_to.map(s => SEG_LABELS[s]||s).join('، ') : 'الجميع';
+      const statusBadge = p.status === 'active'
+        ? `<span style="background:#e6f4ea;color:#1e7e34;padding:.2rem .6rem;border-radius:999px;font-size:.75rem;font-weight:700">نشط</span>`
+        : `<span style="background:#fce8e6;color:#c62828;padding:.2rem .6rem;border-radius:999px;font-size:.75rem;font-weight:700">معطل</span>`;
+      const endDate = p.end_date ? `<span style="font-size:.8rem">${p.end_date}</span>` : '—';
+      const json = escHtml(JSON.stringify(p));
+      return `<tr>
+        <td style="font-size:.8rem;color:var(--on-surface-dim)">#${p.id}</td>
+        <td style="font-weight:600">${escHtml(p.name)}</td>
+        <td><span style="display:inline-flex;align-items:center;gap:.35rem;font-size:.82rem"><span class="ms" style="font-size:1rem">${icon}</span>${label}</span></td>
+        <td>${statusBadge}</td>
+        <td style="font-size:.82rem">${escHtml(seg)}</td>
+        <td>${endDate}</td>
+        <td>
+          <div style="display:flex;gap:.4rem">
+            <button onclick='openPromoModal(${JSON.stringify(JSON.stringify(p))})' style="padding:.3rem .7rem;border:1px solid var(--border);border-radius:7px;background:#fff;cursor:pointer;font-size:.8rem;color:var(--primary)"><span class="ms" style="font-size:.9rem">edit</span></button>
+            <button onclick="deletePromo(${p.id})" style="padding:.3rem .7rem;border:1px solid rgba(198,40,40,.2);border-radius:7px;background:#fff;cursor:pointer;font-size:.8rem;color:#c62828"><span class="ms" style="font-size:.9rem">delete</span></button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:#c62828">تعذّر تحميل العروض</td></tr>'; }
+}
+
+async function deletePromo(id) {
+  if (!confirm('هل تريد حذف هذا العرض؟')) return;
+  try {
+    const res = await fetch(PROMO_API, { method:'DELETE', headers: prodApiHeaders(), body: JSON.stringify({ id }) });
+    const d   = await res.json();
+    if (d.ok) loadPromotions();
+  } catch {}
 }
 
 // ── Run after all declarations ────────────────────────────────────────────────
