@@ -25,30 +25,35 @@
   /* ─── Inject CSS ───────────────────────────────────────────── */
   var style = document.createElement('style');
   style.textContent = [
-    /* ── Profile dropdown (dark glass) ── */
-    '#nav-pd{position:fixed;width:230px;background:rgba(22,10,3,0.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,255,255,0.07);padding:16px 16px 14px;opacity:0;pointer-events:none;transform:translateY(-8px);transition:opacity 0.2s ease,transform 0.2s ease;z-index:600;direction:rtl;}',
+    /* ── Profile dropdown — identical to index.html #profile-dropdown ── */
+    '#nav-pd{position:fixed;transform:translateY(-8px);width:230px;background:rgba(22,10,3,0.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,255,255,0.07);padding:16px 16px 14px;opacity:0;pointer-events:none;transition:opacity 0.2s ease,transform 0.2s ease;z-index:600;direction:rtl;}',
     '#nav-pd.open{opacity:1;pointer-events:auto;transform:translateY(0);}',
     '#nav-pd::before{content:"";position:absolute;top:-6px;left:14px;transform:rotate(45deg);width:11px;height:11px;background:rgba(22,10,3,0.97);border-left:1px solid rgba(255,255,255,0.1);border-top:1px solid rgba(255,255,255,0.1);}',
-    '.nav-pd-hd{display:flex;align-items:center;gap:10px;margin-bottom:12px;}',
-    '.nav-pd-av{width:40px;height:40px;border-radius:50%;flex-shrink:0;background:rgba(254,214,91,0.1);border:2px solid rgba(254,214,91,0.28);display:flex;align-items:center;justify-content:center;}',
-    '.nav-pd-av .material-symbols-outlined{color:#fed65b;font-size:22px;font-variation-settings:"FILL" 1,"wght" 300,"GRAD" 0,"opsz" 24;}',
-    '.nav-pd-info{flex:1;min-width:0;}',
-    '.nav-pd-nm{font-family:"Amiri",serif;font-size:0.95rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
-    '.nav-pd-ph{font-size:0.72rem;color:rgba(255,255,255,0.4);direction:ltr;text-align:right;margin-top:1px;}',
-    '.nav-pd-wallet{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:9px 10px;background:rgba(254,214,91,0.06);border-radius:8px;border:1px solid rgba(254,214,91,0.12);cursor:default;transition:background 0.2s,border-color 0.2s;}',
-    '.nav-pd-wallet:hover{background:rgba(254,214,91,0.1);border-color:rgba(254,214,91,0.2);}',
-    '.nav-pd-wl{display:flex;align-items:center;gap:5px;font-size:0.71rem;color:rgba(255,255,255,0.4);}',
-    '.nav-pd-wl .material-symbols-outlined{font-size:14px;color:rgba(254,214,91,0.6);}',
-    '.nav-pd-wv{font-family:"Manrope",sans-serif;font-size:0.82rem;font-weight:700;color:#fed65b;direction:ltr;}',
-    '.nav-pd-acts{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}',
-    '.nav-pd-ab{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;cursor:pointer;font-family:"Manrope",sans-serif;font-size:0.83rem;color:rgba(255,255,255,0.8);text-align:right;transition:background 0.2s,border-color 0.2s;text-decoration:none;}',
-    '.nav-pd-ab:hover{background:rgba(255,255,255,0.08);border-color:rgba(254,214,91,0.22);}',
-    '.nav-pd-ab-inner{display:flex;align-items:center;gap:8px;}',
-    '.nav-pd-ab .material-symbols-outlined{font-size:16px;color:rgba(254,214,91,0.72);}',
-    '.nav-pd-divider{border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0 0 12px;}',
-    '.nav-pd-out{width:100%;padding:10px 12px;background:rgba(220,50,50,0.1);border:1px solid rgba(220,50,50,0.2);border-radius:10px;display:flex;align-items:center;gap:8px;cursor:pointer;font-family:"Manrope",sans-serif;font-size:0.83rem;color:rgba(220,100,100,0.9);transition:background 0.2s,border-color 0.2s;text-align:right;}',
-    '.nav-pd-out:hover{background:rgba(220,50,50,0.18);border-color:rgba(220,50,50,0.38);}',
-    '.nav-pd-out .material-symbols-outlined{font-size:17px;color:rgba(220,100,100,0.9);}',
+    '.pdd-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}',
+    '.pdd-avatar{width:40px;height:40px;border-radius:50%;flex-shrink:0;background:rgba(254,214,91,0.1);border:2px solid rgba(254,214,91,0.28);display:flex;align-items:center;justify-content:center;}',
+    '.pdd-avatar span{color:#fed65b;font-size:22px;font-variation-settings:"FILL" 1,"wght" 300,"GRAD" 0,"opsz" 24;}',
+    '.pdd-info{flex:1;min-width:0;}',
+    '.pdd-name{font-family:"Amiri",serif;font-size:0.95rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+    '.pdd-phone{font-size:0.72rem;color:rgba(255,255,255,0.4);direction:ltr;text-align:right;margin-top:1px;}',
+    '.pdd-edit-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}',
+    '.pdd-edit-item{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;cursor:pointer;transition:background 0.2s,border-color 0.2s;text-decoration:none;}',
+    '.pdd-edit-item:hover{background:rgba(255,255,255,0.08);border-color:rgba(254,214,91,0.22);}',
+    '.pdd-edit-item-main{min-width:0;display:flex;align-items:center;gap:8px;flex:1;}',
+    '.pdd-edit-item-main .material-symbols-outlined{font-size:16px;color:rgba(254,214,91,0.72);flex-shrink:0;}',
+    '.pdd-edit-copy{min-width:0;display:flex;flex-direction:column;gap:3px;text-align:right;}',
+    '.pdd-edit-label{font-size:0.68rem;color:rgba(255,255,255,0.35);}',
+    '.pdd-edit-value{font-size:0.74rem;color:rgba(255,255,255,0.8);line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+    '.pdd-edit-action{display:flex;align-items:center;gap:4px;flex-shrink:0;font-size:0.68rem;color:#fed65b;}',
+    '.pdd-edit-action .material-symbols-outlined{font-size:15px;}',
+    '.pdd-wallet-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:9px 10px;background:rgba(254,214,91,0.06);border-radius:8px;border:1px solid rgba(254,214,91,0.12);cursor:pointer;transition:background 0.2s,border-color 0.2s;}',
+    '.pdd-wallet-row:hover{background:rgba(254,214,91,0.1);border-color:rgba(254,214,91,0.2);}',
+    '.pdd-wallet-label{display:flex;align-items:center;gap:5px;font-size:0.71rem;color:rgba(255,255,255,0.4);}',
+    '.pdd-wallet-icon{font-size:14px;color:rgba(254,214,91,0.6);}',
+    '.pdd-wallet-balance{font-family:"Manrope",sans-serif;font-size:0.82rem;font-weight:700;color:#fed65b;direction:ltr;}',
+    '.pdd-divider{border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0 0 12px;}',
+    '.pdd-logout-btn{width:100%;padding:10px 12px;background:rgba(220,50,50,0.1);border:1px solid rgba(220,50,50,0.2);border-radius:10px;display:flex;align-items:center;gap:8px;cursor:pointer;font-family:"Manrope",sans-serif;font-size:0.83rem;color:rgba(220,100,100,0.9);transition:background 0.2s,border-color 0.2s;}',
+    '.pdd-logout-btn:hover{background:rgba(220,50,50,0.18);border-color:rgba(220,50,50,0.38);}',
+    '.pdd-logout-btn span{font-size:17px;}',
 
     /* ── Cart dropdown (shared) ── */
     '#nav-cart-dd{position:absolute;top:calc(100% + 10px);left:0;width:320px;background:#fdf9f0;border:1px solid rgba(60,0,4,0.1);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,0.15);z-index:300;direction:rtl;overflow:hidden;opacity:0;pointer-events:none;transform:translateY(-8px);transition:opacity 0.2s ease,transform 0.2s ease;}',
@@ -70,24 +75,54 @@
 
   /* ─── Inject HTML ──────────────────────────────────────────── */
 
-  // Profile dropdown
+  // Profile dropdown — exact replica of #profile-dropdown in index.html
   var pdEl = document.createElement('div');
   pdEl.id = 'nav-pd';
   pdEl.innerHTML =
-    '<div class="nav-pd-hd">' +
-      '<div class="nav-pd-av"><span class="material-symbols-outlined">account_circle</span></div>' +
-      '<div class="nav-pd-info"><div class="nav-pd-nm" id="nav-pd-nm">مستخدم</div><div class="nav-pd-ph" id="nav-pd-ph">—</div></div>' +
+    '<div class="pdd-header">' +
+      '<div class="pdd-avatar"><span class="material-symbols-outlined">account_circle</span></div>' +
+      '<div class="pdd-info">' +
+        '<div class="pdd-name" id="npd-name">مستخدم</div>' +
+        '<div class="pdd-phone" id="npd-phone">—</div>' +
+      '</div>' +
     '</div>' +
-    '<div class="nav-pd-wallet">' +
-      '<div class="nav-pd-wl"><span class="material-symbols-outlined">account_balance_wallet</span>رصيد المحفظة</div>' +
-      '<div class="nav-pd-wv" id="nav-pd-wv">—</div>' +
+    '<div class="pdd-edit-list">' +
+      '<div class="pdd-edit-item" style="cursor:default;">' +
+        '<div class="pdd-edit-item-main">' +
+          '<span class="material-symbols-outlined">sell</span>' +
+          '<div class="pdd-edit-copy">' +
+            '<div class="pdd-edit-label">الشريحة</div>' +
+            '<div class="pdd-edit-value" id="npd-segment">لم يتم تحديد الشريحة بعد</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<button class="pdd-edit-item" id="npd-btn-invite" type="button">' +
+        '<div class="pdd-edit-item-main">' +
+          '<span class="material-symbols-outlined">card_giftcard</span>' +
+          '<div class="pdd-edit-copy">' +
+            '<div class="pdd-edit-label">كود الدعوة</div>' +
+            '<div class="pdd-edit-value" id="npd-invite-code">-</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="pdd-edit-action"><span class="material-symbols-outlined">open_in_new</span></div>' +
+      '</button>' +
+      '<button class="pdd-edit-item" id="npd-btn-address" type="button">' +
+        '<div class="pdd-edit-item-main">' +
+          '<span class="material-symbols-outlined">edit_location_alt</span>' +
+          '<div class="pdd-edit-copy">' +
+            '<div class="pdd-edit-label">العنوان</div>' +
+            '<div class="pdd-edit-value" id="npd-address">تعديل العنوان الحالي</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="pdd-edit-action"><span class="material-symbols-outlined">edit</span></div>' +
+      '</button>' +
     '</div>' +
-    '<div class="nav-pd-acts">' +
-      '<a href="index.html" class="nav-pd-ab"><div class="nav-pd-ab-inner"><span class="material-symbols-outlined">home</span>الصفحة الرئيسية</div><span class="material-symbols-outlined" style="font-size:14px;color:rgba(255,255,255,0.2);">chevron_left</span></a>' +
-      '<a href="checkout.html" class="nav-pd-ab"><div class="nav-pd-ab-inner"><span class="material-symbols-outlined">shopping_bag</span>طلباتي</div><span class="material-symbols-outlined" style="font-size:14px;color:rgba(255,255,255,0.2);">chevron_left</span></a>' +
+    '<div class="pdd-wallet-row">' +
+      '<div class="pdd-wallet-label"><span class="material-symbols-outlined pdd-wallet-icon">account_balance_wallet</span>رصيد المحفظة</div>' +
+      '<div class="pdd-wallet-balance" id="npd-wallet">0.00 ج.م</div>' +
     '</div>' +
-    '<hr class="nav-pd-divider"/>' +
-    '<button id="nav-pd-out" class="nav-pd-out"><span class="material-symbols-outlined">logout</span>تسجيل الخروج</button>';
+    '<hr class="pdd-divider"/>' +
+    '<button id="npd-btn-logout" class="pdd-logout-btn"><span class="material-symbols-outlined">logout</span>تسجيل الخروج</button>';
 
   // Mobile menu
   var cur = (location.pathname.split('/').pop() || 'index.html');
@@ -138,23 +173,25 @@
     pdEl.style.left = Math.max(8, left) + 'px';
   }
 
+  var segmentLabels = { 'مستهلك': 'مستهلك', 'جملة': 'جملة', 'corporate': 'جملة الجملة', 'consumer': 'مستهلك', 'wholesale': 'جملة' };
+
+  function buildAddressLabel(gov, city, details) {
+    return [gov, city, details].filter(Boolean).join('، ');
+  }
+
   function openPd() {
     var s = getSession();
     if (!s) return;
-    document.getElementById('nav-pd-nm').textContent = s.name || 'مستخدم';
-    document.getElementById('nav-pd-ph').textContent = s.phone || '—';
+    document.getElementById('npd-name').textContent = s.name || 'مستخدم';
+    document.getElementById('npd-phone').textContent = s.phone || '—';
+    document.getElementById('npd-segment').textContent = segmentLabels[s.segment] || s.segment || 'لم يتم تحديد الشريحة بعد';
+    document.getElementById('npd-invite-code').textContent = s.referral_code || s.invitationCode || '…';
+    var addr = buildAddressLabel(s.governorate || '', s.city || '', s.addressDetails || s.address || '') || 'لم يتم تحديد العنوان بعد';
+    document.getElementById('npd-address').textContent = addr;
+    var bal = s.wallet != null ? s.wallet : 0;
+    document.getElementById('npd-wallet').textContent = Number(bal).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م';
     positionPd();
     pdEl.classList.add('open');
-    // Fetch wallet balance
-    fetch('apis/users/wallet.php')
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (d && d.ok && d.balance !== undefined) {
-          document.getElementById('nav-pd-wv').textContent =
-            parseFloat(d.balance).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م';
-        }
-      })
-      .catch(function () {});
   }
   function closePd() { pdEl.classList.remove('open'); }
 
@@ -175,9 +212,28 @@
     });
   }
 
-  var pdOutBtn = document.getElementById('nav-pd-out');
-  if (pdOutBtn) pdOutBtn.addEventListener('click', function () {
+  var pdLogoutBtn = document.getElementById('npd-btn-logout');
+  if (pdLogoutBtn) pdLogoutBtn.addEventListener('click', function () {
     clearSession();
+    window.location.href = 'index.html';
+  });
+
+  var pdInviteBtn = document.getElementById('npd-btn-invite');
+  if (pdInviteBtn) pdInviteBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var s = getSession();
+    var code = s && (s.referral_code || s.invitationCode);
+    if (code) {
+      navigator.clipboard && navigator.clipboard.writeText(code).catch(function(){});
+    }
+    closePd();
+    window.location.href = 'index.html';
+  });
+
+  var pdAddressBtn = document.getElementById('npd-btn-address');
+  if (pdAddressBtn) pdAddressBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    closePd();
     window.location.href = 'index.html';
   });
 

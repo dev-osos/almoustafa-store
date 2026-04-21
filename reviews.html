@@ -174,7 +174,6 @@
     <a class="flex items-center gap-2 text-[#3c0004]/70 font-headline font-semibold text-base tracking-wide hover:text-[#735c00] transition-colors duration-300" href="collections.html"><i class="bi bi-shop text-sm"></i> منتجاتنا</a>
     <a class="flex items-center gap-2 text-[#3c0004] border-b-2 border-[#3c0004] pb-1 font-headline font-semibold text-base tracking-wide" href="reviews.html"><i class="bi bi-star-fill text-sm"></i> آراء العملاء</a>
     <a class="flex items-center gap-2 text-[#3c0004]/70 font-headline font-semibold text-base tracking-wide hover:text-[#735c00] transition-colors duration-300" href="about.html"><i class="bi bi-people text-sm"></i> من نحن</a>
-    <button id="btn-contact" class="flex items-center gap-2 text-[#3c0004]/70 font-headline font-semibold text-base tracking-wide hover:text-[#735c00] transition-colors duration-300"><i class="bi bi-envelope text-sm"></i> تواصل معنا</button>
   </div>
   <div class="flex items-center gap-6">
     <div class="relative" id="cart-icon-wrapper">
@@ -361,41 +360,6 @@
 </footer>
 
 </div><!-- end main-content -->
-
-<!-- Contact Modal -->
-<div id="contact-backdrop">
-  <div id="contact-modal">
-    <button class="contact-close-btn" id="btn-contact-close">
-      <span class="material-symbols-outlined" style="font-size:18px;">close</span>
-    </button>
-    <div style="position:relative;z-index:1;">
-      <div class="contact-modal-title">تواصل معنا</div>
-      <div class="contact-modal-sub">نحن هنا للمساعدة — اختر وسيلة التواصل المناسبة</div>
-      <div class="contact-divider-gold"></div>
-    </div>
-    <div class="contact-item">
-      <div class="contact-item-icon" style="background:rgba(37,211,102,0.12);color:#25d366;"><i class="bi bi-whatsapp"></i></div>
-      <div class="contact-item-body"><div class="contact-item-label">واتساب</div><div class="contact-item-value">201037966515+</div></div>
-      <a href="https://wa.me/201037966515" target="_blank" class="contact-item-btn cta-whatsapp">ابدأ محادثة</a>
-    </div>
-    <div class="contact-item">
-      <div class="contact-item-icon" style="background:rgba(254,214,91,0.1);color:#fed65b;"><i class="bi bi-telephone"></i></div>
-      <div class="contact-item-body"><div class="contact-item-label">الهاتف</div><div class="contact-item-value" style="direction:ltr;">201037966515+</div></div>
-      <a href="tel:+201037966515" class="contact-item-btn cta-call">اتصل الآن</a>
-    </div>
-    <div class="contact-item">
-      <div class="contact-item-icon" style="background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6);"><i class="bi bi-envelope"></i></div>
-      <div class="contact-item-body"><div class="contact-item-label">البريد الإلكتروني</div><div class="contact-item-value" style="direction:ltr;font-size:0.8rem;">support@almoustafa.store</div></div>
-      <a href="mailto:support@almoustafa.store" class="contact-item-btn cta-email">راسلنا</a>
-    </div>
-    <div class="contact-item">
-      <div class="contact-item-icon" style="background:rgba(225,48,108,0.1);color:#f472b6;"><i class="bi bi-instagram"></i></div>
-      <div class="contact-item-body"><div class="contact-item-label">إنستغرام</div><div class="contact-item-value" style="direction:ltr;">@almoustafa.honey</div></div>
-      <a href="#" target="_blank" class="contact-item-btn cta-instagram">تابعنا</a>
-    </div>
-  </div>
-</div>
-
 <script>
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function toArabicDigits(n) {
@@ -553,16 +517,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { threshold: 0.15 });
   document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
 
-  // Contact modal
-  const contactBackdrop = document.getElementById('contact-backdrop');
-  document.getElementById('btn-contact').addEventListener('click', () => {
-    contactBackdrop.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  });
-  document.getElementById('btn-contact-close').addEventListener('click', () => {
-    contactBackdrop.classList.remove('open');
-    document.body.style.overflow = '';
-  });
   contactBackdrop.addEventListener('click', (e) => {
     if (e.target === contactBackdrop) {
       contactBackdrop.classList.remove('open');

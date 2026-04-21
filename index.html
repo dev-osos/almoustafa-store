@@ -3429,24 +3429,6 @@
             logoutBackdrop.classList.remove('open');
             document.body.style.overflow = '';
         }
-
-        // --- Contact modal ---
-        const contactBackdrop = document.getElementById('contact-backdrop');
-        document.getElementById('btn-contact')?.addEventListener('click', () => {
-            contactBackdrop.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        });
-        document.getElementById('btn-contact-close').addEventListener('click', () => {
-            contactBackdrop.classList.remove('open');
-            document.body.style.overflow = '';
-        });
-        contactBackdrop.addEventListener('click', (e) => {
-            if (e.target === contactBackdrop) {
-                contactBackdrop.classList.remove('open');
-                document.body.style.overflow = '';
-            }
-        });
-
         // --- Quality standards modal ---
         const qualityBackdrop = document.getElementById('quality-backdrop');
         document.getElementById('btn-quality-close').addEventListener('click', () => {
@@ -4647,60 +4629,6 @@
       </div>
       <button class="modal-btn-gold" id="btn-success-close">متابعة التسوق</button>
     </div>
-
-  </div>
-</div>
-<!-- ========== CONTACT MODAL ========== -->
-<div id="contact-backdrop">
-  <div id="contact-modal">
-    <button class="contact-close-btn" id="btn-contact-close">
-      <span class="material-symbols-outlined" style="font-size:18px;">close</span>
-    </button>
-    <div style="position:relative;z-index:1;">
-      <div class="contact-modal-title">تواصل معنا</div>
-      <div class="contact-modal-sub">نحن هنا للمساعدة — اختر وسيلة التواصل المناسبة</div>
-      <div class="contact-divider-gold"></div>
-    </div>
-
-    <!-- WhatsApp -->
-    <div class="contact-item">
-      <div class="contact-item-icon" style="background:rgba(37,211,102,0.12);color:#25d366;"><i class="bi bi-whatsapp"></i></div>
-      <div class="contact-item-body">
-        <div class="contact-item-label">واتساب</div>
-        <div class="contact-item-value">201037966515+</div>
-      </div>
-      <a href="https://wa.me/201037966515" target="_blank" class="contact-item-btn cta-whatsapp">ابدأ محادثة</a>
-    </div>
-
-    <!-- Phone -->
-    <div class="contact-item">
-      <div class="contact-item-icon" style="background:rgba(254,214,91,0.1);color:#fed65b;"><i class="bi bi-telephone"></i></div>
-      <div class="contact-item-body">
-        <div class="contact-item-label">الهاتف</div>
-        <div class="contact-item-value" style="direction:ltr;">201037966515+</div>
-      </div>
-      <a href="tel:+201037966515" class="contact-item-btn cta-call">اتصل الآن</a>
-    </div>
-
-    <!-- Email -->
-    <div class="contact-item">
-      <div class="contact-item-icon" style="background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6);"><i class="bi bi-envelope"></i></div>
-      <div class="contact-item-body">
-        <div class="contact-item-label">البريد الإلكتروني</div>
-        <div class="contact-item-value" style="direction:ltr;font-size:0.8rem;">support@almoustafa.store</div>
-      </div>
-      <a href="mailto:support@almoustafa.store" class="contact-item-btn cta-email">راسلنا</a>
-    </div>
-
-    <!-- Location -->
-    <div class="contact-item">
-      <div class="contact-item-icon" style="background:rgba(66,133,244,0.1);color:#7ab3ff;"><i class="bi bi-geo-alt"></i></div>
-      <div class="contact-item-body">
-        <div class="contact-item-label">العنوان</div>
-        <div class="contact-item-value"> الاسكندريه ، العجمي</div>
-      </div>
-    </div>
-
 
   </div>
 </div>
