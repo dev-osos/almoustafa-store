@@ -271,8 +271,9 @@
             <span class="alm-modal-field-icon material-symbols-outlined">phone_iphone</span>
             <input id="alm-forgot-phone" type="tel" placeholder="01XXXXXXXXX" autocomplete="tel"/>
           </div>
+          <div id="alm-forgot-phone-hint" style="font-size:0.72rem;margin-top:5px;min-height:16px;"></div>
         </div>
-        <button class="alm-modal-btn-gold" id="alm-btn-send-forgot-otp">إرسال رمز تغيير كلمة السر</button>
+        <button class="alm-modal-btn-gold" id="alm-btn-send-forgot-otp" disabled style="opacity:0.45;cursor:not-allowed;">إرسال رمز تغيير كلمة السر</button>
       </div>
       <div id="alm-forgot-step-2" style="display:none;">
         <div class="alm-modal-otp-hint">تم إرسال رمز التحقق إلى<br/><span class="hl" id="alm-forgot-otp-phone-display"></span></div>
@@ -523,9 +524,49 @@
     document.getElementById('alm-forgot-step-1').style.display = 'block';
     document.getElementById('alm-forgot-step-2').style.display = 'none';
     document.getElementById('alm-forgot-phone').value = '';
+    document.getElementById('alm-forgot-phone-hint').textContent = '';
+    var sb = document.getElementById('alm-btn-send-forgot-otp');
+    sb.disabled = true; sb.style.opacity = '0.45'; sb.style.cursor = 'not-allowed';
     showPanel('forgot');
   });
   document.getElementById('alm-btn-back-to-login').addEventListener('click', function() { showPanel('login'); });
+
+  /* ─── Dynamic phone check for forgot ──────────────────────── */
+  (function() {
+    var timer = null;
+    var phoneEl = document.getElementById('alm-forgot-phone');
+    var hintEl  = document.getElementById('alm-forgot-phone-hint');
+    var sendBtn = document.getElementById('alm-btn-send-forgot-otp');
+    function setReady(ok) {
+      sendBtn.disabled = !ok;
+      sendBtn.style.opacity = ok ? '' : '0.45';
+      sendBtn.style.cursor  = ok ? '' : 'not-allowed';
+    }
+    phoneEl.addEventListener('input', function() {
+      clearTimeout(timer);
+      hintEl.textContent = '';
+      setReady(false);
+      var val = phoneEl.value.trim();
+      if (val.length < 7) return;
+      hintEl.style.color = 'rgba(255,255,255,0.4)';
+      hintEl.textContent = 'جارٍ التحقق...';
+      timer = setTimeout(async function() {
+        try {
+          var res  = await fetch('apis/users/check_phone.php?phone=' + encodeURIComponent(val));
+          var data = await res.json();
+          if (data.exists) {
+            hintEl.style.color = 'rgba(100,220,130,0.85)';
+            hintEl.textContent = '✓ الرقم مرتبط بحساب';
+            setReady(true);
+          } else {
+            hintEl.style.color = 'rgba(255,100,100,0.85)';
+            hintEl.textContent = '✗ لا يوجد حساب مرتبط بهذا الرقم';
+            setReady(false);
+          }
+        } catch { hintEl.textContent = ''; }
+      }, 600);
+    });
+  })();
 
   function startForgotTimer() {
     clearInterval(forgotOtpInterval);

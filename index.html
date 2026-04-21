@@ -3876,16 +3876,62 @@
 
         // --- Forgot password: open panel ---
         document.getElementById('btn-forgot').addEventListener('click', () => {
-            // Reset to step 1
             document.getElementById('forgot-step-1').style.display = 'block';
             document.getElementById('forgot-step-2').style.display = 'none';
-            document.getElementById('forgot-phone').value = '';
+            const phoneEl = document.getElementById('forgot-phone');
+            phoneEl.value = '';
+            document.getElementById('forgot-phone-hint').textContent = '';
+            const sendBtn = document.getElementById('btn-send-forgot-otp');
+            sendBtn.disabled = true;
+            sendBtn.style.opacity = '0.45';
+            sendBtn.style.cursor = 'not-allowed';
             showPanel('forgot');
         });
 
         document.getElementById('btn-back-to-login').addEventListener('click', () => {
             showPanel('login');
         });
+
+        // --- Forgot phone: dynamic check ---
+        (() => {
+            let checkTimer = null;
+            const phoneEl = document.getElementById('forgot-phone');
+            const hintEl  = document.getElementById('forgot-phone-hint');
+            const sendBtn = document.getElementById('btn-send-forgot-otp');
+
+            function setReady(ok) {
+                sendBtn.disabled      = !ok;
+                sendBtn.style.opacity = ok ? '' : '0.45';
+                sendBtn.style.cursor  = ok ? '' : 'not-allowed';
+            }
+
+            phoneEl.addEventListener('input', () => {
+                clearTimeout(checkTimer);
+                hintEl.textContent = '';
+                setReady(false);
+                const val = phoneEl.value.trim();
+                if (val.length < 7) return;
+                hintEl.style.color = 'rgba(255,255,255,0.4)';
+                hintEl.textContent = 'جارٍ التحقق...';
+                checkTimer = setTimeout(async () => {
+                    try {
+                        const res  = await fetch('apis/users/check_phone.php?phone=' + encodeURIComponent(val));
+                        const data = await res.json();
+                        if (data.exists) {
+                            hintEl.style.color = 'rgba(100,220,130,0.85)';
+                            hintEl.textContent = '✓ الرقم مرتبط بحساب';
+                            setReady(true);
+                        } else {
+                            hintEl.style.color = 'rgba(255,100,100,0.85)';
+                            hintEl.textContent = '✗ لا يوجد حساب مرتبط بهذا الرقم';
+                            setReady(false);
+                        }
+                    } catch {
+                        hintEl.textContent = '';
+                    }
+                }, 600);
+            });
+        })();
 
         // --- Forgot: send OTP ---
         let forgotOtpInterval = null;
@@ -4320,8 +4366,9 @@
             <span class="modal-field-icon material-symbols-outlined">phone_iphone</span>
             <input id="forgot-phone" type="tel" placeholder="01XXXXXXXXX" autocomplete="tel"/>
           </div>
+          <div id="forgot-phone-hint" style="font-size:0.72rem;margin-top:5px;min-height:16px;"></div>
         </div>
-        <button class="modal-btn-gold" id="btn-send-forgot-otp">إرسال رمز تغيير كلمة السر</button>
+        <button class="modal-btn-gold" id="btn-send-forgot-otp" disabled style="opacity:0.45;cursor:not-allowed;">إرسال رمز تغيير كلمة السر</button>
       </div>
 
       <!-- Sub-step 2: verify OTP -->
