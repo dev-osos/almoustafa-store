@@ -240,9 +240,20 @@
     <div class="alm-modal-panel active" id="alm-panel-login">
       <div class="alm-modal-field">
         <label for="alm-login-phone">رقم الهاتف</label>
-        <div class="alm-modal-field-wrap">
-          <span class="alm-modal-field-icon material-symbols-outlined">phone_iphone</span>
-          <input id="alm-login-phone" type="tel" placeholder="01XXXXXXXXX" autocomplete="tel"/>
+        <div class="alm-phone-row">
+          <button type="button" class="alm-cc-btn" id="alm-login-cc-btn" aria-haspopup="listbox" aria-expanded="false">
+            <span class="flag" id="alm-login-cc-flag">🇸🇦</span>
+            <span class="dial" id="alm-login-cc-dial">+966</span>
+            <span class="chevron">expand_more</span>
+            <div class="alm-cc-dropdown" id="alm-login-cc-dropdown" role="listbox">
+              <div class="alm-cc-search"><input type="text" id="alm-login-cc-search" placeholder="ابحث عن دولة..." autocomplete="off"/></div>
+              <div id="alm-login-cc-list"></div>
+            </div>
+          </button>
+          <div class="alm-modal-field-wrap">
+            <span class="alm-modal-field-icon material-symbols-outlined">phone_iphone</span>
+            <input id="alm-login-phone" type="tel" placeholder="5XXXXXXXX" autocomplete="tel" dir="ltr"/>
+          </div>
         </div>
       </div>
       <div class="alm-modal-field">
@@ -491,8 +502,54 @@
   document.addEventListener('click', function(e) {
     if (!document.getElementById('alm-cc-btn').contains(e.target)) closeCcDropdown();
     if (document.getElementById('alm-forgot-cc-btn') && !document.getElementById('alm-forgot-cc-btn').contains(e.target)) closeAlmForgotCcDropdown();
+    if (document.getElementById('alm-login-cc-btn') && !document.getElementById('alm-login-cc-btn').contains(e.target)) closeAlmLoginCcDropdown();
   });
   buildCcList('');
+
+  /* ─── Login CC picker ──────────────────────────────────────── */
+  var almLoginSelectedCountry = COUNTRIES[0];
+  function buildAlmLoginCcList(filter) {
+    var list = document.getElementById('alm-login-cc-list');
+    list.innerHTML = '';
+    var q = (filter || '').trim();
+    var filtered = q ? COUNTRIES.filter(function(c) { return c.n.includes(q) || c.d.includes(q); }) : COUNTRIES;
+    filtered.forEach(function(c) {
+      var div = document.createElement('div');
+      div.className = 'alm-cc-item' + (c === almLoginSelectedCountry ? ' selected' : '');
+      div.setAttribute('role', 'option');
+      div.innerHTML = '<span class="cc-flag">' + c.f + '</span><span class="cc-name">' + c.n + '</span><span class="cc-dial">' + c.d + '</span>';
+      div.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        almLoginSelectedCountry = c;
+        document.getElementById('alm-login-cc-flag').textContent = c.f;
+        document.getElementById('alm-login-cc-dial').textContent = c.d;
+        document.getElementById('alm-login-phone').placeholder = c.d === '+966' ? '5XXXXXXXX' : 'XXXXXXXXX';
+        closeAlmLoginCcDropdown();
+      });
+      list.appendChild(div);
+    });
+  }
+  function openAlmLoginCcDropdown() {
+    document.getElementById('alm-login-cc-dropdown').classList.add('open');
+    document.getElementById('alm-login-cc-btn').setAttribute('aria-expanded', 'true');
+    document.getElementById('alm-login-cc-search').value = '';
+    buildAlmLoginCcList('');
+    setTimeout(function() { document.getElementById('alm-login-cc-search').focus(); }, 50);
+  }
+  function closeAlmLoginCcDropdown() {
+    document.getElementById('alm-login-cc-dropdown').classList.remove('open');
+    document.getElementById('alm-login-cc-btn').setAttribute('aria-expanded', 'false');
+  }
+  document.getElementById('alm-login-cc-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('alm-login-cc-dropdown').classList.contains('open') ? closeAlmLoginCcDropdown() : openAlmLoginCcDropdown();
+  });
+  document.getElementById('alm-login-cc-search').addEventListener('input', function(e) { buildAlmLoginCcList(e.target.value); });
+  function getAlmLoginPhone() {
+    var raw = document.getElementById('alm-login-phone').value.trim().replace(/[\s\-().]+/g, '');
+    return almLoginSelectedCountry.d + raw.replace(/^0+/, '');
+  }
+  buildAlmLoginCcList('');
 
   /* ─── Phone exists check ───────────────────────────────────── */
   var phoneCheckTimer = null;
@@ -724,7 +781,9 @@
       var res  = await fetch('apis/users/reset_password.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: almForgotPhone, password: pw }) });
       var data = await res.json();
       if (!res.ok) { alert(data.error || 'تعذّر تغيير كلمة المرور'); return; }
-      document.getElementById('alm-success-name-line').textContent = 'تم تغيير كلمة المرور بنجاح';
+      setSession({ customer_id: data.customer_id, name: data.name || null, phone: data.phone, referral_code: data.referral_code || null, loggedAt: new Date().toISOString() });
+      notifySessionChange();
+      document.getElementById('alm-success-name-line').textContent = data.name ? 'أهلاً ' + data.name : 'تم تغيير كلمة المرور بنجاح';
       showPanel('success');
     } catch { alert('خطأ في الاتصال. يرجى المحاولة مجدداً.'); }
     finally { btn.disabled = false; btn.textContent = 'حفظ كلمة المرور الجديدة'; }
@@ -732,10 +791,10 @@
 
   /* ─── Login ────────────────────────────────────────────────── */
   document.getElementById('alm-btn-login-submit').addEventListener('click', async function() {
-    var phone    = document.getElementById('alm-login-phone').value.trim();
+    var phone    = getAlmLoginPhone();
     var password = document.getElementById('alm-login-password').value;
     var btn      = document.getElementById('alm-btn-login-submit');
-    if (!phone || !password) { alert('يرجى إدخال رقم الهاتف وكلمة المرور'); return; }
+    if (!document.getElementById('alm-login-phone').value.trim() || !password) { alert('يرجى إدخال رقم الهاتف وكلمة المرور'); return; }
     btn.disabled = true; btn.textContent = 'جارٍ التحقق...';
     try {
       var res  = await fetch('apis/users/login.php', {

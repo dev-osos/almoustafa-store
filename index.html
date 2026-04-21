@@ -2946,6 +2946,7 @@
         document.addEventListener('click', (e) => {
           if (!document.getElementById('cc-btn').contains(e.target)) closeCcDropdown();
           if (!document.getElementById('forgot-cc-btn').contains(e.target)) closeForgotCcDropdown();
+          if (document.getElementById('login-cc-btn') && !document.getElementById('login-cc-btn').contains(e.target)) closeLoginCcDropdown();
         });
 
         // Helper: get full international phone from picker + input
@@ -3007,6 +3008,52 @@
           return forgotSelectedCountry.d + local;
         }
         buildForgotCcList('');
+
+        // ── Login country code picker ─────────────────────────────────────────
+        let loginSelectedCountry = COUNTRIES[0];
+
+        function buildLoginCcList(filter) {
+          const list = document.getElementById('login-cc-list');
+          list.innerHTML = '';
+          const q = (filter || '').trim();
+          const filtered = q ? COUNTRIES.filter(c => c.n.includes(q) || c.d.includes(q)) : COUNTRIES;
+          filtered.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'cc-item' + (c === loginSelectedCountry ? ' selected' : '');
+            div.setAttribute('role', 'option');
+            div.innerHTML = `<span class="cc-flag">${c.f}</span><span class="cc-name">${c.n}</span><span class="cc-dial">${c.d}</span>`;
+            div.addEventListener('mousedown', (e) => {
+              e.preventDefault();
+              loginSelectedCountry = c;
+              document.getElementById('login-cc-flag').textContent = c.f;
+              document.getElementById('login-cc-dial').textContent = c.d;
+              document.getElementById('login-phone').placeholder = c.d === '+966' ? '5XXXXXXXX' : 'XXXXXXXXX';
+              closeLoginCcDropdown();
+            });
+            list.appendChild(div);
+          });
+        }
+        function openLoginCcDropdown() {
+          document.getElementById('login-cc-dropdown').classList.add('open');
+          document.getElementById('login-cc-btn').setAttribute('aria-expanded', 'true');
+          document.getElementById('login-cc-search').value = '';
+          buildLoginCcList('');
+          setTimeout(() => document.getElementById('login-cc-search').focus(), 50);
+        }
+        function closeLoginCcDropdown() {
+          document.getElementById('login-cc-dropdown').classList.remove('open');
+          document.getElementById('login-cc-btn').setAttribute('aria-expanded', 'false');
+        }
+        document.getElementById('login-cc-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          document.getElementById('login-cc-dropdown').classList.contains('open') ? closeLoginCcDropdown() : openLoginCcDropdown();
+        });
+        document.getElementById('login-cc-search').addEventListener('input', (e) => buildLoginCcList(e.target.value));
+        function getLoginPhone() {
+          const raw = document.getElementById('login-phone').value.trim().replace(/[\s\-().]+/g, '');
+          return loginSelectedCountry.d + raw.replace(/^0+/, '');
+        }
+        buildLoginCcList('');
 
         // ── Phone exists check ────────────────────────────────────────────────
         let phoneCheckTimer = null;
@@ -4138,7 +4185,15 @@
                 });
                 const data = await res.json();
                 if (!res.ok) { alert(data.error || 'تعذّر تغيير كلمة المرور'); return; }
-                document.getElementById('success-name-line').textContent = 'تم تغيير كلمة المرور بنجاح';
+                setSession({
+                    customer_id:   data.customer_id,
+                    name:          data.name || null,
+                    phone:         data.phone,
+                    referral_code: data.referral_code || null,
+                    loggedAt:      new Date().toISOString(),
+                });
+                updateAccountIcon();
+                document.getElementById('success-name-line').textContent = data.name ? 'أهلاً ' + data.name : 'تم تغيير كلمة المرور بنجاح';
                 showPanel('success');
             } catch {
                 alert('خطأ في الاتصال. يرجى المحاولة مجدداً.');
@@ -4150,11 +4205,11 @@
 
         // --- Login submit ---
         document.getElementById('btn-login-submit').addEventListener('click', async () => {
-            const phone    = document.getElementById('login-phone').value.trim();
+            const phone    = getLoginPhone();
             const password = document.getElementById('login-password').value;
             const btn      = document.getElementById('btn-login-submit');
 
-            if (!phone || !password) { alert('يرجى إدخال رقم الهاتف وكلمة المرور'); return; }
+            if (!document.getElementById('login-phone').value.trim() || !password) { alert('يرجى إدخال رقم الهاتف وكلمة المرور'); return; }
 
             btn.disabled = true;
             btn.textContent = 'جارٍ التحقق...';
@@ -4386,9 +4441,22 @@
     <div class="modal-panel active" id="panel-login">
       <div class="modal-field">
         <label for="login-phone">رقم الهاتف</label>
-        <div class="modal-field-wrap">
-          <span class="modal-field-icon material-symbols-outlined">phone_iphone</span>
-          <input id="login-phone" type="tel" placeholder="01XXXXXXXXX" autocomplete="tel"/>
+        <div class="phone-row">
+          <button type="button" class="country-code-btn" id="login-cc-btn" aria-haspopup="listbox" aria-expanded="false">
+            <span class="flag" id="login-cc-flag">🇸🇦</span>
+            <span class="dial" id="login-cc-dial">+966</span>
+            <span class="chevron">expand_more</span>
+            <div class="cc-dropdown" id="login-cc-dropdown" role="listbox">
+              <div class="cc-search">
+                <input type="text" id="login-cc-search" placeholder="ابحث عن دولة..." autocomplete="off"/>
+              </div>
+              <div id="login-cc-list"></div>
+            </div>
+          </button>
+          <div class="modal-field-wrap">
+            <span class="modal-field-icon material-symbols-outlined">phone_iphone</span>
+            <input id="login-phone" type="tel" placeholder="5XXXXXXXX" autocomplete="tel" dir="ltr"/>
+          </div>
         </div>
       </div>
       <div class="modal-field">

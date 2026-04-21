@@ -47,6 +47,11 @@ try {
     if ($stmt->rowCount() === 0) {
         api_error('لا يوجد حساب مرتبط بهذا الرقم', 404);
     }
+
+    // Fetch customer for auto-login
+    $cStmt = $pdo->prepare("SELECT id, name, phone, referral_code, profile_complete FROM customers WHERE phone = :phone LIMIT 1");
+    $cStmt->execute([':phone' => $phone]);
+    $customer = $cStmt->fetch(PDO::FETCH_ASSOC);
 } catch (Throwable) {
     api_error('خطأ في قاعدة البيانات', 500);
 }
@@ -54,4 +59,17 @@ try {
 // Invalidate OTP after use
 unset($_SESSION[$sKey]);
 
-api_ok(['message' => 'تم تغيير كلمة المرور بنجاح']);
+// Start authenticated session
+session_regenerate_id(true);
+$_SESSION['customer_id']    = (int) $customer['id'];
+$_SESSION['customer_phone'] = $customer['phone'];
+$_SESSION['customer_name']  = $customer['name'] ?? '';
+
+api_ok([
+    'message'          => 'تم تغيير كلمة المرور بنجاح',
+    'customer_id'      => (int) $customer['id'],
+    'name'             => $customer['name'],
+    'phone'            => $customer['phone'],
+    'referral_code'    => $customer['referral_code'],
+    'profile_complete' => (bool) $customer['profile_complete'],
+]);
