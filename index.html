@@ -10,8 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="المصطفى"/>
-<link rel="icon" href="fav.ico" sizes="any"/>
-  <link rel="apple-touch-icon" href="logo.png"/>
+<link rel="apple-touch-icon" href="logo.png"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&amp;family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -3890,23 +3889,39 @@
 
         // --- Forgot: send OTP ---
         let forgotOtpInterval = null;
-        document.getElementById('btn-send-forgot-otp').addEventListener('click', () => {
-            const phone = document.getElementById('forgot-phone').value.trim();
-            const masked = phone.length >= 4
-                ? phone.slice(0, 3) + 'XX XXX X' + phone.slice(-2)
-                : phone;
-            document.getElementById('forgot-otp-phone-display').textContent = masked;
-            // Clear OTP boxes
-            const forgotBoxes = document.querySelectorAll('#forgot-otp-row .otp-box');
-            forgotBoxes.forEach(b => { b.value = ''; });
-            // Start timer
-            startForgotTimer();
-            document.getElementById('btn-verify-forgot-otp').disabled = false;
-            // Show step 2
-            document.getElementById('forgot-step-1').style.display = 'none';
-            document.getElementById('forgot-step-2').style.display = 'block';
-            forgotBoxes[0].focus();
-        });
+        let forgotPhone = '';
+        async function sendForgotOtp() {
+            const rawPhone = document.getElementById('forgot-phone').value.trim();
+            if (!rawPhone) { alert('يرجى إدخال رقم الهاتف'); return; }
+            const btn = document.getElementById('btn-send-forgot-otp');
+            btn.disabled = true;
+            btn.textContent = 'جارٍ الإرسال...';
+            try {
+                const res  = await fetch('apis/verify/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: rawPhone }),
+                });
+                const data = await res.json();
+                if (!res.ok) { alert(data.error || 'تعذّر إرسال الرمز'); return; }
+                forgotPhone = rawPhone;
+                const masked = rawPhone.slice(0, 3) + 'XX XXX X' + rawPhone.slice(-2);
+                document.getElementById('forgot-otp-phone-display').textContent = masked;
+                const forgotBoxes = document.querySelectorAll('#forgot-otp-row .otp-box');
+                forgotBoxes.forEach(b => { b.value = ''; });
+                startForgotTimer();
+                document.getElementById('btn-verify-forgot-otp').disabled = false;
+                document.getElementById('forgot-step-1').style.display = 'none';
+                document.getElementById('forgot-step-2').style.display = 'block';
+                forgotBoxes[0].focus();
+            } catch {
+                alert('خطأ في الاتصال. يرجى المحاولة مجدداً.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'إرسال رمز تغيير كلمة السر';
+            }
+        }
+        document.getElementById('btn-send-forgot-otp').addEventListener('click', sendForgotOtp);
 
         // --- Forgot OTP boxes ---
         const forgotOtpBoxes = Array.from(document.querySelectorAll('#forgot-otp-row .otp-box'));
@@ -3951,37 +3966,87 @@
             }, 1000);
         }
 
-        document.getElementById('btn-resend-forgot-otp').addEventListener('click', () => {
-            forgotOtpBoxes.forEach(b => { b.value = ''; });
-            startForgotTimer();
-            document.getElementById('btn-verify-forgot-otp').disabled = false;
-            forgotOtpBoxes[0].focus();
+        document.getElementById('btn-resend-forgot-otp').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-resend-forgot-otp');
+            btn.disabled = true;
+            btn.textContent = 'جارٍ إعادة الإرسال...';
+            try {
+                const res  = await fetch('apis/verify/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: forgotPhone }),
+                });
+                const data = await res.json();
+                if (!res.ok) { alert(data.error || 'تعذّر إعادة الإرسال'); return; }
+                forgotOtpBoxes.forEach(b => { b.value = ''; });
+                startForgotTimer();
+                document.getElementById('btn-verify-forgot-otp').disabled = false;
+                forgotOtpBoxes[0].focus();
+            } catch {
+                alert('خطأ في الاتصال. يرجى المحاولة مجدداً.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'إعادة إرسال الرمز';
+            }
         });
 
         // --- Forgot: verify OTP → new password panel ---
-        document.getElementById('btn-verify-forgot-otp').addEventListener('click', () => {
+        document.getElementById('btn-verify-forgot-otp').addEventListener('click', async () => {
             const code = forgotOtpBoxes.map(b => b.value).join('');
-            if (code.length < 4) return;
-            clearInterval(forgotOtpInterval);
-            document.getElementById('new-password').value = '';
-            document.getElementById('confirm-password').value = '';
-            document.getElementById('msg-password-mismatch').style.display = 'none';
-            showPanel('new-password');
+            if (code.length < 4) { alert('يرجى إدخال الرمز المكوّن من 4 أرقام'); return; }
+            const btn = document.getElementById('btn-verify-forgot-otp');
+            btn.disabled = true;
+            btn.textContent = 'جارٍ التحقق...';
+            try {
+                const res  = await fetch('apis/verify/check.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: forgotPhone, code }),
+                });
+                const data = await res.json();
+                if (!res.ok) { alert(data.error || 'الرمز غير صحيح'); btn.disabled = false; btn.textContent = 'التحقق والمتابعة'; return; }
+                clearInterval(forgotOtpInterval);
+                document.getElementById('new-password').value = '';
+                document.getElementById('confirm-password').value = '';
+                document.getElementById('msg-password-mismatch').style.display = 'none';
+                showPanel('new-password');
+            } catch {
+                alert('خطأ في الاتصال. يرجى المحاولة مجدداً.');
+                btn.disabled = false;
+                btn.textContent = 'التحقق والمتابعة';
+            }
         });
 
         // --- Save new password ---
-        document.getElementById('btn-save-new-password').addEventListener('click', () => {
+        document.getElementById('btn-save-new-password').addEventListener('click', async () => {
             const pw  = document.getElementById('new-password').value;
             const cpw = document.getElementById('confirm-password').value;
             const mismatchMsg = document.getElementById('msg-password-mismatch');
-            if (pw !== cpw || pw === '') {
+            if (pw !== cpw || pw.length < 6) {
                 mismatchMsg.style.display = 'block';
+                mismatchMsg.textContent = pw.length < 6 ? 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' : 'كلمتا المرور غير متطابقتين';
                 return;
             }
             mismatchMsg.style.display = 'none';
-            // Password reset success — show success panel
-            document.getElementById('success-name-line').textContent = 'تم تغيير كلمة المرور بنجاح';
-            showPanel('success');
+            const btn = document.getElementById('btn-save-new-password');
+            btn.disabled = true;
+            btn.textContent = 'جارٍ الحفظ...';
+            try {
+                const res  = await fetch('apis/users/reset_password.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: forgotPhone, password: pw }),
+                });
+                const data = await res.json();
+                if (!res.ok) { alert(data.error || 'تعذّر تغيير كلمة المرور'); return; }
+                document.getElementById('success-name-line').textContent = 'تم تغيير كلمة المرور بنجاح';
+                showPanel('success');
+            } catch {
+                alert('خطأ في الاتصال. يرجى المحاولة مجدداً.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'حفظ كلمة المرور الجديدة';
+            }
         });
 
         // --- Login submit ---
@@ -5436,7 +5501,7 @@
 
 <!-- Floating Contact Button -->
 <div id="contact-fab">
-    <a class="fab-link" id="fab-anchor" href="#" aria-label="تواصل معنا">
+    <a class="fab-link" id="fab-anchor" href="https://wa.me/201037966515" aria-label="تواصل معنا">
         <span class="mode-badge" id="fab-badge">واتساب</span>
         <span class="fab-icon" id="fab-icon"></span>
     </a>
