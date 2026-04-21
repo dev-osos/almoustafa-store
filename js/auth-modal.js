@@ -544,6 +544,7 @@
   }
 
   var forgotOtpBoxes = Array.from(document.querySelectorAll('#alm-forgot-otp-row .alm-otp-box'));
+  var almForgotPhone = '';
   forgotOtpBoxes.forEach(function(box, i) {
     box.addEventListener('input', function() {
       box.value = box.value.replace(/\D/g, '').slice(-1);
@@ -552,40 +553,80 @@
     box.addEventListener('keydown', function(e) { if (e.key === 'Backspace' && !box.value && i > 0) forgotOtpBoxes[i - 1].focus(); });
   });
 
-  document.getElementById('alm-btn-send-forgot-otp').addEventListener('click', function() {
-    var phone = document.getElementById('alm-forgot-phone').value.trim();
-    var masked = phone.length >= 4 ? phone.slice(0, 3) + 'XX XXX X' + phone.slice(-2) : phone;
-    document.getElementById('alm-forgot-otp-phone-display').textContent = masked;
-    forgotOtpBoxes.forEach(function(b) { b.value = ''; });
-    startForgotTimer();
-    document.getElementById('alm-btn-verify-forgot-otp').disabled = false;
-    document.getElementById('alm-forgot-step-1').style.display = 'none';
-    document.getElementById('alm-forgot-step-2').style.display = 'block';
-    forgotOtpBoxes[0].focus();
+  async function almSendForgotOtp() {
+    var rawPhone = document.getElementById('alm-forgot-phone').value.trim();
+    if (!rawPhone) { alert('يرجى إدخال رقم الهاتف'); return; }
+    var btn = document.getElementById('alm-btn-send-forgot-otp');
+    btn.disabled = true; btn.textContent = 'جارٍ الإرسال...';
+    try {
+      var res  = await fetch('apis/verify/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: rawPhone }) });
+      var data = await res.json();
+      if (!res.ok) { alert(data.error || 'تعذّر إرسال الرمز'); return; }
+      almForgotPhone = rawPhone;
+      var masked = rawPhone.slice(0, 3) + 'XX XXX X' + rawPhone.slice(-2);
+      document.getElementById('alm-forgot-otp-phone-display').textContent = masked;
+      forgotOtpBoxes.forEach(function(b) { b.value = ''; });
+      startForgotTimer();
+      document.getElementById('alm-btn-verify-forgot-otp').disabled = false;
+      document.getElementById('alm-forgot-step-1').style.display = 'none';
+      document.getElementById('alm-forgot-step-2').style.display = 'block';
+      forgotOtpBoxes[0].focus();
+    } catch { alert('خطأ في الاتصال. يرجى المحاولة مجدداً.'); }
+    finally { btn.disabled = false; btn.textContent = 'إرسال رمز تغيير كلمة السر'; }
+  }
+  document.getElementById('alm-btn-send-forgot-otp').addEventListener('click', almSendForgotOtp);
+
+  document.getElementById('alm-btn-resend-forgot-otp').addEventListener('click', async function() {
+    var btn = document.getElementById('alm-btn-resend-forgot-otp');
+    btn.disabled = true; btn.textContent = 'جارٍ إعادة الإرسال...';
+    try {
+      var res  = await fetch('apis/verify/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: almForgotPhone }) });
+      var data = await res.json();
+      if (!res.ok) { alert(data.error || 'تعذّر إعادة الإرسال'); return; }
+      forgotOtpBoxes.forEach(function(b) { b.value = ''; });
+      startForgotTimer();
+      document.getElementById('alm-btn-verify-forgot-otp').disabled = false;
+      forgotOtpBoxes[0].focus();
+    } catch { alert('خطأ في الاتصال. يرجى المحاولة مجدداً.'); }
+    finally { btn.disabled = false; btn.textContent = 'إعادة إرسال الرمز'; }
   });
-  document.getElementById('alm-btn-resend-forgot-otp').addEventListener('click', function() {
-    forgotOtpBoxes.forEach(function(b) { b.value = ''; });
-    startForgotTimer();
-    document.getElementById('alm-btn-verify-forgot-otp').disabled = false;
-    forgotOtpBoxes[0].focus();
-  });
-  document.getElementById('alm-btn-verify-forgot-otp').addEventListener('click', function() {
+
+  document.getElementById('alm-btn-verify-forgot-otp').addEventListener('click', async function() {
     var code = forgotOtpBoxes.map(function(b) { return b.value; }).join('');
-    if (code.length < 4) return;
-    clearInterval(forgotOtpInterval);
-    document.getElementById('alm-new-password').value = '';
-    document.getElementById('alm-confirm-password').value = '';
-    document.getElementById('alm-msg-password-mismatch').style.display = 'none';
-    showPanel('new-password');
+    if (code.length < 4) { alert('يرجى إدخال الرمز المكوّن من 4 أرقام'); return; }
+    var btn = document.getElementById('alm-btn-verify-forgot-otp');
+    btn.disabled = true; btn.textContent = 'جارٍ التحقق...';
+    try {
+      var res  = await fetch('apis/verify/check.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: almForgotPhone, code: code }) });
+      var data = await res.json();
+      if (!res.ok) { alert(data.error || 'الرمز غير صحيح'); btn.disabled = false; btn.textContent = 'التحقق والمتابعة'; return; }
+      clearInterval(forgotOtpInterval);
+      document.getElementById('alm-new-password').value = '';
+      document.getElementById('alm-confirm-password').value = '';
+      document.getElementById('alm-msg-password-mismatch').style.display = 'none';
+      showPanel('new-password');
+    } catch { alert('خطأ في الاتصال. يرجى المحاولة مجدداً.'); btn.disabled = false; btn.textContent = 'التحقق والمتابعة'; }
   });
-  document.getElementById('alm-btn-save-new-password').addEventListener('click', function() {
+
+  document.getElementById('alm-btn-save-new-password').addEventListener('click', async function() {
     var pw  = document.getElementById('alm-new-password').value;
     var cpw = document.getElementById('alm-confirm-password').value;
     var msg = document.getElementById('alm-msg-password-mismatch');
-    if (pw !== cpw || pw === '') { msg.style.display = 'block'; return; }
+    if (pw.length < 6 || pw !== cpw) {
+      msg.textContent = pw.length < 6 ? 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' : 'كلمتا المرور غير متطابقتين';
+      msg.style.display = 'block'; return;
+    }
     msg.style.display = 'none';
-    document.getElementById('alm-success-name-line').textContent = 'تم تغيير كلمة المرور بنجاح';
-    showPanel('success');
+    var btn = document.getElementById('alm-btn-save-new-password');
+    btn.disabled = true; btn.textContent = 'جارٍ الحفظ...';
+    try {
+      var res  = await fetch('apis/users/reset_password.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: almForgotPhone, password: pw }) });
+      var data = await res.json();
+      if (!res.ok) { alert(data.error || 'تعذّر تغيير كلمة المرور'); return; }
+      document.getElementById('alm-success-name-line').textContent = 'تم تغيير كلمة المرور بنجاح';
+      showPanel('success');
+    } catch { alert('خطأ في الاتصال. يرجى المحاولة مجدداً.'); }
+    finally { btn.disabled = false; btn.textContent = 'حفظ كلمة المرور الجديدة'; }
   });
 
   /* ─── Login ────────────────────────────────────────────────── */
