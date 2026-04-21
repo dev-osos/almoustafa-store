@@ -532,7 +532,7 @@ render();})();
       <!-- Brand / About column -->
       <div class="md:col-span-5 flex flex-col gap-5">
         <div class="flex items-center gap-4">
-          <img alt="Al Moustafa Logo" class="h-14 w-auto drop-shadow-lg" src="https://lh3.googleusercontent.com/aida/ADBb0uizSWOC5dO7JPu0qOgcoJ9ZKB23Xl2dS_VdD3ppNMwsSYmWklfqXSzJlhBqsHkCArodz3NSLoUFTYTJ8GrYDvwWQTM_SkeedskIQyPkQGig6r5OgG5q_7sb9DmVlnxULPn-6QXfcnAxrGbpMwYgA9jKssJg26DIAHjc_uer4KgctBKVMz5Clkxu07bpNCXlyXGMHS1KTnDkQZTTyMVFpuwJfFF55MKla2QQFlt65sR2mwkPo5yFEZEQSwEV4fWfzKAkXE5vLrD4Pls"/>
+          <img alt="Al Moustafa Logo" class="h-14 w-auto drop-shadow-lg" src="logo.png"/>
           <div>
             <div class="font-headline text-2xl text-[#fed65b]">المصطفى</div>
             <div class="font-headline italic text-[#fed65b]/60 text-sm">خبراء العسل الصافي</div>
@@ -785,6 +785,21 @@ render();})();
 </script>
 <script src="js/auth-modal.js"></script>
 <script src="js/nav-shared.js"></script>
+<script>
+  (function () {
+    function revealPage() {
+      var overlay = document.getElementById('loading-overlay');
+      var main    = document.getElementById('main-content');
+      if (overlay) { overlay.style.opacity = '0'; setTimeout(function () { overlay.style.display = 'none'; }, 700); }
+      if (main)    { main.classList.remove('content-hidden'); main.classList.add('content-visible'); }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', revealPage);
+    } else {
+      revealPage();
+    }
+  }());
+</script>
 <script src="js/v_id_bootstrap.js"></script>
 <script src="js/cookie-consent.js"></script>
 <script src="js/pwa-install.js"></script>
