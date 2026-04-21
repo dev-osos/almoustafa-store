@@ -1,4 +1,4 @@
-const CACHE_NAME = 'almoustafa-static-v75';
+const CACHE_NAME = 'almoustafa-static-v76';
 const PRECACHE_ASSETS = [
   './',
   'index.html',
