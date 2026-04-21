@@ -790,7 +790,7 @@ render();})();
     function revealPage() {
       var overlay = document.getElementById('loading-overlay');
       var main    = document.getElementById('main-content');
-      if (overlay) { overlay.style.opacity = '0'; setTimeout(function () { overlay.style.display = 'none'; }, 700); }
+      if (overlay) { overlay.style.opacity = '0'; setTimeout(function () { overlay.style.display = 'none'; }, 1000); }
       if (main)    { main.classList.remove('content-hidden'); main.classList.add('content-visible'); }
     }
     if (document.readyState === 'loading') {
