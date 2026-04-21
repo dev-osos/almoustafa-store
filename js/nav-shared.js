@@ -68,7 +68,19 @@
   var pdEl = document.createElement('div');
   pdEl.id = 'nav-pd';
   pdEl.innerHTML =
-    '';
+    '<div class="nav-pd-hd">' +
+      '<div class="nav-pd-av"><span class="material-symbols-outlined">account_circle</span></div>' +
+      '<div><div class="nav-pd-nm" id="nav-pd-nm">مستخدم</div><div class="nav-pd-ph" id="nav-pd-ph">—</div></div>' +
+    '</div>' +
+    '<div class="nav-pd-wallet">' +
+      '<div class="nav-pd-wl"><span class="material-symbols-outlined">account_balance_wallet</span>رصيد المحفظة</div>' +
+      '<div class="nav-pd-wv" id="nav-pd-wv">—</div>' +
+    '</div>' +
+    '<div class="nav-pd-acts">' +
+      '<a href="index.html" class="nav-pd-ab"><span class="material-symbols-outlined">home</span>الصفحة الرئيسية</a>' +
+      '<a href="checkout.html" class="nav-pd-ab"><span class="material-symbols-outlined">shopping_bag</span>طلباتي</a>' +
+      '<button id="nav-pd-out" class="nav-pd-ab nav-pd-out"><span class="material-symbols-outlined">logout</span>تسجيل الخروج</button>' +
+    '</div>';
 
   // Mobile menu
   var cur = (location.pathname.split('/').pop() || 'index.html');
