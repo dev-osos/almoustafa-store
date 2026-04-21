@@ -495,9 +495,7 @@
 
         /* ========== PROFILE DROPDOWN ========== */
         #profile-dropdown {
-            position: absolute;
-            top: calc(100% + 14px);
-            left: 0;
+            position: fixed;
             transform: translateY(-8px);
             width: 230px;
             background: rgba(22,10,3,0.97);
@@ -3294,6 +3292,18 @@
             return [governorate, city, details].filter(Boolean).join('، ');
         }
 
+        // Move profile-dropdown to body to escape nav stacking context
+        document.body.appendChild(profileDropdown);
+
+        function positionProfileDropdown() {
+            const btn = document.getElementById('btn-account');
+            if (!btn) return;
+            const r = btn.getBoundingClientRect();
+            profileDropdown.style.top  = (r.bottom + 14) + 'px';
+            const left = r.left - profileDropdown.offsetWidth + r.width;
+            profileDropdown.style.left = Math.max(8, left) + 'px';
+        }
+
         function openProfileDropdown() {
             const session = getSession();
             document.getElementById('pdd-name').textContent = session?.name || 'مستخدم';
@@ -3315,6 +3325,7 @@
             
             const balance = session?.wallet ?? 0;
             document.getElementById('pdd-wallet').textContent = Number(balance).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م';
+            positionProfileDropdown();
             profileDropdown.classList.add('open');
         }
         function closeProfileDropdown() {

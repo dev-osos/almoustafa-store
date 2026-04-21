@@ -26,7 +26,7 @@
   var style = document.createElement('style');
   style.textContent = [
     /* ── Mini profile dropdown ── */
-    '#nav-pd{position:absolute;top:calc(100% + 12px);left:0;width:260px;background:#fdf9f0;border:1px solid rgba(60,0,4,0.1);border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.13);z-index:500;direction:rtl;overflow:hidden;opacity:0;pointer-events:none;transform:translateY(-8px);transition:opacity 0.2s ease,transform 0.2s ease;}',
+    '#nav-pd{position:fixed;width:260px;background:#fdf9f0;border:1px solid rgba(60,0,4,0.1);border-radius:16px;box-shadow:0 16px 48px rgba(0,0,0,0.13);z-index:500;direction:rtl;overflow:hidden;opacity:0;pointer-events:none;transform:translateY(-8px);transition:opacity 0.2s ease,transform 0.2s ease;}',
     '#nav-pd.open{opacity:1;pointer-events:auto;transform:translateY(0);}',
     '.nav-pd-hd{background:#3c0004;padding:14px 16px;display:flex;align-items:center;gap:12px;}',
     '.nav-pd-av{width:40px;height:40px;border-radius:50%;background:rgba(254,214,91,0.18);border:1.5px solid rgba(254,214,91,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;}',
@@ -107,11 +107,25 @@
     }
   }
 
+  // Append to body so it's outside the nav stacking context
+  document.body.appendChild(pdEl);
+
+  function positionPd() {
+    if (!accountBtn) return;
+    var r = accountBtn.getBoundingClientRect();
+    pdEl.style.top  = (r.bottom + 12) + 'px';
+    // align to left edge of button (RTL: dropdown opens leftward from button)
+    var left = r.left - pdEl.offsetWidth + r.width;
+    pdEl.style.left = Math.max(8, left) + 'px';
+  }
+
   function openPd() {
     var s = getSession();
     if (!s) return;
     document.getElementById('nav-pd-nm').textContent = s.name || 'مستخدم';
     document.getElementById('nav-pd-ph').textContent = s.phone || '—';
+    positionPd();
+    pdEl.classList.add('open');
     // Fetch wallet balance
     fetch('apis/users/wallet.php')
       .then(function (r) { return r.json(); })
@@ -122,15 +136,10 @@
         }
       })
       .catch(function () {});
-    pdEl.classList.add('open');
   }
   function closePd() { pdEl.classList.remove('open'); }
 
   if (accountBtn) {
-    // Attach dropdown to the button's parent wrapper (needs position:relative)
-    var acWrap = accountBtn.parentElement;
-    acWrap.style.position = 'relative';
-    acWrap.appendChild(pdEl);
 
     accountBtn.addEventListener('click', function (e) {
       e.stopPropagation();
