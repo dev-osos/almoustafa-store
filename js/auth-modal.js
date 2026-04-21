@@ -25,7 +25,7 @@
       position: fixed; inset: 0;
       background: rgba(28,28,23,0.72);
       backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-      z-index: 600;
+      z-index: 9000;
       display: flex; align-items: center; justify-content: center;
       padding: 16px;
       opacity: 0; pointer-events: none;
@@ -33,7 +33,7 @@
     }
     #alm-modal-backdrop.open { opacity: 1; pointer-events: auto; }
     #alm-login-modal {
-      position: relative; z-index: 601;
+      position: relative; z-index: 9001;
       width: 100%; max-width: 420px;
       background: rgba(60,0,4,0.82);
       backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
