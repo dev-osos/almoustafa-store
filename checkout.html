@@ -660,7 +660,7 @@
     } else if (shippingCost === 0) {
       shippingText = 'مجاني';
     } else {
-      shipping     = shippingCost * 0.65;
+      shipping     = Math.round(shippingCost * 0.65);
       shippingText = fmtPrice(shipping);
     }
     const useWallet    = balance > 0 && document.getElementById('wallet-use-cb').checked;
