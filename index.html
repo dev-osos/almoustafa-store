@@ -2945,16 +2945,68 @@
         });
         document.addEventListener('click', (e) => {
           if (!document.getElementById('cc-btn').contains(e.target)) closeCcDropdown();
+          if (!document.getElementById('forgot-cc-btn').contains(e.target)) closeForgotCcDropdown();
         });
 
         // Helper: get full international phone from picker + input
         function getRegPhone() {
           const raw = document.getElementById('reg-phone').value.trim().replace(/[\s\-().]+/g, '');
-          const local = raw.replace(/^0+/, ''); // strip leading zeros
+          const local = raw.replace(/^0+/, '');
           return selectedCountry.d + local;
         }
 
         buildCcList('');
+
+        // ── Forgot password country code picker ───────────────────────────────
+        let forgotSelectedCountry = COUNTRIES[0];
+
+        function buildForgotCcList(filter) {
+          const list = document.getElementById('forgot-cc-list');
+          list.innerHTML = '';
+          const q = (filter || '').trim();
+          const filtered = q ? COUNTRIES.filter(c => c.n.includes(q) || c.d.includes(q)) : COUNTRIES;
+          filtered.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'cc-item' + (c === forgotSelectedCountry ? ' selected' : '');
+            div.setAttribute('role', 'option');
+            div.innerHTML = `<span class="cc-flag">${c.f}</span><span class="cc-name">${c.n}</span><span class="cc-dial">${c.d}</span>`;
+            div.addEventListener('mousedown', (e) => {
+              e.preventDefault();
+              forgotSelectedCountry = c;
+              document.getElementById('forgot-cc-flag').textContent = c.f;
+              document.getElementById('forgot-cc-dial').textContent = c.d;
+              document.getElementById('forgot-phone').placeholder = c.d === '+966' ? '5XXXXXXXX' : 'XXXXXXXXX';
+              closeForgotCcDropdown();
+              document.getElementById('forgot-phone').dispatchEvent(new Event('input'));
+            });
+            list.appendChild(div);
+          });
+        }
+        function openForgotCcDropdown() {
+          document.getElementById('forgot-cc-dropdown').classList.add('open');
+          document.getElementById('forgot-cc-btn').setAttribute('aria-expanded', 'true');
+          document.getElementById('forgot-cc-search').value = '';
+          buildForgotCcList('');
+          setTimeout(() => document.getElementById('forgot-cc-search').focus(), 50);
+        }
+        function closeForgotCcDropdown() {
+          document.getElementById('forgot-cc-dropdown').classList.remove('open');
+          document.getElementById('forgot-cc-btn').setAttribute('aria-expanded', 'false');
+        }
+        document.getElementById('forgot-cc-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = document.getElementById('forgot-cc-dropdown').classList.contains('open');
+          isOpen ? closeForgotCcDropdown() : openForgotCcDropdown();
+        });
+        document.getElementById('forgot-cc-search').addEventListener('input', (e) => {
+          buildForgotCcList(e.target.value);
+        });
+        function getForgotPhone() {
+          const raw = document.getElementById('forgot-phone').value.trim().replace(/[\s\-().]+/g, '');
+          const local = raw.replace(/^0+/, '');
+          return forgotSelectedCountry.d + local;
+        }
+        buildForgotCcList('');
 
         // ── Phone exists check ────────────────────────────────────────────────
         let phoneCheckTimer = null;
@@ -3909,13 +3961,14 @@
                 clearTimeout(checkTimer);
                 hintEl.textContent = '';
                 setReady(false);
-                const val = phoneEl.value.trim();
-                if (val.length < 7) return;
+                const local = phoneEl.value.trim().replace(/\D/g, '');
+                if (local.length < 7) return;
                 hintEl.style.color = 'rgba(255,255,255,0.4)';
                 hintEl.textContent = 'جارٍ التحقق...';
                 checkTimer = setTimeout(async () => {
                     try {
-                        const res  = await fetch('apis/users/check_phone.php?phone=' + encodeURIComponent(val));
+                        const phone = getForgotPhone();
+                        const res  = await fetch('apis/users/check_phone.php?phone=' + encodeURIComponent(phone));
                         const data = await res.json();
                         if (data.exists) {
                             hintEl.style.color = 'rgba(100,220,130,0.85)';
@@ -3937,8 +3990,8 @@
         let forgotOtpInterval = null;
         let forgotPhone = '';
         async function sendForgotOtp() {
-            const rawPhone = document.getElementById('forgot-phone').value.trim();
-            if (!rawPhone) { alert('يرجى إدخال رقم الهاتف'); return; }
+            const rawPhone = getForgotPhone();
+            if (!rawPhone || rawPhone.length < 8) { alert('يرجى إدخال رقم الهاتف'); return; }
             const btn = document.getElementById('btn-send-forgot-otp');
             btn.disabled = true;
             btn.textContent = 'جارٍ الإرسال...';
@@ -4362,9 +4415,22 @@
         </div>
         <div class="modal-field">
           <label for="forgot-phone">رقم الهاتف</label>
-          <div class="modal-field-wrap">
-            <span class="modal-field-icon material-symbols-outlined">phone_iphone</span>
-            <input id="forgot-phone" type="tel" placeholder="01XXXXXXXXX" autocomplete="tel"/>
+          <div class="phone-row">
+            <button type="button" class="country-code-btn" id="forgot-cc-btn" aria-haspopup="listbox" aria-expanded="false">
+              <span class="flag" id="forgot-cc-flag">🇸🇦</span>
+              <span class="dial" id="forgot-cc-dial">+966</span>
+              <span class="chevron">expand_more</span>
+              <div class="cc-dropdown" id="forgot-cc-dropdown" role="listbox">
+                <div class="cc-search">
+                  <input type="text" id="forgot-cc-search" placeholder="ابحث عن دولة..." autocomplete="off"/>
+                </div>
+                <div id="forgot-cc-list"></div>
+              </div>
+            </button>
+            <div class="modal-field-wrap">
+              <span class="modal-field-icon material-symbols-outlined">phone_iphone</span>
+              <input id="forgot-phone" type="tel" placeholder="5XXXXXXXX" autocomplete="tel" dir="ltr"/>
+            </div>
           </div>
           <div id="forgot-phone-hint" style="font-size:0.72rem;margin-top:5px;min-height:16px;"></div>
         </div>

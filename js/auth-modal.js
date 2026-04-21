@@ -267,9 +267,20 @@
         </div>
         <div class="alm-modal-field">
           <label for="alm-forgot-phone">رقم الهاتف</label>
-          <div class="alm-modal-field-wrap">
-            <span class="alm-modal-field-icon material-symbols-outlined">phone_iphone</span>
-            <input id="alm-forgot-phone" type="tel" placeholder="01XXXXXXXXX" autocomplete="tel"/>
+          <div class="alm-phone-row">
+            <button type="button" class="alm-cc-btn" id="alm-forgot-cc-btn" aria-haspopup="listbox" aria-expanded="false">
+              <span class="flag" id="alm-forgot-cc-flag">🇸🇦</span>
+              <span class="dial" id="alm-forgot-cc-dial">+966</span>
+              <span class="chevron">expand_more</span>
+              <div class="alm-cc-dropdown" id="alm-forgot-cc-dropdown" role="listbox">
+                <div class="alm-cc-search"><input type="text" id="alm-forgot-cc-search" placeholder="ابحث عن دولة..." autocomplete="off"/></div>
+                <div id="alm-forgot-cc-list"></div>
+              </div>
+            </button>
+            <div class="alm-modal-field-wrap">
+              <span class="alm-modal-field-icon material-symbols-outlined">phone_iphone</span>
+              <input id="alm-forgot-phone" type="tel" placeholder="5XXXXXXXX" autocomplete="tel" dir="ltr"/>
+            </div>
           </div>
           <div id="alm-forgot-phone-hint" style="font-size:0.72rem;margin-top:5px;min-height:16px;"></div>
         </div>
@@ -479,6 +490,7 @@
   document.getElementById('alm-cc-search-input').addEventListener('input', function(e) { buildCcList(e.target.value); });
   document.addEventListener('click', function(e) {
     if (!document.getElementById('alm-cc-btn').contains(e.target)) closeCcDropdown();
+    if (document.getElementById('alm-forgot-cc-btn') && !document.getElementById('alm-forgot-cc-btn').contains(e.target)) closeAlmForgotCcDropdown();
   });
   buildCcList('');
 
@@ -531,6 +543,52 @@
   });
   document.getElementById('alm-btn-back-to-login').addEventListener('click', function() { showPanel('login'); });
 
+  /* ─── Forgot CC picker ─────────────────────────────────────── */
+  var almForgotSelectedCountry = COUNTRIES[0];
+  function buildAlmForgotCcList(filter) {
+    var list = document.getElementById('alm-forgot-cc-list');
+    list.innerHTML = '';
+    var q = (filter || '').trim();
+    var filtered = q ? COUNTRIES.filter(function(c) { return c.n.includes(q) || c.d.includes(q); }) : COUNTRIES;
+    filtered.forEach(function(c) {
+      var div = document.createElement('div');
+      div.className = 'alm-cc-item' + (c === almForgotSelectedCountry ? ' selected' : '');
+      div.setAttribute('role', 'option');
+      div.innerHTML = '<span class="cc-flag">' + c.f + '</span><span class="cc-name">' + c.n + '</span><span class="cc-dial">' + c.d + '</span>';
+      div.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        almForgotSelectedCountry = c;
+        document.getElementById('alm-forgot-cc-flag').textContent = c.f;
+        document.getElementById('alm-forgot-cc-dial').textContent = c.d;
+        document.getElementById('alm-forgot-phone').placeholder = c.d === '+966' ? '5XXXXXXXX' : 'XXXXXXXXX';
+        closeAlmForgotCcDropdown();
+        document.getElementById('alm-forgot-phone').dispatchEvent(new Event('input'));
+      });
+      list.appendChild(div);
+    });
+  }
+  function openAlmForgotCcDropdown() {
+    document.getElementById('alm-forgot-cc-dropdown').classList.add('open');
+    document.getElementById('alm-forgot-cc-btn').setAttribute('aria-expanded', 'true');
+    document.getElementById('alm-forgot-cc-search').value = '';
+    buildAlmForgotCcList('');
+    setTimeout(function() { document.getElementById('alm-forgot-cc-search').focus(); }, 50);
+  }
+  function closeAlmForgotCcDropdown() {
+    document.getElementById('alm-forgot-cc-dropdown').classList.remove('open');
+    document.getElementById('alm-forgot-cc-btn').setAttribute('aria-expanded', 'false');
+  }
+  document.getElementById('alm-forgot-cc-btn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('alm-forgot-cc-dropdown').classList.contains('open') ? closeAlmForgotCcDropdown() : openAlmForgotCcDropdown();
+  });
+  document.getElementById('alm-forgot-cc-search').addEventListener('input', function(e) { buildAlmForgotCcList(e.target.value); });
+  function getAlmForgotPhone() {
+    var raw = document.getElementById('alm-forgot-phone').value.trim().replace(/[\s\-().]+/g, '');
+    return almForgotSelectedCountry.d + raw.replace(/^0+/, '');
+  }
+  buildAlmForgotCcList('');
+
   /* ─── Dynamic phone check for forgot ──────────────────────── */
   (function() {
     var timer = null;
@@ -546,13 +604,14 @@
       clearTimeout(timer);
       hintEl.textContent = '';
       setReady(false);
-      var val = phoneEl.value.trim();
-      if (val.length < 7) return;
+      var local = phoneEl.value.trim().replace(/\D/g, '');
+      if (local.length < 7) return;
       hintEl.style.color = 'rgba(255,255,255,0.4)';
       hintEl.textContent = 'جارٍ التحقق...';
       timer = setTimeout(async function() {
         try {
-          var res  = await fetch('apis/users/check_phone.php?phone=' + encodeURIComponent(val));
+          var phone = getAlmForgotPhone();
+          var res  = await fetch('apis/users/check_phone.php?phone=' + encodeURIComponent(phone));
           var data = await res.json();
           if (data.exists) {
             hintEl.style.color = 'rgba(100,220,130,0.85)';
@@ -595,16 +654,17 @@
   });
 
   async function almSendForgotOtp() {
-    var rawPhone = document.getElementById('alm-forgot-phone').value.trim();
-    if (!rawPhone) { alert('يرجى إدخال رقم الهاتف'); return; }
+    var fullPhone = getAlmForgotPhone();
+    if (!fullPhone || fullPhone.length < 8) { alert('يرجى إدخال رقم الهاتف'); return; }
     var btn = document.getElementById('alm-btn-send-forgot-otp');
     btn.disabled = true; btn.textContent = 'جارٍ الإرسال...';
     try {
-      var res  = await fetch('apis/verify/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: rawPhone }) });
+      var res  = await fetch('apis/verify/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: fullPhone }) });
       var data = await res.json();
       if (!res.ok) { alert(data.error || 'تعذّر إرسال الرمز'); return; }
-      almForgotPhone = rawPhone;
-      var masked = rawPhone.slice(0, 3) + 'XX XXX X' + rawPhone.slice(-2);
+      almForgotPhone = fullPhone;
+      var raw = document.getElementById('alm-forgot-phone').value.trim();
+      var masked = raw.slice(0, 3) + 'XX XXX X' + raw.slice(-2);
       document.getElementById('alm-forgot-otp-phone-display').textContent = masked;
       forgotOtpBoxes.forEach(function(b) { b.value = ''; });
       startForgotTimer();
