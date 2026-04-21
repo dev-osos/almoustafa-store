@@ -161,6 +161,13 @@
     closePd();
   });
 
+  // Close profile dropdown whenever any modal opens
+  document.addEventListener('alm:modal-open', closePd);
+  document.addEventListener('click', function(e) {
+    var backdrop = document.getElementById('modal-backdrop');
+    if (backdrop && backdrop.classList.contains('open')) closePd();
+  });
+
   /* ─── Cart badge ───────────────────────────────────────────── */
   function updateCartBadge() {
     var badge = document.getElementById('cart-badge');
