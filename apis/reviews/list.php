@@ -8,6 +8,7 @@ require_once __DIR__ . '/../db.php';
 api_response_init();
 api_require_method(['GET']);
 
+try {
 $pdo = api_pdo();
 
 // Auto-create table if missing
@@ -69,3 +70,10 @@ api_ok([
             : 0,
     ],
 ]);
+} catch (PDOException $e) {
+    error_log('reviews/list PDOException: ' . $e->getMessage());
+    api_error('خطأ في قاعدة البيانات', 500);
+} catch (Throwable $e) {
+    error_log('reviews/list error: ' . $e->getMessage());
+    api_error('حدث خطأ داخلي', 500);
+}

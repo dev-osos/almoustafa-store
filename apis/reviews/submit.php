@@ -27,32 +27,39 @@ if (mb_strlen($content) > 2000) {
     api_error('الرأي طويل جداً', 422);
 }
 
-$pdo = api_pdo();
+try {
+    $pdo = api_pdo();
 
-// Auto-create table if missing
-$pdo->exec("CREATE TABLE IF NOT EXISTS reviews (
-  id         BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  name       VARCHAR(100)     NOT NULL,
-  product    VARCHAR(150)     NOT NULL DEFAULT '',
-  rating     TINYINT UNSIGNED NOT NULL,
-  content    TEXT             NOT NULL,
-  visible    TINYINT(1)       NOT NULL DEFAULT 1,
-  sort_order INT              NOT NULL DEFAULT 0,
-  created_at TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  KEY idx_reviews_visible (visible),
-  KEY idx_reviews_sort    (sort_order),
-  KEY idx_reviews_created (created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS reviews (
+      id         BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      name       VARCHAR(100)     NOT NULL,
+      product    VARCHAR(150)     NOT NULL DEFAULT '',
+      rating     TINYINT UNSIGNED NOT NULL,
+      content    TEXT             NOT NULL,
+      visible    TINYINT(1)       NOT NULL DEFAULT 1,
+      sort_order INT              NOT NULL DEFAULT 0,
+      created_at TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      KEY idx_reviews_visible (visible),
+      KEY idx_reviews_sort    (sort_order),
+      KEY idx_reviews_created (created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-$stmt = $pdo->prepare("
-    INSERT INTO reviews (name, product, rating, content, visible, sort_order)
-    VALUES (:name, :product, :rating, :content, 1, 0)
-");
-$stmt->execute([
-    ':name'    => $name,
-    ':product' => $product,
-    ':rating'  => $rating,
-    ':content' => $content,
-]);
+    $stmt = $pdo->prepare("
+        INSERT INTO reviews (name, product, rating, content, visible, sort_order)
+        VALUES (:name, :product, :rating, :content, 1, 0)
+    ");
+    $stmt->execute([
+        ':name'    => $name,
+        ':product' => $product,
+        ':rating'  => $rating,
+        ':content' => $content,
+    ]);
 
-api_ok(['id' => (int) $pdo->lastInsertId()]);
+    api_ok(['id' => (int) $pdo->lastInsertId()]);
+} catch (PDOException $e) {
+    error_log('reviews/submit PDOException: ' . $e->getMessage());
+    api_error('خطأ في قاعدة البيانات، يرجى المحاولة لاحقاً', 500);
+} catch (Throwable $e) {
+    error_log('reviews/submit error: ' . $e->getMessage());
+    api_error('حدث خطأ داخلي', 500);
+}
