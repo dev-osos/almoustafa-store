@@ -633,7 +633,7 @@
           document.getElementById(flagId).textContent = c.f;
           document.getElementById(dialId).textContent = c.d;
           const phoneEl = document.getElementById(phoneInputId);
-          if (phoneEl) phoneEl.placeholder = c.d === '+966' ? '5XXXXXXXX' : 'XXXXXXXXX';
+          if (phoneEl) phoneEl.placeholder = c.d === '+20' ? '01XXXXXXXXX' : 'XXXXXXXXX';
           close();
           if (onSelect) onSelect(c);
         });
