@@ -160,12 +160,13 @@
     .alm-modal-timer .hl { color: #fed65b; font-weight: 700; }
     .alm-modal-back-link { text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.3); cursor: pointer; margin-top: 6px; }
     .alm-modal-back-link:hover { color: rgba(255,255,255,0.6); }
-    .alm-phone-row { display: flex; gap: 8px; align-items: stretch; }
+    .alm-phone-row { display: flex !important; gap: 8px; align-items: stretch; }
     .alm-cc-btn {
-      flex-shrink: 0; display: flex; align-items: center; gap: 5px; padding: 0 10px;
-      background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 12px;
-      color: #fff; font-family: 'Manrope', sans-serif; font-size: 0.82rem;
+      flex-shrink: 0 !important; display: flex !important; align-items: center; gap: 5px; padding: 0 10px !important;
+      background: rgba(255,255,255,0.06) !important; border: 1.5px solid rgba(255,255,255,0.1) !important; border-radius: 12px;
+      color: #fff !important; font-family: 'Manrope', sans-serif; font-size: 0.82rem;
       cursor: pointer; white-space: nowrap; transition: background 0.2s, border-color 0.2s; position: relative;
+      min-width: 72px; box-sizing: border-box;
     }
     .alm-cc-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(254,214,91,0.3); }
     .alm-cc-btn .flag { font-size: 1.1rem; line-height: 1; }
