@@ -2150,9 +2150,7 @@
             #cart-dropdown.open { transform: translateX(-50%) translateY(0); }
 
             /* Profile Dropdown */
-            #profile-dropdown { left: 50%; transform: translateX(-50%) translateY(-8px); width: 260px; }
-            #profile-dropdown.open { transform: translateX(-50%) translateY(0); }
-            #profile-dropdown::before { left: 50%; transform: translateX(-50%) rotate(45deg); }
+            #profile-dropdown { width: 260px; }
         }
 
         /* Tablets (481px - 768px) */
@@ -3298,9 +3296,15 @@
             const btn = document.getElementById('btn-account');
             if (!btn) return;
             const r = btn.getBoundingClientRect();
-            profileDropdown.style.top  = (r.bottom + 14) + 'px';
-            const left = r.left - profileDropdown.offsetWidth + r.width;
-            profileDropdown.style.left = Math.max(8, left) + 'px';
+            const ddW = profileDropdown.offsetWidth || 260;
+            const margin = 8;
+            const vw = window.innerWidth;
+            profileDropdown.style.top = (r.bottom + 14) + 'px';
+            // align right edge with button right edge, then clamp within viewport
+            let left = r.left - ddW + r.width;
+            left = Math.min(left, vw - ddW - margin);
+            left = Math.max(margin, left);
+            profileDropdown.style.left = left + 'px';
         }
 
         function openProfileDropdown() {
