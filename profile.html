@@ -160,26 +160,95 @@
     color: #fed65b; direction: ltr;
   }
 
-  /* ── Invite code ── */
-  .pf-invite-code {
+  /* ── Invite section (matches invitation modal in index.html) ── */
+  .pf-referral-header {
+    text-align: center;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, rgba(60,0,4,0.18) 0%, rgba(115,92,0,0.08) 100%);
+    border-radius: 16px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(115,92,0,0.2);
+  }
+  .pf-referral-label { font-size: 0.7rem; color: rgba(255,255,255,0.35); margin-bottom: 10px; }
+  .pf-referral-code {
     font-family: "Manrope", sans-serif;
-    font-size: 1.6rem; font-weight: 700;
-    color: #fed65b; letter-spacing: 0.12em;
-    text-align: center; direction: ltr;
-    padding: 14px;
-    background: rgba(254,214,91,0.07);
+    font-size: 2rem; font-weight: 800;
+    color: #fed65b; letter-spacing: 0.3em; direction: ltr;
+    margin: 8px 0 4px;
+  }
+  .pf-referral-copy-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 14px; border-radius: 20px; border: none; cursor: pointer;
+    background: rgba(254,214,91,0.12); color: #fed65b;
+    font-size: 0.72rem; font-family: "Manrope", sans-serif;
+    transition: background 0.2s;
+  }
+  .pf-referral-copy-btn:hover { background: rgba(254,214,91,0.2); }
+  .pf-referral-copy-btn .material-symbols-outlined { font-size: 14px; }
+  .pf-referral-link-row {
+    margin-top: 14px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(254,214,91,0.12);
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 8px; width: 100%;
+  }
+  .pf-referral-link-text {
+    flex: 1; min-width: 0;
+    font-size: 0.68rem; color: rgba(255,255,255,0.35);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    direction: ltr; text-align: left;
+    font-family: "Manrope", sans-serif; letter-spacing: 0.01em;
+  }
+  /* info sections */
+  .pf-info-section { margin-bottom: 24px; }
+  .pf-info-section:last-child { margin-bottom: 0; }
+  .pf-info-section-title {
+    font-family: "Amiri", serif; font-size: 1.05rem; font-weight: 700;
+    color: rgba(255,255,255,0.85); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pf-info-section-title .material-symbols-outlined { font-size: 20px; color: #fed65b; }
+  .pf-info-highlight {
+    background: rgba(254,214,91,0.08);
     border: 1px solid rgba(254,214,91,0.15);
-    border-radius: 14px; margin-bottom: 10px;
+    border-radius: 12px; padding: 16px 20px; margin-bottom: 16px;
   }
-  .pf-copy-btn {
-    width: 100%; padding: 13px;
-    background: linear-gradient(135deg, #fed65b, #f5c400);
-    color: #3c0004; border: none; border-radius: 12px;
-    font-family: "Amiri", serif; font-size: 1rem; font-weight: 700;
-    cursor: pointer; transition: opacity 0.2s;
+  .pf-info-highlight-title {
+    font-family: "Amiri", serif; font-size: 0.95rem; font-weight: 700;
+    color: #fed65b; margin-bottom: 6px;
   }
-  .pf-copy-btn:hover { opacity: 0.88; }
-  .pf-copy-hint { text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-top: 8px; min-height: 18px; }
+  .pf-info-highlight-text { font-size: 0.78rem; color: rgba(255,255,255,0.6); line-height: 1.7; }
+  /* referral users list */
+  .pf-referral-users { margin-top: 12px; }
+  .pf-referral-user-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px; margin-bottom: 8px;
+  }
+  .pf-referral-user-avatar {
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(254,214,91,0.08);
+    border: 1px solid rgba(254,214,91,0.2);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pf-referral-user-avatar .material-symbols-outlined {
+    font-size: 18px; color: rgba(254,214,91,0.55);
+    font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  }
+  .pf-referral-user-info { flex: 1; min-width: 0; }
+  .pf-referral-user-name { font-size: 0.8rem; color: rgba(255,255,255,0.8); font-weight: 600; }
+  .pf-referral-user-phone { font-size: 0.68rem; color: rgba(255,255,255,0.35); direction: ltr; text-align: right; }
+  .pf-referral-user-date { font-size: 0.64rem; color: rgba(255,255,255,0.25); margin-top: 2px; }
+  .pf-referral-empty {
+    text-align: center; padding: 24px 0;
+  }
+  .pf-referral-empty .material-symbols-outlined {
+    font-size: 36px; color: rgba(255,255,255,0.12); display: block; margin-bottom: 8px;
+  }
+  .pf-referral-empty-text { font-size: 0.8rem; color: rgba(255,255,255,0.3); }
+  .pf-referral-empty-sub { font-size: 0.7rem; color: rgba(255,255,255,0.18); margin-top: 4px; }
 
   /* ── Section header ── */
   .pf-section-title {
@@ -363,10 +432,65 @@
     <div class="pf-section-title">كود الدعوة</div>
   </div>
   <div class="pf-card">
-    <div style="padding:18px 18px 20px;">
-      <div class="pf-invite-code" id="pf-invite-code">…</div>
-      <button class="pf-copy-btn" id="pf-copy-btn">نسخ الكود</button>
-      <div class="pf-copy-hint" id="pf-copy-hint"></div>
+    <div style="padding:20px 20px 24px;">
+
+      <!-- Code display -->
+      <div class="pf-referral-header">
+        <div class="pf-referral-label">كود الدعوة الخاص بك</div>
+        <div class="pf-referral-code" id="pf-invite-code">…</div>
+        <button class="pf-referral-copy-btn" id="pf-copy-code-btn" type="button">
+          <span class="material-symbols-outlined">content_copy</span>
+          نسخ الكود
+        </button>
+        <!-- Referral link row -->
+        <div class="pf-referral-link-row">
+          <span class="material-symbols-outlined" style="font-size:16px;color:rgba(254,214,91,0.5);flex-shrink:0;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">link</span>
+          <div class="pf-referral-link-text" id="pf-referral-link-display"></div>
+          <button id="pf-copy-link-btn" type="button" class="pf-referral-copy-btn" style="flex-shrink:0;margin:0;padding:5px 10px;">
+            <span class="material-symbols-outlined" style="font-size:13px">content_copy</span>
+            نسخ الرابط
+          </button>
+        </div>
+      </div>
+
+      <!-- How it works -->
+      <div class="pf-info-section">
+        <div class="pf-info-section-title">
+          <span class="material-symbols-outlined">group_add</span>
+          كيف يعمل؟
+        </div>
+        <p style="font-size:0.85rem;color:rgba(255,255,255,0.7);line-height:1.8;margin-bottom:16px;">
+          شارك كود الدعوة مع أصدقائك وعائلتك. عند استخدامهم للكود في تسجيلهم الأول، ستحصل أنت وهم على مكافآت حصرية!
+        </p>
+      </div>
+
+      <!-- Rewards -->
+      <div class="pf-info-section">
+        <div class="pf-info-section-title">
+          <span class="material-symbols-outlined">card_giftcard</span>
+          مكافآت الدعوة
+        </div>
+        <div class="pf-info-highlight">
+          <div class="pf-info-highlight-title"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:middle;margin-left:4px;">payments</span>١٥ ج.م</div>
+          <div class="pf-info-highlight-text">رصيد في محفظتك لكل دعوة ناجحة</div>
+        </div>
+      </div>
+
+      <!-- Referred users -->
+      <div class="pf-info-section">
+        <div class="pf-info-section-title">
+          <span class="material-symbols-outlined">people</span>
+          المستخدمون الذين استخدموا الكود الخاص بك
+        </div>
+        <div class="pf-referral-users" id="pf-referral-users">
+          <div class="pf-referral-empty">
+            <span class="material-symbols-outlined">person_search</span>
+            <div class="pf-referral-empty-text">لم يستخدم أحد كود الدعوة الخاص بك بعد</div>
+            <div class="pf-referral-empty-sub">شارك الكود مع أصدقائك لبدء كسب المكافآت</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -471,7 +595,7 @@
     document.getElementById('pf-phone').textContent = s.phone || '—';
     document.getElementById('pf-segment').textContent = SEGMENT_LABELS[s.segment] || s.segment || 'لم يتم تحديد الشريحة بعد';
     document.getElementById('pf-wallet').textContent = fmtWallet(s.wallet);
-    document.getElementById('pf-invite-code').textContent = s.referral_code || s.invitationCode || '—';
+    setReferralUI(s.referral_code || s.invitationCode || '—');
     document.getElementById('pf-addr-display').textContent = buildAddress(s);
     /* restore address form */
     document.getElementById('pf-gov').value = s.governorate || '';
@@ -492,6 +616,7 @@
   setTimeout(function () { loading.style.display = 'none'; }, 400);
 
   render();
+  loadReferralUsers();
 
   /* ── Back button ── */
   document.getElementById('pf-back').addEventListener('click', function () {
@@ -499,21 +624,71 @@
     else window.location.href = 'index.html';
   });
 
-  /* ── Invite copy ── */
-  document.getElementById('pf-copy-btn').addEventListener('click', function () {
+  /* ── Referral helpers ── */
+  function buildReferralLink(code) {
+    var base = new URL('index.html', window.location.href);
+    base.searchParams.set('ref', code);
+    base.searchParams.set('signup', '1');
+    return base.href;
+  }
+
+  function setReferralUI(code) {
+    document.getElementById('pf-invite-code').textContent = code;
+    var linkEl = document.getElementById('pf-referral-link-display');
+    if (linkEl) linkEl.textContent = buildReferralLink(code);
+  }
+
+  function copyWithFeedback(text, btn, label) {
+    var orig = btn.innerHTML;
+    navigator.clipboard.writeText(text).then(function () {
+      btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px">check</span> ' + label;
+      btn.style.color = 'rgba(100,220,130,0.9)';
+      setTimeout(function () { btn.innerHTML = orig; btn.style.color = ''; }, 2200);
+    }).catch(function () {});
+  }
+
+  document.getElementById('pf-copy-code-btn').addEventListener('click', function () {
     var code = document.getElementById('pf-invite-code').textContent;
-    var hint = document.getElementById('pf-copy-hint');
-    if (navigator.clipboard && code && code !== '—') {
-      navigator.clipboard.writeText(code).then(function () {
-        hint.style.color = 'rgba(100,220,130,0.9)';
-        hint.textContent = 'تم نسخ الكود ✓';
-        setTimeout(function () { hint.textContent = ''; }, 2500);
-      }).catch(function () {
-        hint.style.color = 'rgba(255,120,120,0.85)';
-        hint.textContent = 'تعذّر النسخ تلقائياً';
-      });
-    }
+    if (code && code !== '…') copyWithFeedback(code, this, 'تم النسخ!');
   });
+
+  document.getElementById('pf-copy-link-btn').addEventListener('click', function () {
+    var link = document.getElementById('pf-referral-link-display').textContent.trim();
+    if (link) copyWithFeedback(link, this, 'تم!');
+  });
+
+  /* ── Load referral users ── */
+  function loadReferralUsers() {
+    fetch('apis/users/referral.php')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.ok && data.referral_code) {
+          setReferralUI(data.referral_code);
+          var s = getSession();
+          setSession(Object.assign({}, s, { referral_code: data.referral_code, invitationCode: data.referral_code }));
+        }
+        var listEl = document.getElementById('pf-referral-users');
+        if (!data.success || !data.referred || data.referred.length === 0) {
+          listEl.innerHTML =
+            '<div class="pf-referral-empty">' +
+              '<span class="material-symbols-outlined">person_search</span>' +
+              '<div class="pf-referral-empty-text">لم يستخدم أحد كود الدعوة الخاص بك بعد</div>' +
+              '<div class="pf-referral-empty-sub">شارك الكود مع أصدقائك لبدء كسب المكافآت</div>' +
+            '</div>';
+          return;
+        }
+        listEl.innerHTML = data.referred.map(function (user) {
+          return '<div class="pf-referral-user-item">' +
+            '<div class="pf-referral-user-avatar"><span class="material-symbols-outlined">person</span></div>' +
+            '<div class="pf-referral-user-info">' +
+              '<div class="pf-referral-user-name">' + user.name + '</div>' +
+              '<div class="pf-referral-user-phone">' + user.phone + '</div>' +
+              '<div class="pf-referral-user-date">' + new Date(user.joined_at).toLocaleDateString('ar-EG') + '</div>' +
+            '</div></div>';
+        }).join('');
+      })
+      .catch(function () {});
+  }
 
   /* ── Address autocomplete ── */
   var GOVS = [];
