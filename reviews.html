@@ -63,20 +63,23 @@
   .reveal-on-scroll.active { opacity:1; transform:translateY(0); }
 
   /* Star rating interactive */
-  .star-rating { display:flex; flex-direction:row-reverse; gap:4px; }
+  .star-rating { display:flex; flex-direction:row-reverse; gap:6px; }
   .star-rating input { display:none; }
   .star-rating label {
-    font-size:28px; color:rgba(115,92,0,0.25); cursor:pointer;
+    font-size:36px; color:rgba(253,246,240,0.30); cursor:pointer;
     font-family:'Material Symbols Outlined';
-    font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;
-    transition:color 0.15s;
+    font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+    transition:color 0.15s, transform 0.15s;
+    text-shadow: 0 0 8px rgba(0,0,0,0.4);
   }
   .star-rating label::before { content:'star'; }
   .star-rating input:checked ~ label,
   .star-rating label:hover,
   .star-rating label:hover ~ label {
     color:#fed65b;
-    font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;
+    font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24;
+    text-shadow: 0 0 12px rgba(254,214,91,0.5);
+    transform: scale(1.15);
   }
 
   /* Review card */
@@ -323,14 +326,7 @@
           <div>
             <label class="block text-[#fdf9f0]/60 text-xs font-bold mb-2 tracking-widest">المنتج</label>
             <select id="rf-product" class="review-input" style="color:#1c1c17">
-              <option value="">اختر منتجاً (اختياري)</option>
-              <option>عسل السدر الملكي</option>
-              <option>مزيج الزهور البرية</option>
-              <option>عسل المانوكا</option>
-              <option>عسل الأكاسيا</option>
-              <option>عسل الزنجبيل</option>
-              <option>عسل الغابة السوداء</option>
-              <option>منتج آخر</option>
+              <option value="">جارٍ التحميل...</option>
             </select>
           </div>
         </div>
@@ -441,6 +437,25 @@ async function loadReviews() {
   }
 }
 
+// ── Populate product dropdown from API ────────────────────────────────────────
+async function loadProductOptions() {
+  const sel = document.getElementById('rf-product');
+  try {
+    const res  = await fetch('apis/products/list.php');
+    const data = await res.json();
+    const list = data.products ?? [];
+    sel.innerHTML = '<option value="">اختر منتجاً (اختياري)</option>';
+    list.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.store_name || p.api_name;
+      opt.textContent = p.store_name || p.api_name;
+      sel.appendChild(opt);
+    });
+  } catch (_) {
+    sel.innerHTML = '<option value="">اختر منتجاً (اختياري)</option>';
+  }
+}
+
 // ── Submit form ───────────────────────────────────────────────────────────────
 function initForm() {
   const form    = document.getElementById('review-form');
@@ -504,6 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Skeleton
   const overlay = document.getElementById('loading-overlay');
   const main    = document.getElementById('main-content');
+  loadProductOptions();
   loadReviews().finally(() => {
     overlay.style.opacity = '0';
     main.classList.remove('content-hidden');
@@ -744,6 +760,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 <script src="js/auth-modal.js"></script>
 <script src="js/profile-dropdown.js"></script>
+<script src="js/nav-shared.js"></script>
 <script src="js/v_id_bootstrap.js"></script>
 <script src="js/cookie-consent.js"></script>
 <script src="js/pwa-install.js"></script>
