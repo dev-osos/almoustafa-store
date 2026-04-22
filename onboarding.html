@@ -754,8 +754,13 @@ body {
 
   // --- Apply referral code from URL (?ref=XXXXXX) ---
   (function applyRefCode() {
-    const refCode = new URLSearchParams(window.location.search).get('ref');
+    const refCode = new URLSearchParams(window.location.search).get('ref')
+                 || localStorage.getItem('alm_pending_ref');
     if (!refCode) return;
+
+    // Consume it so it doesn't persist beyond this onboarding
+    localStorage.removeItem('alm_pending_ref');
+
     const inp    = document.getElementById('invitation-code');
     const notice = document.getElementById('referral-notice');
     const icon   = document.getElementById('invitation-code-icon');

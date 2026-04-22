@@ -2838,7 +2838,29 @@
     document.addEventListener('DOMContentLoaded', () => {
         const loadingOverlay = document.getElementById('loading-overlay');
         const mainContent = document.getElementById('main-content');
-        
+
+        // Handle referral link: ?ref=CODE&signup=1
+        (function handleReferralParam() {
+            const params = new URLSearchParams(window.location.search);
+            const refCode = params.get('ref');
+            const openSignup = params.get('signup') === '1';
+            if (refCode) {
+                localStorage.setItem('alm_pending_ref', refCode);
+            }
+            if (openSignup && !getSession()?.uid) {
+                setTimeout(() => {
+                    openModal();
+                    showPanel('register-1');
+                }, 1600);
+            }
+            if (refCode || openSignup) {
+                const clean = new URL(window.location.href);
+                clean.searchParams.delete('ref');
+                clean.searchParams.delete('signup');
+                history.replaceState(null, '', clean.toString());
+            }
+        })();
+
         // Simulate loading state
         setTimeout(() => {
             loadingOverlay.style.opacity = '0';
@@ -3696,7 +3718,10 @@
         const invitationCodeDisplay = document.getElementById('invitation-code-display');
 
         function buildReferralLink(code) {
-            return new URL('onboarding.html?ref=' + encodeURIComponent(code), window.location.href).href;
+            const base = new URL('index.html', window.location.href);
+            base.searchParams.set('ref', code);
+            base.searchParams.set('signup', '1');
+            return base.href;
         }
 
         function setReferralUI(code) {
