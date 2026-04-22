@@ -160,18 +160,21 @@
     .alm-modal-timer .hl { color: #fed65b; font-weight: 700; }
     .alm-modal-back-link { text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.3); cursor: pointer; margin-top: 6px; }
     .alm-modal-back-link:hover { color: rgba(255,255,255,0.6); }
-    .alm-phone-row { display: flex !important; gap: 8px; align-items: stretch; }
+    .alm-phone-row { display: flex !important; gap: 8px; align-items: stretch; direction: ltr; }
+    .alm-phone-row .alm-modal-field-wrap { flex: 1; min-width: 0; }
     .alm-cc-btn {
-      flex-shrink: 0 !important; display: flex !important; align-items: center; gap: 5px; padding: 0 10px !important;
-      background: rgba(255,255,255,0.06) !important; border: 1.5px solid rgba(255,255,255,0.1) !important; border-radius: 12px;
-      color: #fff !important; font-family: 'Manrope', sans-serif; font-size: 0.82rem;
-      cursor: pointer; white-space: nowrap; transition: background 0.2s, border-color 0.2s; position: relative;
-      min-width: 72px; box-sizing: border-box;
+      flex: 0 0 auto !important; display: flex !important; align-items: center !important; gap: 5px; padding: 0 12px !important;
+      background: rgba(255,255,255,0.06) !important; border: 1.5px solid rgba(255,255,255,0.1) !important; border-radius: 12px !important;
+      color: #fff !important; font-family: 'Manrope', sans-serif !important; font-size: 0.82rem !important;
+      cursor: pointer !important; white-space: nowrap !important; transition: background 0.2s, border-color 0.2s; position: relative !important;
+      min-width: 80px !important; min-height: 44px !important; box-sizing: border-box !important;
+      appearance: none !important; -webkit-appearance: none !important;
+      outline: none; line-height: 1;
     }
-    .alm-cc-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(254,214,91,0.3); }
-    .alm-cc-btn .flag { font-size: 1.1rem; line-height: 1; }
-    .alm-cc-btn .dial { font-weight: 700; letter-spacing: 0.03em; direction: ltr; }
-    .alm-cc-btn .chevron { font-size: 14px; opacity: 0.5; font-family: 'Material Symbols Outlined'; font-weight: normal; }
+    .alm-cc-btn:hover { background: rgba(255,255,255,0.1) !important; border-color: rgba(254,214,91,0.3) !important; }
+    .alm-cc-btn .flag { font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
+    .alm-cc-btn .dial { font-weight: 700; letter-spacing: 0.03em; direction: ltr; color: #fff; flex-shrink: 0; }
+    .alm-cc-btn .chevron { font-size: 14px; opacity: 0.5; font-family: 'Material Symbols Outlined'; font-weight: normal; flex-shrink: 0; }
     .alm-cc-dropdown {
       position: absolute; top: calc(100% + 6px); right: 0;
       width: 260px; max-height: 240px; overflow-y: auto;
