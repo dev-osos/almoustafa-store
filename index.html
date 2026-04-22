@@ -1605,7 +1605,7 @@
             position: fixed; inset: 0;
             background: rgba(28,28,23,0.75);
             backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            z-index: 500;
+            z-index: 700;
             display: flex; align-items: center; justify-content: center;
             padding: 16px;
             opacity: 0; pointer-events: none;
@@ -3825,6 +3825,25 @@
                 }, 2000);
             }).catch(() => {
                 alert('كود الدعوة: ' + code);
+            });
+        });
+
+        document.getElementById('btn-copy-referral-link').addEventListener('click', () => {
+            const link = document.getElementById('referral-link-display').textContent.trim();
+            if (!link) return;
+            const btn = document.getElementById('btn-copy-referral-link');
+            navigator.clipboard.writeText(link).then(() => {
+                const original = btn.innerHTML;
+                btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:13px">check</span> تم النسخ!';
+                btn.style.color = '#4caf50';
+                btn.style.borderColor = 'rgba(76,175,80,0.4)';
+                setTimeout(() => {
+                    btn.innerHTML = original;
+                    btn.style.color = '';
+                    btn.style.borderColor = '';
+                }, 2200);
+            }).catch(() => {
+                alert('الرابط: ' + link);
             });
         });
 
