@@ -112,7 +112,7 @@
     '.apd-addr-btn-primary:disabled{opacity:0.45;cursor:not-allowed;transform:none;}',
     '.apd-addr-btn-secondary{flex:1;min-height:50px;border-radius:14px;font-family:"Manrope",sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;border:1px solid rgba(254,214,91,0.18);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.65);transition:background 0.2s,border-color 0.2s,color 0.2s;}',
     '.apd-addr-btn-secondary:hover{background:rgba(255,255,255,0.09);border-color:rgba(254,214,91,0.3);color:#fff;}',
-    '@media(max-width:480px){.apd-addr-modal{padding:34px 20px 24px;max-width:95vw;border-radius:24px;}.apd-addr-grid{grid-template-columns:1fr;}.apd-addr-actions{flex-direction:column;}}',
+    '@media(max-width:480px){.apd-addr-modal{padding:34px 20px 24px;max-width:95vw;border-radius:24px;}.apd-addr-actions{flex-direction:column;}}',
   ].join('');
   document.head.appendChild(style);
 
@@ -226,7 +226,6 @@
             '<textarea class="apd-addr-input" id="alm-pd-detail" rows="2" placeholder="الشارع واسم العمارة ورقم الشقة أو الدور السكني" style="min-height:unset;resize:none;"></textarea>' +
           '</div>' +
         '</div>' +
-        '<div class="apd-addr-hint">سيتم حفظ التعديل مباشرة على حسابك الحالي داخل الجلسة.</div>' +
         '<div class="apd-addr-msg" id="alm-pd-addr-msg"></div>' +
         '<div class="apd-addr-actions">' +
           '<button class="apd-addr-btn-primary" id="alm-pd-save-btn" type="button">حفظ العنوان</button>' +
