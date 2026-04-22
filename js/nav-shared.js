@@ -31,14 +31,22 @@
     /* ── Mobile menu ── */
     '#nav-mm-bd{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:399;opacity:0;pointer-events:none;transition:opacity 0.3s;}',
     '#nav-mm-bd.open{opacity:1;pointer-events:auto;}',
-    '#nav-mm{position:fixed;top:0;left:0;width:280px;height:100vh;background:rgba(253,249,240,0.98);backdrop-filter:blur(20px);z-index:400;padding:100px 24px 24px;transform:translateX(-100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:10px 0 40px rgba(0,0,0,0.1);overflow-y:auto;}',
+    '#nav-mm{position:fixed;top:0;left:0;width:280px;height:100vh;background:rgba(253,249,240,0.98);backdrop-filter:blur(20px);z-index:400;padding:100px 24px 24px;transform:translateX(-100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);box-shadow:10px 0 40px rgba(0,0,0,0.1);overflow-y:auto;display:flex;flex-direction:column;}',
     '#nav-mm.open{transform:translateX(0);}',
     '#nav-mm-cls{position:absolute;top:32px;right:24px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(60,0,4,0.2);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#3c0004;}',
-    '.nav-mm-links{display:flex;flex-direction:column;gap:0;}',
+    '.nav-mm-links{display:flex;flex-direction:column;gap:0;flex:1;}',
     '.nav-mm-a{display:flex;align-items:center;gap:14px;color:rgba(60,0,4,0.7);font-family:"Amiri",serif;font-weight:600;font-size:1.35rem;padding:20px 0;border-bottom:1px solid rgba(60,0,4,0.1);text-decoration:none;transition:color 0.2s;min-height:64px;}',
     '.nav-mm-a:hover{color:#3c0004;}',
     '.nav-mm-a.cur{color:#3c0004;font-weight:700;}',
-    '.nav-mm-a .material-symbols-outlined{font-size:26px;}'
+    '.nav-mm-a .material-symbols-outlined{font-size:26px;}',
+    /* profile / login row at bottom */
+    '#nav-mm-profile{margin-top:auto;padding-top:20px;border-top:1px solid rgba(60,0,4,0.1);}',
+    '#nav-mm-profile-btn{width:100%;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;border:none;cursor:pointer;font-family:"Amiri",serif;font-size:1.1rem;font-weight:700;transition:background 0.2s;}',
+    '#nav-mm-profile-btn.logged-in{background:rgba(60,0,4,0.08);color:#3c0004;}',
+    '#nav-mm-profile-btn.logged-in:hover{background:rgba(60,0,4,0.14);}',
+    '#nav-mm-profile-btn.logged-out{background:#3c0004;color:#fff;}',
+    '#nav-mm-profile-btn.logged-out:hover{background:#5d0e12;}',
+    '#nav-mm-profile-btn .material-symbols-outlined{font-size:24px;}'
   ].join('');
   document.head.appendChild(style);
 
@@ -58,10 +66,41 @@
       '<a href="collections.html" class="nav-mm-a' + ac('collections.html') + '"><span class="material-symbols-outlined">store</span>منتجاتنا</a>' +
       '<a href="reviews.html" class="nav-mm-a' + ac('reviews.html') + '"><span class="material-symbols-outlined">star</span>آراء العملاء</a>' +
       '<a href="about.html" class="nav-mm-a' + ac('about.html') + '"><span class="material-symbols-outlined">groups</span>من نحن</a>' +
+    '</div>' +
+    '<div id="nav-mm-profile">' +
+      '<button id="nav-mm-profile-btn" class="logged-out">' +
+        '<span class="material-symbols-outlined">person</span>' +
+        '<span id="nav-mm-profile-label">تسجيل الدخول</span>' +
+      '</button>' +
     '</div>';
 
   document.body.appendChild(mmBd);
   document.body.appendChild(mmEl);
+
+  /* ─── Profile button in mobile menu ───────────────────────── */
+  function updateMMProfile() {
+    var s = getSession();
+    var btn = document.getElementById('nav-mm-profile-btn');
+    var label = document.getElementById('nav-mm-profile-label');
+    var icon = btn.querySelector('.material-symbols-outlined');
+    if (s) {
+      btn.className = 'logged-in';
+      icon.textContent = 'account_circle';
+      icon.style.fontVariationSettings = "'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24";
+      label.textContent = s.name || 'الملف الشخصي';
+      btn.onclick = function () { window.location.href = 'profile.html'; };
+    } else {
+      btn.className = 'logged-out';
+      icon.textContent = 'person';
+      icon.style.fontVariationSettings = '';
+      label.textContent = 'تسجيل الدخول';
+      btn.onclick = function () {
+        closeMM();
+        if (window.almAuth) window.almAuth.open('login');
+        else window.location.href = 'index.html';
+      };
+    }
+  }
 
   /* ─── Cart badge ───────────────────────────────────────────── */
   function updateCartBadge() {
@@ -185,5 +224,8 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeMM();
   });
+
+  updateMMProfile();
+  document.addEventListener('alm:session-changed', updateMMProfile);
 
 })();
