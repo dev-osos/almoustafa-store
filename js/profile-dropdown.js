@@ -52,7 +52,7 @@
   ].join('');
   document.head.appendChild(style);
 
-  /* ─── Dropdown HTML ────────────────────────────────────────── */
+  /* ─── Dropdown HTML ───────────────────────────── */
   var dd = document.createElement('div');
   dd.id = 'alm-profile-dd';
   dd.innerHTML =
