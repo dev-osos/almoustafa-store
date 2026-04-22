@@ -7,6 +7,14 @@
 (function () {
   'use strict';
 
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  function init() {
+
   /* ─── Session ─────────────────────────────────────────────── */
   function getSession() {
     try { return JSON.parse(localStorage.getItem('alm_session')); } catch { return null; }
@@ -203,8 +211,6 @@
   updateCartBadge();
 
   /* ─── Mobile menu ──────────────────────────────────────────── */
-  var menuBtn = document.getElementById('btn-mobile-menu');
-
   function openMM() {
     mmEl.classList.add('open');
     mmBd.classList.add('open');
@@ -216,11 +222,22 @@
     document.body.style.overflow = '';
   }
 
-  if (menuBtn) {
-    menuBtn.addEventListener('click', openMM);
-  }
+  /* Event delegation — works regardless of load order or DOM timing */
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (t && t.closest && t.closest('#btn-mobile-menu')) {
+      e.preventDefault();
+      e.stopPropagation();
+      openMM();
+    }
+  }, true);
+
   mmBd.addEventListener('click', closeMM);
   document.getElementById('nav-mm-cls').addEventListener('click', closeMM);
+  /* Close when tapping any link inside the mobile menu */
+  mmEl.querySelectorAll('.nav-mm-a').forEach(function (a) {
+    a.addEventListener('click', closeMM);
+  });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeMM();
   });
@@ -228,4 +245,5 @@
   updateMMProfile();
   document.addEventListener('alm:session-changed', updateMMProfile);
 
+  } /* end init */
 })();
