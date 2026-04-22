@@ -275,10 +275,17 @@
       e.stopPropagation();
       if (getSession()) {
         dd.classList.contains('open') ? apdClose() : apdOpen();
-      } else if (window.almAuth) {
-        window.almAuth.open('login');
       } else {
-        window.location.href = 'index.html#login';
+        var isIndex = window.location.pathname === '/' ||
+                      window.location.pathname.endsWith('index.html') ||
+                      window.location.pathname.endsWith('/');
+        if (isIndex && window.almAuth) {
+          window.almAuth.open('login');
+        } else if (isIndex && typeof openModal === 'function') {
+          showPanel('login'); openModal();
+        } else {
+          window.location.href = 'index.html#login';
+        }
       }
     });
   }
