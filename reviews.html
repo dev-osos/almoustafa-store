@@ -203,7 +203,10 @@
     <!-- Overall stats -->
     <div class="flex items-center justify-center gap-8 flex-wrap">
       <div class="text-center">
-        <div class="font-headline text-6xl text-primary font-bold" id="stat-avg">—</div>
+        <div class="font-headline font-bold text-primary flex items-baseline justify-center gap-0.5" id="stat-avg">
+          <span id="stat-avg-int" style="font-size:4.5rem;line-height:1;">—</span>
+          <span id="stat-avg-dec" style="font-size:2rem;line-height:1;opacity:0.55;letter-spacing:-0.02em;"></span>
+        </div>
         <div class="flex justify-center gap-1 my-2" id="stat-stars">
           <span class="material-symbols-outlined text-on-surface-variant/30" style="font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
           <span class="material-symbols-outlined text-on-surface-variant/30" style="font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;">star</span>
@@ -462,7 +465,14 @@ async function loadReviews() {
 
     // Stats
     const avgVal = stats.total > 0 ? stats.avg_rating.toFixed(1) : '—';
-    document.getElementById('stat-avg').textContent   = stats.total > 0 ? toArabicDigits(avgVal) : '—';
+    if (stats.total > 0) {
+      const [intPart, decPart] = avgVal.split('.');
+      document.getElementById('stat-avg-int').textContent = toArabicDigits(intPart);
+      document.getElementById('stat-avg-dec').textContent = '.' + toArabicDigits(decPart);
+    } else {
+      document.getElementById('stat-avg-int').textContent = '—';
+      document.getElementById('stat-avg-dec').textContent = '';
+    }
     document.getElementById('stat-total').textContent = stats.total > 0 ? '+' + toArabicDigits(stats.total) : '—';
     document.getElementById('stat-sat').textContent   = stats.total > 0 ? toArabicDigits(stats.satisfaction) + '٪' : '—';
 
