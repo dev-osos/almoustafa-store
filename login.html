@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<script src="js/no-double-tap-zoom.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>تسجيل الدخول | المصطفى</title>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#3c0004"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="المصطفى"/>
+<link rel="apple-touch-icon" href="logo.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Manrope:wght@200..800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100dvh;
+    background: #1a0002;
+    font-family: 'Manrope', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 16px 40px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(254,214,91,0.18) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 40% at 80% 110%, rgba(60,0,4,0.6) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-back {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+    z-index: 10;
+  }
+  .page-back:hover { background: rgba(255,255,255,0.14); color: #fff; }
+  .page-back .material-symbols-outlined { font-size: 20px; }
+
+  .login-card {
+    position: relative;
+    z-index: 1;
+    width: 100%; max-width: 420px;
+    background: rgba(60,0,4,0.72);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 28px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.55),
+                inset 0 1px 0 rgba(255,255,255,0.12);
+    padding: 44px 38px 40px;
+    overflow: hidden;
+  }
+  .login-card::before {
+    content: '';
+    position: absolute; top: -70px; left: 50%;
+    transform: translateX(-50%);
+    width: 280px; height: 200px;
+    background: radial-gradient(ellipse, rgba(254,214,91,0.22) 0%, transparent 68%);
+    pointer-events: none;
+  }
+  .login-card::after {
+    content: '';
+    position: absolute; bottom: -50px; right: -50px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(254,214,91,0.08) 0%, transparent 65%);
+    border-radius: 50%; pointer-events: none;
+  }
+  .login-card.compact .logo-area { display: none; }
+  .login-card.compact .success-icon { width: 56px; height: 56px; margin-bottom: 14px; }
+  .login-card.compact .success-icon span { font-size: 28px; }
+
+  .logo-area {
+    display: flex; flex-direction: column; align-items: center;
+    margin-bottom: 28px; position: relative; z-index: 1;
+  }
+  .logo-ring {
+    width: 76px; height: 76px; border-radius: 50%;
+    border: 2px solid rgba(254,214,91,0.32);
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(254,214,91,0.07);
+    margin-bottom: 12px;
+    box-shadow: 0 0 28px rgba(254,214,91,0.12);
+  }
+  .logo-ring img { width: 54px; height: 54px; object-fit: contain; border-radius: 50%; }
+  .logo-area h1 { font-family: 'Amiri', serif; color: #fff; font-size: 1.5rem; font-weight: 700; }
+  .logo-area p { color: rgba(255,255,255,0.4); font-size: 0.78rem; margin-top: 4px; }
+  .gold-divider {
+    width: 44px; height: 2px;
+    background: linear-gradient(90deg, transparent, #fed65b, transparent);
+    border-radius: 2px; margin: 9px auto 0;
+  }
+
+  .tabs {
+    display: flex; background: rgba(255,255,255,0.06);
+    border-radius: 12px; padding: 4px; margin-bottom: 26px;
+    position: relative; z-index: 1;
+  }
+  .tab {
+    flex: 1; text-align: center; padding: 9px 0;
+    font-family: 'Amiri', serif; font-size: 0.88rem; font-weight: 700;
+    color: rgba(255,255,255,0.35); border-radius: 9px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: rgba(254,214,91,0.15); color: #fed65b;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+
+  .panel { display: none; position: relative; z-index: 1; }
+  .panel.active { display: block; animation: fadeIn 0.2s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .field { margin-bottom: 15px; }
+  .field label {
+    display: block; font-size: 0.73rem; font-weight: 600;
+    color: rgba(255,255,255,0.4); margin-bottom: 7px; letter-spacing: 0.05em;
+  }
+  .field-wrap { position: relative; }
+  .field input {
+    width: 100%;
+    padding: 13px 16px 13px 44px;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-family: 'Manrope', sans-serif; font-size: 0.87rem;
+    outline: none; transition: border-color 0.2s, background 0.2s;
+  }
+  .field input:focus {
+    border-color: rgba(254,214,91,0.5);
+    background: rgba(255,255,255,0.09);
+  }
+  .field input::placeholder { color: rgba(255,255,255,0.22); }
+  .field-icon {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,0.28); font-size: 19px; pointer-events: none;
+    font-family: 'Material Symbols Outlined'; font-weight: normal;
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  }
+
+  .btn-gold {
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, #fed65b 0%, #f5c400 100%);
+    color: #3c0004; border: none; border-radius: 12px;
+    font-family: 'Amiri', serif; font-size: 1rem; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.04em; margin-top: 6px;
+    box-shadow: 0 4px 20px rgba(254,214,91,0.28);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(254,214,91,0.4); }
+  .btn-gold:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+  .btn-outline {
+    width: 100%; padding: 13px; background: transparent;
+    color: rgba(255,255,255,0.5);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    font-family: 'Amiri', serif; font-size: 0.92rem; font-weight: 700;
+    cursor: pointer; margin-top: 8px; transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-outline:hover { border-color: rgba(255,255,255,0.25); color: #fff; }
+
+  .link-forgot {
+    text-align: center; margin-top: 14px;
+    font-size: 0.77rem; color: rgba(254,214,91,0.6); cursor: pointer;
+  }
+  .link-forgot:hover { color: #fed65b; }
+
+  .inline-msg {
+    text-align: center; margin-top: 8px;
+    font-size: 0.75rem; color: rgba(255,255,255,0.4);
+    display: none;
+  }
+  .separator { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 16px 0; }
+  .footer-note {
+    text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.3);
+  }
+  .footer-note span { color: #fed65b; font-weight: 700; cursor: pointer; }
+  .footer-note span:hover { text-decoration: underline; }
+
+  .otp-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; }
+  .otp-box {
+    width: 56px; height: 60px;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 12px; text-align: center;
+    font-family: 'Manrope', sans-serif;
+    font-size: 1.4rem; font-weight: 700; color: #fed65b;
+    outline: none; caret-color: #fed65b;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .otp-box:focus { border-color: rgba(254,214,91,0.55); background: rgba(254,214,91,0.08); }
+
+  .otp-hint { text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-bottom: 18px; line-height: 1.5; }
+  .otp-hint .hl { color: rgba(254,214,91,0.75); }
+  .timer { text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-bottom: 6px; }
+  .timer .hl { color: #fed65b; font-weight: 700; }
+  .back-link { text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.3); cursor: pointer; margin-top: 6px; }
+  .back-link:hover { color: rgba(255,255,255,0.6); }
+
+  /* Phone + country code */
+  .phone-row { display: flex; gap: 8px; align-items: stretch; }
+  .phone-row .field-wrap { flex: 1; }
+  .phone-row .field-wrap input { border-radius: 12px; }
+
+  .cc-btn {
+    flex-shrink: 0;
+    display: flex; align-items: center; gap: 5px;
+    padding: 0 10px;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    color: #fff; font-family: 'Manrope', sans-serif; font-size: 0.82rem;
+    cursor: pointer; white-space: nowrap;
+    transition: background 0.2s, border-color 0.2s;
+    position: relative;
+  }
+  .cc-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(254,214,91,0.3); }
+  .cc-btn .flag { font-size: 1.1rem; line-height: 1; }
+  .cc-btn .dial { font-weight: 700; letter-spacing: 0.03em; direction: ltr; }
+  .cc-btn .chevron {
+    font-size: 14px; opacity: 0.5;
+    font-family: 'Material Symbols Outlined'; font-weight: normal;
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  }
+  .cc-dropdown {
+    position: absolute; top: calc(100% + 6px); right: 0;
+    width: 260px; max-height: 240px; overflow-y: auto;
+    background: rgba(22,10,3,0.98);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+    z-index: 400;
+    display: none;
+    direction: rtl;
+  }
+  .cc-dropdown.open { display: block; }
+  .cc-search {
+    padding: 10px 12px 6px;
+    position: sticky; top: 0;
+    background: rgba(22,10,3,0.98);
+  }
+  .cc-search input {
+    width: 100%; padding: 7px 10px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; color: #fff;
+    font-size: 0.78rem; font-family: 'Manrope', sans-serif;
+    outline: none; direction: rtl;
+  }
+  .cc-search input::placeholder { color: rgba(255,255,255,0.3); }
+  .cc-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; cursor: pointer;
+    font-size: 0.8rem; color: rgba(255,255,255,0.8);
+    transition: background 0.15s;
+  }
+  .cc-item:hover, .cc-item.selected { background: rgba(254,214,91,0.1); color: #fed65b; }
+  .cc-item .cc-flag { font-size: 1.1rem; flex-shrink: 0; }
+  .cc-item .cc-name { flex: 1; }
+  .cc-item .cc-dial { font-weight: 700; direction: ltr; opacity: 0.7; font-size: 0.75rem; }
+
+  .phone-exists-msg {
+    display: none; align-items: center; gap: 6px;
+    margin-top: 7px; padding: 8px 11px;
+    background: rgba(255,80,80,0.12);
+    border: 1px solid rgba(255,80,80,0.25);
+    border-radius: 10px;
+    font-size: 0.76rem; color: rgba(255,160,160,0.95);
+    line-height: 1.45;
+  }
+  .phone-exists-msg.show { display: flex; }
+  .phone-exists-msg .ms {
+    font-size: 16px; flex-shrink: 0; color: rgba(255,100,100,0.9);
+    font-family: 'Material Symbols Outlined'; font-weight: normal;
+  }
+  .phone-exists-msg span.goto { color: #fed65b; cursor: pointer; font-weight: 700; text-decoration: underline; white-space: nowrap; }
+  #reg-phone.exists { border-color: rgba(255,80,80,0.5) !important; }
+
+  .success-icon {
+    width: 64px; height: 64px;
+    background: rgba(254,214,91,0.12);
+    border: 2px solid rgba(254,214,91,0.4);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+  }
+  .success-icon span {
+    color: #fed65b; font-size: 32px;
+    font-family: 'Material Symbols Outlined'; font-weight: normal;
+    font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  }
+
+  @media (max-width: 480px) {
+    .login-card { padding: 32px 20px 28px; }
+  }
+</style>
+</head>
+<body>
+
+<a class="page-back" href="index.html" id="btn-back" aria-label="رجوع">
+  <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+
+<div class="login-card" id="login-card">
+
+  <div class="logo-area" id="logo-area">
+    <div class="logo-ring">
+      <img src="logo.png" alt="شعار المصطفى"/>
+    </div>
+    <h1>المصطفى</h1>
+    <p>خبراء العسل الصافي</p>
+    <div class="gold-divider"></div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-tab="login">تسجيل الدخول</div>
+    <div class="tab" data-tab="register">إنشاء حساب جديد</div>
+  </div>
+
+  <!-- LOGIN PANEL -->
+  <div class="panel active" id="panel-login">
+    <div class="field">
+      <label for="login-phone">رقم الهاتف</label>
+      <div class="phone-row">
+        <button type="button" class="cc-btn" id="login-cc-btn" aria-haspopup="listbox" aria-expanded="false">
+          <span class="flag" id="login-cc-flag">🇸🇦</span>
+          <span class="dial" id="login-cc-dial">+966</span>
+          <span class="chevron">expand_more</span>
+          <div class="cc-dropdown" id="login-cc-dropdown" role="listbox">
+            <div class="cc-search">
+              <input type="text" id="login-cc-search" placeholder="ابحث عن دولة..." autocomplete="off"/>
+            </div>
+            <div id="login-cc-list"></div>
+          </div>
+        </button>
+        <div class="field-wrap">
+          <span class="field-icon">phone_iphone</span>
+          <input id="login-phone" type="tel" placeholder="5XXXXXXXX" autocomplete="tel" dir="ltr"/>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label for="login-password">كلمة المرور</label>
+      <div class="field-wrap">
+        <span class="field-icon">lock</span>
+        <input id="login-password" type="password" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+    </div>
+    <button class="btn-gold" id="btn-login-submit">دخول</button>
+    <div class="link-forgot" id="btn-forgot">نسيت كلمة المرور؟</div>
+    <hr class="separator"/>
+    <div class="footer-note">ليس لديك حساب؟ <span id="btn-go-register">إنشاء حساب جديد</span></div>
+  </div>
+
+  <!-- FORGOT PASSWORD PANEL -->
+  <div class="panel" id="panel-forgot">
+    <div id="forgot-step-1">
+      <div style="text-align:center;margin-bottom:20px;position:relative;z-index:1;">
+        <div style="font-family:'Amiri',serif;color:#fff;font-size:1.1rem;font-weight:700;margin-bottom:6px;">استعادة كلمة المرور</div>
+        <div style="font-size:0.75rem;color:rgba(255,255,255,0.35);line-height:1.5;">أدخل رقم هاتفك لإرسال رمز التحقق</div>
+      </div>
+      <div class="field">
+        <label for="forgot-phone">رقم الهاتف</label>
+        <div class="phone-row">
+          <button type="button" class="cc-btn" id="forgot-cc-btn" aria-haspopup="listbox" aria-expanded="false">
+            <span class="flag" id="forgot-cc-flag">🇸🇦</span>
+            <span class="dial" id="forgot-cc-dial">+966</span>
+            <span class="chevron">expand_more</span>
+            <div class="cc-dropdown" id="forgot-cc-dropdown" role="listbox">
+              <div class="cc-search">
+                <input type="text" id="forgot-cc-search" placeholder="ابحث عن دولة..." autocomplete="off"/>
+              </div>
+              <div id="forgot-cc-list"></div>
+            </div>
+          </button>
+          <div class="field-wrap">
+            <span class="field-icon">phone_iphone</span>
+            <input id="forgot-phone" type="tel" placeholder="5XXXXXXXX" autocomplete="tel" dir="ltr"/>
+          </div>
+        </div>
+        <div id="forgot-phone-hint" style="font-size:0.72rem;margin-top:5px;min-height:16px;"></div>
+      </div>
+      <button class="btn-gold" id="btn-send-forgot-otp" disabled style="opacity:0.45;cursor:not-allowed;">إرسال رمز تغيير كلمة السر</button>
+    </div>
+    <div id="forgot-step-2" style="display:none;">
+      <div class="otp-hint">
+        تم إرسال رمز التحقق إلى<br/>
+        <span class="hl" id="forgot-otp-phone-display"></span>
+      </div>
+      <div class="otp-row" id="forgot-otp-row">
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="الرقم الأول"/>
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="الرقم الثاني"/>
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="الرقم الثالث"/>
+        <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="الرقم الرابع"/>
+      </div>
+      <div class="timer">انتهاء الرمز خلال <span class="hl" id="forgot-otp-timer">1:30</span></div>
+      <button class="btn-gold" id="btn-verify-forgot-otp" style="margin-top:14px;">التحقق والمتابعة</button>
+      <button class="btn-outline" id="btn-resend-forgot-otp">إعادة إرسال الرمز</button>
+    </div>
+    <hr class="separator" style="margin-top:18px;"/>
+    <div class="back-link" id="btn-back-to-login">
+      <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;margin-left:4px;font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;">arrow_forward</span>
+      العودة لتسجيل الدخول
+    </div>
+  </div>
+
+  <!-- NEW PASSWORD PANEL -->
+  <div class="panel" id="panel-new-password">
+    <div style="text-align:center;margin-bottom:22px;position:relative;z-index:1;">
+      <div style="font-family:'Amiri',serif;color:#fff;font-size:1.1rem;font-weight:700;margin-bottom:6px;">تعيين كلمة مرور جديدة</div>
+      <div style="font-size:0.75rem;color:rgba(255,255,255,0.35);line-height:1.5;">اختر كلمة مرور جديدة لحسابك</div>
+    </div>
+    <div class="field">
+      <label for="new-password">كلمة المرور الجديدة</label>
+      <div class="field-wrap">
+        <span class="field-icon">lock</span>
+        <input id="new-password" type="password" placeholder="••••••••" autocomplete="new-password"/>
+      </div>
+    </div>
+    <div class="field">
+      <label for="confirm-password">تأكيد كلمة المرور</label>
+      <div class="field-wrap">
+        <span class="field-icon">lock_reset</span>
+        <input id="confirm-password" type="password" placeholder="••••••••" autocomplete="new-password"/>
+      </div>
+    </div>
+    <div class="inline-msg" id="msg-password-mismatch" style="color:rgba(255,120,120,0.8);">كلمتا المرور غير متطابقتين</div>
+    <button class="btn-gold" id="btn-save-new-password">حفظ كلمة المرور الجديدة</button>
+  </div>
+
+  <!-- REGISTER STEP 1 PANEL -->
+  <div class="panel" id="panel-register-1">
+    <div class="field">
+      <label for="reg-name">الاسم الكامل</label>
+      <div class="field-wrap">
+        <span class="field-icon">person</span>
+        <input id="reg-name" type="text" placeholder="أدخل اسمك" autocomplete="name"/>
+      </div>
+    </div>
+    <div class="field">
+      <label for="reg-phone">رقم الهاتف</label>
+      <div class="phone-row">
+        <button type="button" class="cc-btn" id="cc-btn" aria-haspopup="listbox" aria-expanded="false">
+          <span class="flag" id="cc-flag">🇸🇦</span>
+          <span class="dial" id="cc-dial">+966</span>
+          <span class="chevron">expand_more</span>
+          <div class="cc-dropdown" id="cc-dropdown" role="listbox">
+            <div class="cc-search">
+              <input type="text" id="cc-search-input" placeholder="ابحث عن دولة..." autocomplete="off"/>
+            </div>
+            <div id="cc-list"></div>
+          </div>
+        </button>
+        <div class="field-wrap">
+          <span class="field-icon">phone_iphone</span>
+          <input id="reg-phone" type="tel" placeholder="5XXXXXXXX" autocomplete="tel" dir="ltr"/>
+        </div>
+      </div>
+      <div class="phone-exists-msg" id="phone-exists-msg">
+        <span class="ms">warning</span>
+        <span>هذا الرقم مسجّل مسبقاً. <span class="goto" id="phone-exists-goto">تسجيل الدخول</span></span>
+      </div>
+    </div>
+    <div class="field">
+      <label for="reg-password">كلمة المرور</label>
+      <div class="field-wrap">
+        <span class="field-icon">lock</span>
+        <input id="reg-password" type="password" placeholder="••••••••" autocomplete="new-password"/>
+      </div>
+    </div>
+    <button class="btn-gold" id="btn-send-otp">إرسال كود التأكيد</button>
+    <hr class="separator"/>
+    <div class="footer-note">لديك حساب؟ <span id="btn-go-login">تسجيل الدخول</span></div>
+  </div>
+
+  <!-- REGISTER STEP 2 — OTP PANEL -->
+  <div class="panel" id="panel-register-2">
+    <div class="otp-hint">
+      تم إرسال كود مكوّن من 4 أرقام إلى<br/>
+      <span class="hl" id="otp-phone-display"></span>
+    </div>
+    <div class="otp-row" id="otp-row">
+      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="الرقم الأول"/>
+      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="الرقم الثاني"/>
+      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="الرقم الثالث"/>
+      <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="الرقم الرابع"/>
+    </div>
+    <div class="timer">انتهاء الكود خلال <span class="hl" id="otp-timer">10:00</span></div>
+    <button class="btn-gold" id="btn-verify-otp" style="margin-top:14px;">تأكيد الكود</button>
+    <button class="btn-outline" id="btn-resend-otp">إعادة إرسال الكود</button>
+    <div class="back-link" id="btn-back-to-reg1">
+      <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;margin-left:4px;font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;">arrow_forward</span>
+      تعديل رقم الهاتف
+    </div>
+  </div>
+
+  <!-- SUCCESS PANEL -->
+  <div class="panel" id="panel-success">
+    <div style="text-align:center;">
+      <div class="success-icon">
+        <span>check_circle</span>
+      </div>
+      <div style="font-family:'Amiri',serif;color:#fff;font-size:1.3rem;font-weight:700;margin-bottom:8px;">
+        مرحباً بك في متجر المصطفى!
+      </div>
+      <div id="success-name-line" style="font-size:0.82rem;color:rgba(255,255,255,0.4);margin-bottom:24px;"></div>
+    </div>
+    <button class="btn-gold" id="btn-success-close">متابعة التسوق</button>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  function getSession() {
+    try { return JSON.parse(localStorage.getItem('alm_session')); } catch { return null; }
+  }
+  function setSession(data) {
+    localStorage.setItem('alm_session', JSON.stringify(data));
+  }
+
+  // If already logged in, go back
+  if (getSession()) {
+    window.location.replace('index.html');
+    return;
+  }
+
+  // Determine return URL (from query param or referrer)
+  const params = new URLSearchParams(location.search);
+  const returnUrl = params.get('return') || 'index.html';
+
+  function goBack() {
+    window.location.href = returnUrl;
+  }
+
+  document.getElementById('btn-back').href = returnUrl;
+
+  // --- Panel switcher ---
+  function showPanel(name) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('panel-' + name);
+    if (panel) panel.classList.add('active');
+
+    const tabsEl = document.getElementById('tabs');
+    const loginTab = tabsEl.querySelector('[data-tab="login"]');
+    const registerTab = tabsEl.querySelector('[data-tab="register"]');
+    loginTab.classList.toggle('active', name === 'login');
+    registerTab.classList.toggle('active', name === 'register-1' || name === 'register-2');
+    tabsEl.style.display = (name === 'register-2' || name === 'success' || name === 'forgot' || name === 'new-password') ? 'none' : 'flex';
+    const card = document.getElementById('login-card');
+    card.classList.toggle('compact', name === 'success' || name === 'new-password');
+  }
+
+  // Auto tab from query param
+  if (params.get('tab') === 'register') showPanel('register-1');
+
+  document.getElementById('tabs').addEventListener('click', (e) => {
+    const tab = e.target.closest('[data-tab]');
+    if (!tab) return;
+    showPanel(tab.dataset.tab === 'login' ? 'login' : 'register-1');
+  });
+
+  document.getElementById('btn-go-register').addEventListener('click', () => showPanel('register-1'));
+  document.getElementById('btn-go-login').addEventListener('click', () => showPanel('login'));
+  document.getElementById('btn-back-to-login').addEventListener('click', () => showPanel('login'));
+  document.getElementById('btn-success-close').addEventListener('click', goBack);
+
+  // --- Countries ---
+  const COUNTRIES = [
+    {n:'مصر',           f:'🇪🇬', d:'+20'}, {n:'السعودية',    f:'🇸🇦', d:'+966'},
+    {n:'الإمارات',   f:'🇦🇪', d:'+971'}, {n:'الكويت',        f:'🇰🇼', d:'+965'},
+    {n:'قطر',        f:'🇶🇦', d:'+974'}, {n:'البحرين',       f:'🇧🇭', d:'+973'},
+    {n:'عُمان',      f:'🇴🇲', d:'+968'}, {n:'الأردن',        f:'🇯🇴', d:'+962'},
+    {n:'لبنان',      f:'🇱🇧', d:'+961'}, {n:'العراق',        f:'🇮🇶', d:'+964'},
+    {n:'سوريا',      f:'🇸🇾', d:'+963'}, {n:'اليمن',         f:'🇾🇪', d:'+967'},
+    {n:'ليبيا',      f:'🇱🇾', d:'+218'}, {n:'تونس',          f:'🇹🇳', d:'+216'},
+    {n:'الجزائر',    f:'🇩🇿', d:'+213'}, {n:'المغرب',        f:'🇲🇦', d:'+212'},
+    {n:'السودان',    f:'🇸🇩', d:'+249'}, {n:'موريتانيا',     f:'🇲🇷', d:'+222'},
+    {n:'الصومال',    f:'🇸🇴', d:'+252'}, {n:'جيبوتي',        f:'🇩🇯', d:'+253'},
+    {n:'تركيا',      f:'🇹🇷', d:'+90'},  {n:'إيران',         f:'🇮🇷', d:'+98'},
+    {n:'باكستان',    f:'🇵🇰', d:'+92'},  {n:'الهند',         f:'🇮🇳', d:'+91'},
+    {n:'بنغلاديش',   f:'🇧🇩', d:'+880'}, {n:'إندونيسيا',     f:'🇮🇩', d:'+62'},
+    {n:'ماليزيا',    f:'🇲🇾', d:'+60'},  {n:'الفلبين',       f:'🇵🇭', d:'+63'},
+    {n:'المملكة المتحدة',f:'🇬🇧',d:'+44'},{n:'ألمانيا',     f:'🇩🇪', d:'+49'},
+    {n:'فرنسا',      f:'🇫🇷', d:'+33'},  {n:'إيطاليا',       f:'🇮🇹', d:'+39'},
+    {n:'إسبانيا',    f:'🇪🇸', d:'+34'},  {n:'هولندا',        f:'🇳🇱', d:'+31'},
+    {n:'السويد',     f:'🇸🇪', d:'+46'},  {n:'النرويج',       f:'🇳🇴', d:'+47'},
+    {n:'الدنمارك',   f:'🇩🇰', d:'+45'},  {n:'كندا',          f:'🇨🇦', d:'+1'},
+    {n:'الولايات المتحدة',f:'🇺🇸',d:'+1'},{n:'أستراليا',     f:'🇦🇺', d:'+61'},
+    {n:'نيوزيلندا',  f:'🇳🇿', d:'+64'},  {n:'جنوب أفريقيا', f:'🇿🇦', d:'+27'},
+    {n:'نيجيريا',    f:'🇳🇬', d:'+234'}, {n:'كينيا',         f:'🇰🇪', d:'+254'},
+    {n:'إثيوبيا',    f:'🇪🇹', d:'+251'}, {n:'غانا',          f:'🇬🇭', d:'+233'},
+  ];
+
+  function makeCcPicker({ btnId, dropdownId, searchId, listId, flagId, dialId, phoneInputId, onSelect }) {
+    let selected = COUNTRIES[0];
+
+    function build(filter) {
+      const list = document.getElementById(listId);
+      list.innerHTML = '';
+      const q = (filter || '').trim();
+      const filtered = q ? COUNTRIES.filter(c => c.n.includes(q) || c.d.includes(q)) : COUNTRIES;
+      filtered.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'cc-item' + (c === selected ? ' selected' : '');
+        div.setAttribute('role', 'option');
+        div.innerHTML = `<span class="cc-flag">${c.f}</span><span class="cc-name">${c.n}</span><span class="cc-dial">${c.d}</span>`;
+        div.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          selected = c;
+          document.getElementById(flagId).textContent = c.f;
+          document.getElementById(dialId).textContent = c.d;
+          const phoneEl = document.getElementById(phoneInputId);
+          if (phoneEl) phoneEl.placeholder = c.d === '+966' ? '5XXXXXXXX' : 'XXXXXXXXX';
+          close();
+          if (onSelect) onSelect(c);
+        });
+        list.appendChild(div);
+      });
+    }
+
+    function open() {
+      document.getElementById(dropdownId).classList.add('open');
+      document.getElementById(btnId).setAttribute('aria-expanded', 'true');
+      document.getElementById(searchId).value = '';
+      build('');
+      setTimeout(() => document.getElementById(searchId).focus(), 50);
+    }
+    function close() {
+      document.getElementById(dropdownId).classList.remove('open');
+      document.getElementById(btnId).setAttribute('aria-expanded', 'false');
+    }
+
+    document.getElementById(btnId).addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById(dropdownId).classList.contains('open') ? close() : open();
+    });
+    document.getElementById(searchId).addEventListener('input', (e) => build(e.target.value));
+
+    build('');
+    return {
+      getPhone(inputId) {
+        const raw = document.getElementById(inputId).value.trim().replace(/[\s\-().]+/g, '');
+        return selected.d + raw.replace(/^0+/, '');
+      }
+    };
+  }
+
+  const regPicker    = makeCcPicker({ btnId:'cc-btn',        dropdownId:'cc-dropdown',        searchId:'cc-search-input', listId:'cc-list',        flagId:'cc-flag',        dialId:'cc-dial',        phoneInputId:'reg-phone' });
+  const forgotPicker = makeCcPicker({ btnId:'forgot-cc-btn', dropdownId:'forgot-cc-dropdown', searchId:'forgot-cc-search',listId:'forgot-cc-list', flagId:'forgot-cc-flag', dialId:'forgot-cc-dial', phoneInputId:'forgot-phone',
+    onSelect() { document.getElementById('forgot-phone').dispatchEvent(new Event('input')); }
+  });
+  const loginPicker  = makeCcPicker({ btnId:'login-cc-btn',  dropdownId:'login-cc-dropdown',  searchId:'login-cc-search', listId:'login-cc-list',  flagId:'login-cc-flag',  dialId:'login-cc-dial',  phoneInputId:'login-phone' });
+
+  // Close all cc dropdowns on outside click
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.cc-dropdown.open').forEach(d => d.classList.remove('open'));
+    document.querySelectorAll('.cc-btn[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded','false'));
+  });
+
+  function getRegPhone()    { return regPicker.getPhone('reg-phone'); }
+  function getLoginPhone()  { return loginPicker.getPhone('login-phone'); }
+  function getForgotPhone() { return forgotPicker.getPhone('forgot-phone'); }
+
+  // --- Phone exists check ---
+  let phoneCheckTimer = null;
+  let phoneIsRegistered = false;
+  function showPhoneExists(show) {
+    phoneIsRegistered = show;
+    document.getElementById('phone-exists-msg').classList.toggle('show', show);
+    document.getElementById('reg-phone').classList.toggle('exists', show);
+    document.getElementById('btn-send-otp').disabled = show;
+  }
+  async function checkPhoneExists() {
+    const phone = getRegPhone();
+    const local = document.getElementById('reg-phone').value.trim().replace(/\D/g, '');
+    if (local.length < 7) { showPhoneExists(false); return; }
+    try {
+      const res  = await fetch('apis/users/check_phone.php?phone=' + encodeURIComponent(phone));
+      const data = await res.json();
+      showPhoneExists(!!data.exists);
+    } catch { showPhoneExists(false); }
+  }
+  document.getElementById('reg-phone').addEventListener('input', () => {
+    clearTimeout(phoneCheckTimer);
+    showPhoneExists(false);
+    phoneCheckTimer = setTimeout(checkPhoneExists, 600);
+  });
+  document.getElementById('phone-exists-goto').addEventListener('click', () => showPanel('login'));
+
+  // --- Forgot: phone check ---
+  (() => {
+    let checkTimer = null;
+    const phoneEl = document.getElementById('forgot-phone');
+    const hintEl  = document.getElementById('forgot-phone-hint');
+    const sendBtn = document.getElementById('btn-send-forgot-otp');
+    function setReady(ok) {
+      sendBtn.disabled      = !ok;
+      sendBtn.style.opacity = ok ? '' : '0.45';
+      sendBtn.style.cursor  = ok ? '' : 'not-allowed';
+    }
+    phoneEl.addEventListener('input', () => {
+      clearTimeout(checkTimer);
+      hintEl.textContent = '';
+      setReady(false);
+      const local = phoneEl.value.trim().replace(/\D/g, '');
+      if (local.length < 7) return;
+      hintEl.style.color = 'rgba(255,255,255,0.4)';
+      hintEl.textContent = 'جارٍ التحقق...';
+      checkTimer = setTimeout(async () => {
+        try {
+          const phone = getForgotPhone();
+          const res  = await fetch('apis/users/check_phone.php?phone=' + encodeURIComponent(phone));
+          const data = await res.json();
+          if (data.exists) {
+            hintEl.style.color = 'rgba(100,220,130,0.85)';
+            hintEl.textContent = '✓ الرقم مرتبط بحساب';
+            setReady(true);
+          } else {
+            hintEl.style.color = 'rgba(255,100,100,0.85)';
+            hintEl.textContent = '✗ لا يوجد حساب مرتبط بهذا الرقم';
+            setReady(false);
+          }
+        } catch { hintEl.textContent = ''; }
+      }, 600);
+    });
+  })();
+
+  // --- Forgot: forgot panel ---
+  document.getElementById('btn-forgot').addEventListener('click', () => {
+    document.getElementById('forgot-step-1').style.display = 'block';
+    document.getElementById('forgot-step-2').style.display = 'none';
+    document.getElementById('forgot-phone').value = '';
+    document.getElementById('forgot-phone-hint').textContent = '';
+    const sendBtn = document.getElementById('btn-send-forgot-otp');
+    sendBtn.disabled = true;
+    sendBtn.style.opacity = '0.45';
+    sendBtn.style.cursor = 'not-allowed';
+    showPanel('forgot');
+  });
+
+  // --- Forgot: send OTP ---
+  let forgotOtpInterval = null;
+  let forgotPhone = '';
+  const forgotOtpBoxes = Array.from(document.querySelectorAll('#forgot-otp-row .otp-box'));
+
+  function startForgotTimer() {
+    clearInterval(forgotOtpInterval);
+    let seconds = 600;
+    const timerEl = document.getElementById('forgot-otp-timer');
+    timerEl.textContent = '10:00';
+    forgotOtpInterval = setInterval(() => {
+      seconds--;
+      timerEl.textContent = Math.floor(seconds/60) + ':' + String(seconds%60).padStart(2,'0');
+      if (seconds <= 0) {
+        clearInterval(forgotOtpInterval);
+        timerEl.textContent = 'انتهت صلاحية الرمز';
+        document.getElementById('btn-verify-forgot-otp').disabled = true;
+      }
+    }, 1000);
+  }
+
+  async function sendForgotOtp() {
+    const rawPhone = getForgotPhone();
+    if (!rawPhone || rawPhone.length < 8) { alert('يرجى إدخال رقم الهاتف'); return; }
+    const btn = document.getElementById('btn-send-forgot-otp');
+    btn.disabled = true;
+    btn.textContent = 'جارٍ الإرسال...';
+    try {
+      const res  = await fetch('apis/verify/', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone: rawPhone}) });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'تعذّر إرسال الرمز'); return; }
+      forgotPhone = rawPhone;
+      const masked = rawPhone.slice(0,3) + 'XX XXX X' + rawPhone.slice(-2);
+      document.getElementById('forgot-otp-phone-display').textContent = masked;
+      forgotOtpBoxes.forEach(b => { b.value = ''; });
+      startForgotTimer();
+      document.getElementById('btn-verify-forgot-otp').disabled = false;
+      document.getElementById('forgot-step-1').style.display = 'none';
+      document.getElementById('forgot-step-2').style.display = 'block';
+      forgotOtpBoxes[0].focus();
+    } catch { alert('خطأ في الاتصال. يرجى المحاولة مجدداً.'); }
+    finally { btn.disabled = false; btn.textContent = 'إرسال رمز تغيير كلمة السر'; }
+  }
+  document.getElementById('btn-send-forgot-otp').addEventListener('click', sendForgotOtp);
+
+  forgotOtpBoxes.forEach((box, i) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/\D/g,'').slice(-1);
+      if (box.value && i < forgotOtpBoxes.length-1) forgotOtpBoxes[i+1].focus();
+    });
+    box.addEventListener('keydown', (e) => { if (e.key==='Backspace' && !box.value && i>0) forgotOtpBoxes[i-1].focus(); });
+  });
+  forgotOtpBoxes[0].addEventListener('paste', (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'');
+    forgotOtpBoxes.forEach((b,i) => { b.value = text[i]||''; });
+    const last = Math.min(text.length, forgotOtpBoxes.length)-1;
+    if (last >= 0) forgotOtpBoxes[last].focus();
+  });
+
+  document.getElementById('btn-resend-forgot-otp').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-resend-forgot-otp');
+    btn.disabled = true; btn.textContent = 'جارٍ إعادة الإرسال...';
+    try {
+      const res = await fetch('apis/verify/', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone: forgotPhone}) });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'تعذّر إعادة الإرسال'); return; }
+      forgotOtpBoxes.forEach(b => { b.value = ''; });
+      startForgotTimer();
+      document.getElementById('btn-verify-forgot-otp').disabled = false;
+      forgotOtpBoxes[0].focus();
+    } catch { alert('خطأ في الاتصال. يرجى المحاولة مجدداً.'); }
+    finally { btn.disabled = false; btn.textContent = 'إعادة إرسال الرمز'; }
+  });
+
+  document.getElementById('btn-verify-forgot-otp').addEventListener('click', async () => {
+    const code = forgotOtpBoxes.map(b => b.value).join('');
+    if (code.length < 4) { alert('يرجى إدخال الرمز المكوّن من 4 أرقام'); return; }
+    const btn = document.getElementById('btn-verify-forgot-otp');
+    btn.disabled = true; btn.textContent = 'جارٍ التحقق...';
+    try {
+      const res  = await fetch('apis/verify/check.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone: forgotPhone, code}) });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'الرمز غير صحيح'); btn.disabled = false; btn.textContent = 'التحقق والمتابعة'; return; }
+      clearInterval(forgotOtpInterval);
+      document.getElementById('new-password').value = '';
+      document.getElementById('confirm-password').value = '';
+      document.getElementById('msg-password-mismatch').style.display = 'none';
+      showPanel('new-password');
+    } catch { alert('خطأ في الاتصال. يرجى المحاولة مجدداً.'); btn.disabled = false; btn.textContent = 'التحقق والمتابعة'; }
+  });
+
+  document.getElementById('btn-save-new-password').addEventListener('click', async () => {
+    const pw  = document.getElementById('new-password').value;
+    const cpw = document.getElementById('confirm-password').value;
+    const mismatchMsg = document.getElementById('msg-password-mismatch');
+    if (pw !== cpw || pw.length < 6) {
+      mismatchMsg.style.display = 'block';
+      mismatchMsg.textContent = pw.length < 6 ? 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' : 'كلمتا المرور غير متطابقتين';
+      return;
+    }
+    mismatchMsg.style.display = 'none';
+    const btn = document.getElementById('btn-save-new-password');
+    btn.disabled = true; btn.textContent = 'جارٍ الحفظ...';
+    try {
+      const res  = await fetch('apis/users/reset_password.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone: forgotPhone, password: pw}) });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'تعذّر تغيير كلمة المرور'); return; }
+      setSession({ customer_id: data.customer_id, name: data.name||null, phone: data.phone, referral_code: data.referral_code||null, loggedAt: new Date().toISOString() });
+      document.getElementById('success-name-line').textContent = data.name ? 'أهلاً ' + data.name : 'تم تغيير كلمة المرور بنجاح';
+      showPanel('success');
+    } catch { alert('خطأ في الاتصال. يرجى المحاولة مجدداً.'); }
+    finally { btn.disabled = false; btn.textContent = 'حفظ كلمة المرور الجديدة'; }
+  });
+
+  // --- Login submit ---
+  document.getElementById('btn-login-submit').addEventListener('click', async () => {
+    const phone    = getLoginPhone();
+    const password = document.getElementById('login-password').value;
+    const btn      = document.getElementById('btn-login-submit');
+    if (!document.getElementById('login-phone').value.trim() || !password) { alert('يرجى إدخال رقم الهاتف وكلمة المرور'); return; }
+    btn.disabled = true; btn.textContent = 'جارٍ التحقق...';
+    try {
+      const res  = await fetch('apis/users/login.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone, password}) });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'رقم الهاتف أو كلمة المرور غير صحيحة'); return; }
+      setSession({ customer_id: data.customer_id, name: data.name||null, phone: data.phone||phone, referral_code: data.referral_code||null, invitationCode: data.referral_code||null, loggedAt: new Date().toISOString() });
+      if (data.profile_complete === false) {
+        window.location.href = 'onboarding.html';
+      } else {
+        document.getElementById('success-name-line').textContent = data.name ? 'أهلاً ' + data.name : '';
+        showPanel('success');
+      }
+    } catch { alert('خطأ في الاتصال. يرجى المحاولة مجدداً.'); }
+    finally { btn.disabled = false; btn.textContent = 'دخول'; }
+  });
+
+  // --- Register Step 1 — send OTP ---
+  let otpInterval = null;
+  const otpBoxes = Array.from(document.querySelectorAll('#otp-row .otp-box'));
+
+  function startOtpTimer() {
+    clearInterval(otpInterval);
+    let seconds = 600;
+    const timerEl = document.getElementById('otp-timer');
+    timerEl.textContent = '10:00';
+    otpInterval = setInterval(() => {
+      seconds--;
+      timerEl.textContent = Math.floor(seconds/60) + ':' + String(seconds%60).padStart(2,'0');
+      if (seconds <= 0) {
+        clearInterval(otpInterval);
+        timerEl.textContent = 'انتهت صلاحية الكود';
+        document.getElementById('btn-verify-otp').disabled = true;
+      }
+    }, 1000);
+  }
+
+  document.getElementById('btn-send-otp').addEventListener('click', async () => {
+    const name     = document.getElementById('reg-name').value.trim();
+    const phone    = getRegPhone();
+    const password = document.getElementById('reg-password').value;
+    const btn      = document.getElementById('btn-send-otp');
+    if (!phone) { alert('يرجى إدخال رقم الهاتف'); return; }
+    if (!password || password.length < 6) { alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل'); return; }
+    btn.disabled = true; btn.textContent = 'جارٍ الإرسال...';
+    try {
+      const res  = await fetch('apis/verify/', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone}) });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'تعذّر إرسال الكود'); return; }
+      const masked = phone.slice(0, Math.min(4,phone.length)) + 'XXXXXX' + phone.slice(-2);
+      document.getElementById('otp-phone-display').textContent = masked;
+      otpBoxes.forEach(b => { b.value = ''; });
+      startOtpTimer();
+      document.getElementById('btn-verify-otp').disabled = false;
+      showPanel('register-2');
+      otpBoxes[0].focus();
+    } catch { alert('خطأ في الاتصال. يرجى المحاولة مجدداً.'); }
+    finally { btn.disabled = false; btn.textContent = 'إرسال كود التأكيد'; }
+  });
+
+  otpBoxes.forEach((box, i) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/\D/g,'').slice(-1);
+      if (box.value && i < otpBoxes.length-1) otpBoxes[i+1].focus();
+    });
+    box.addEventListener('keydown', (e) => { if (e.key==='Backspace' && !box.value && i>0) otpBoxes[i-1].focus(); });
+  });
+  otpBoxes[0].addEventListener('paste', (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'');
+    otpBoxes.forEach((b,i) => { b.value = text[i]||''; });
+    const last = Math.min(text.length, otpBoxes.length)-1;
+    if (last >= 0) otpBoxes[last].focus();
+  });
+
+  document.getElementById('btn-resend-otp').addEventListener('click', async () => {
+    const phone = getRegPhone();
+    const btn   = document.getElementById('btn-resend-otp');
+    btn.disabled = true; btn.textContent = 'جارٍ إعادة الإرسال...';
+    try {
+      const res  = await fetch('apis/verify/', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone}) });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || 'تعذّر إعادة الإرسال'); return; }
+      otpBoxes.forEach(b => { b.value = ''; });
+      startOtpTimer();
+      document.getElementById('btn-verify-otp').disabled = false;
+      otpBoxes[0].focus();
+    } catch { alert('خطأ في الاتصال. يرجى المحاولة مجدداً.'); }
+    finally { btn.disabled = false; btn.textContent = 'إعادة إرسال الكود'; }
+  });
+
+  document.getElementById('btn-verify-otp').addEventListener('click', async () => {
+    const code     = otpBoxes.map(b => b.value).join('');
+    if (code.length < 4) { alert('يرجى إدخال الكود المكوّن من 4 أرقام'); return; }
+    const name     = document.getElementById('reg-name').value.trim();
+    const phone    = getRegPhone();
+    const password = document.getElementById('reg-password').value;
+    const btn      = document.getElementById('btn-verify-otp');
+    btn.disabled = true; btn.textContent = 'جارٍ التحقق...';
+    try {
+      const vRes  = await fetch('apis/verify/check.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone, code}) });
+      const vData = await vRes.json();
+      if (!vRes.ok) { alert(vData.error || 'الكود غير صحيح'); return; }
+      const rRes  = await fetch('apis/users/register.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name, phone, password}) });
+      const rData = await rRes.json();
+      if (!rRes.ok) { alert(rData.error || 'تعذّر إنشاء الحساب'); return; }
+      clearInterval(otpInterval);
+      setSession({ customer_id: rData.customer_id, name: rData.name||name||null, phone, referral_code: rData.referral_code||null, invitationCode: rData.referral_code||null, loggedAt: new Date().toISOString() });
+      if (rData.welcome_gift) sessionStorage.setItem('show_welcome_gift','1');
+      window.location.href = 'onboarding.html';
+    } catch { alert('خطأ في الاتصال. يرجى المحاولة مجدداً.'); }
+    finally { btn.disabled = false; btn.textContent = 'تأكيد الكود'; }
+  });
+
+  document.getElementById('btn-back-to-reg1').addEventListener('click', () => {
+    clearInterval(otpInterval);
+    showPanel('register-1');
+  });
+})();
+</script>
+</body>
+</html>
