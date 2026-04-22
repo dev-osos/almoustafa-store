@@ -68,6 +68,8 @@
     '.alm-pd-copy-btn:hover{opacity:0.88;}',
     '.alm-pd-copy-hint{text-align:center;font-size:0.75rem;color:rgba(255,255,255,0.35);margin-top:10px;min-height:18px;}',
     /* address modal */
+    '.alm-pd-row{display:flex;gap:10px;margin-bottom:0;}',
+    '.alm-pd-row .alm-pd-field{flex:1;min-width:0;margin-bottom:14px;}',
     '.alm-pd-field{margin-bottom:14px;}',
     '.alm-pd-field label{display:block;font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.4);margin-bottom:6px;letter-spacing:0.04em;}',
     '.alm-pd-field input,.alm-pd-field textarea{width:100%;padding:11px 14px;border:1.5px solid rgba(255,255,255,0.1);border-radius:10px;background:rgba(255,255,255,0.06);color:#fff;font-family:"Manrope",sans-serif;font-size:0.85rem;outline:none;transition:border-color 0.2s;box-sizing:border-box;}',
@@ -152,13 +154,15 @@
     '<div class="alm-pd-sheet">' +
       '<button class="alm-pd-close" id="alm-pd-addr-close"><span class="material-symbols-outlined">close</span></button>' +
       '<div class="alm-pd-sheet-title">تعديل العنوان</div>' +
-      '<div class="alm-pd-field">' +
-        '<label for="alm-pd-gov">المحافظة</label>' +
-        '<input id="alm-pd-gov" type="text" placeholder="مثال: القاهرة" autocomplete="off"/>' +
-      '</div>' +
-      '<div class="alm-pd-field">' +
-        '<label for="alm-pd-city">المدينة / الحي</label>' +
-        '<input id="alm-pd-city" type="text" placeholder="مثال: مدينة نصر" autocomplete="off"/>' +
+      '<div class="alm-pd-row">' +
+        '<div class="alm-pd-field">' +
+          '<label for="alm-pd-gov">المحافظة</label>' +
+          '<input id="alm-pd-gov" type="text" placeholder="مثال: القاهرة" autocomplete="off"/>' +
+        '</div>' +
+        '<div class="alm-pd-field">' +
+          '<label for="alm-pd-city">المدينة / الحي</label>' +
+          '<input id="alm-pd-city" type="text" placeholder="مثال: مدينة نصر" autocomplete="off"/>' +
+        '</div>' +
       '</div>' +
       '<div class="alm-pd-field">' +
         '<label for="alm-pd-detail">تفاصيل العنوان</label>' +
