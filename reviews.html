@@ -560,7 +560,9 @@ function initForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rating, name, product, content }),
       });
-      const data = await res.json();
+      let data;
+      try { data = await res.json(); }
+      catch (_) { showErr('خطأ في الخادم (' + res.status + ') — يرجى المحاولة مرة أخرى'); resetBtn(); return; }
       if (data.ok) {
         form.classList.add('hidden');
         success.classList.remove('hidden');
@@ -615,13 +617,6 @@ document.addEventListener('DOMContentLoaded', () => {
     entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('active'); });
   }, { threshold: 0.15 });
   document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
-
-  contactBackdrop.addEventListener('click', (e) => {
-    if (e.target === contactBackdrop) {
-      contactBackdrop.classList.remove('open');
-      document.body.style.overflow = '';
-    }
-  });
 
   initForm();
 });

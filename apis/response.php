@@ -1,6 +1,10 @@
 <?php
 declare(strict_types=1);
 
+/* Prevent any PHP notice/warning from corrupting JSON output */
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
+
 require_once __DIR__ . '/bootstrap.php';
 
 if (!function_exists('api_cors_allowed_origin')) {

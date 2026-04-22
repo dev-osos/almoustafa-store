@@ -53,7 +53,7 @@ if (!function_exists('api_pdo')) {
             PDO::ATTR_TIMEOUT => $db['timeout'],
         ];
 
-        if (defined('PDO::MYSQL_ATTR_INIT_COMMAND')) {
+        if (defined('PDO::MYSQL_ATTR_INIT_COMMAND') && !defined('Pdo\Mysql::ATTR_INIT_COMMAND')) {
             $attrs[PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $db['charset'];
         }
 
