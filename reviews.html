@@ -291,6 +291,21 @@
       <p class="font-headline text-2xl text-primary mb-2">لا توجد آراء بعد</p>
       <p class="text-on-surface-variant text-sm">كن أول من يشارك تجربته!</p>
     </div>
+    <!-- Mobile pagination -->
+    <div id="reviews-pagination" class="hidden md:hidden mt-8 flex flex-col items-center gap-4">
+      <div id="reviews-pg-dots" class="flex items-center gap-2"></div>
+      <div class="flex items-center gap-3">
+        <button id="reviews-pg-prev" class="flex items-center gap-1 px-5 py-2 rounded-full border border-primary/30 text-primary font-headline text-sm font-bold disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95" disabled>
+          <span class="material-symbols-outlined" style="font-size:18px">arrow_forward</span>
+          السابق
+        </button>
+        <span id="reviews-pg-label" class="text-on-surface-variant text-xs font-body"></span>
+        <button id="reviews-pg-next" class="flex items-center gap-1 px-5 py-2 rounded-full bg-primary text-on-primary font-headline text-sm font-bold disabled:opacity-30 disabled:pointer-events-none transition-all active:scale-95">
+          التالي
+          <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
+        </button>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -392,6 +407,50 @@ function buildReviewCard(r) {
     </div>`;
 }
 
+// ── Mobile pagination state ───────────────────────────────────────────────────
+const MOBILE_PER_PAGE = 2;
+let allReviews = [];
+let mobilePage  = 0;
+
+function isMobile() { return window.innerWidth < 768; }
+
+function renderMobilePage() {
+  const grid   = document.getElementById('reviews-grid');
+  const pgEl   = document.getElementById('reviews-pagination');
+  const cards  = grid.querySelectorAll('.review-card');
+  const total  = allReviews.length;
+  const pages  = Math.ceil(total / MOBILE_PER_PAGE);
+
+  if (!isMobile() || total === 0) {
+    cards.forEach(c => c.style.display = '');
+    pgEl.classList.add('hidden');
+    return;
+  }
+
+  const start = mobilePage * MOBILE_PER_PAGE;
+  const end   = start + MOBILE_PER_PAGE;
+  cards.forEach((c, i) => { c.style.display = (i >= start && i < end) ? '' : 'none'; });
+
+  // dots
+  const dotsEl = document.getElementById('reviews-pg-dots');
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < pages; i++) {
+    const dot = document.createElement('button');
+    dot.style.cssText = `width:${i===mobilePage?'20px':'8px'};height:8px;border-radius:4px;border:none;cursor:pointer;transition:all 0.25s;background:${i===mobilePage?'#3c0004':'rgba(60,0,4,0.2)'};`;
+    dot.setAttribute('aria-label', 'صفحة ' + (i + 1));
+    dot.addEventListener('click', () => { mobilePage = i; renderMobilePage(); });
+    dotsEl.appendChild(dot);
+  }
+
+  // label & buttons
+  document.getElementById('reviews-pg-label').textContent =
+    toArabicDigits(mobilePage + 1) + ' / ' + toArabicDigits(pages);
+  document.getElementById('reviews-pg-prev').disabled = mobilePage === 0;
+  document.getElementById('reviews-pg-next').disabled = mobilePage >= pages - 1;
+
+  pgEl.classList.remove('hidden');
+}
+
 // ── Load reviews from API ─────────────────────────────────────────────────────
 async function loadReviews() {
   try {
@@ -427,8 +486,11 @@ async function loadReviews() {
       grid.classList.add('hidden');
       empty.classList.remove('hidden');
     } else {
+      allReviews = reviews;
+      mobilePage = 0;
       grid.innerHTML = reviews.map(buildReviewCard).join('');
       empty.classList.add('hidden');
+      renderMobilePage();
     }
   } catch (e) {
     console.warn('Failed to load reviews', e);
@@ -516,6 +578,17 @@ function initForm() {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  // Pagination buttons
+  document.getElementById('reviews-pg-prev').addEventListener('click', () => {
+    if (mobilePage > 0) { mobilePage--; renderMobilePage(); window.scrollTo({top: document.getElementById('reviews-grid').offsetTop - 80, behavior:'smooth'}); }
+  });
+  document.getElementById('reviews-pg-next').addEventListener('click', () => {
+    const pages = Math.ceil(allReviews.length / MOBILE_PER_PAGE);
+    if (mobilePage < pages - 1) { mobilePage++; renderMobilePage(); window.scrollTo({top: document.getElementById('reviews-grid').offsetTop - 80, behavior:'smooth'}); }
+  });
+  // Re-render on resize (mobile ↔ desktop)
+  window.addEventListener('resize', renderMobilePage, { passive: true });
+
   // Skeleton
   const overlay = document.getElementById('loading-overlay');
   const main    = document.getElementById('main-content');
