@@ -2849,8 +2849,7 @@
             }
             if (openSignup && !getSession()?.uid) {
                 setTimeout(() => {
-                    openModal();
-                    showPanel('register-1');
+                    window.location.href = 'login.html?tab=register&return=' + encodeURIComponent(location.pathname + location.search);
                 }, 1600);
             }
             if (refCode || openSignup) {
@@ -3375,8 +3374,7 @@
         function openProfileEditModal() {
             const session = getSession();
             if (!session) {
-                showPanel('login');
-                openModal();
+                window.location.href = 'login.html?return=' + encodeURIComponent(location.pathname + location.search);
                 return;
             }
 
@@ -3475,8 +3473,7 @@
             if (getSession()) {
                 profileDropdown.classList.contains('open') ? closeProfileDropdown() : openProfileDropdown();
             } else {
-                showPanel('login');
-                openModal();
+                window.location.href = 'login.html?return=' + encodeURIComponent(location.pathname + location.search);
             }
         });
 
