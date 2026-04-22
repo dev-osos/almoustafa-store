@@ -167,10 +167,8 @@
         } else {
           dd.classList.contains('open') ? apdClose() : apdOpen();
         }
-      } else if (window.almAuth) {
-        window.almAuth.open('login');
       } else {
-        window.location.href = 'index.html';
+        window.location.href = 'login.html?return=' + encodeURIComponent(location.pathname + location.search);
       }
     });
   }
