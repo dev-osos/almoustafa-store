@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<script src="js/no-double-tap-zoom.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>الملف الشخصي | المصطفى</title>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#3c0004"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="المصطفى"/>
+<link rel="apple-touch-icon" href="logo.png"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Manrope:wght@200..800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#3c0004",
+          "secondary": "#735c00",
+          "secondary-container": "#fed65b",
+          "surface": "#fdf9f0",
+          "surface-container": "#f1eee5",
+          "on-surface": "#1c1c17",
+          "outline": "#897270",
+          "outline-variant": "#dcc0be",
+          "background": "#fdf9f0",
+        },
+        fontFamily: {
+          "headline": ["Amiri", "serif"],
+          "body": ["Manrope", "sans-serif"],
+        },
+      },
+    },
+  }
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #0e0205; min-height: 100vh; margin: 0; font-family: "Manrope", sans-serif; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+
+  /* ── Page header ── */
+  .pf-topbar {
+    position: fixed; top: 0; right: 0; left: 0; z-index: 50;
+    height: 60px;
+    background: rgba(14,2,5,0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(254,214,91,0.1);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px;
+  }
+  .pf-topbar-title {
+    font-family: "Amiri", serif;
+    font-size: 1.1rem; font-weight: 700;
+    color: #fff; letter-spacing: 0.03em;
+  }
+  .pf-back-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: rgba(255,255,255,0.7);
+    transition: background 0.2s, color 0.2s;
+  }
+  .pf-back-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+  .pf-back-btn .material-symbols-outlined { font-size: 20px; }
+
+  /* ── Page content ── */
+  .pf-content {
+    padding: 80px 16px 40px;
+    max-width: 560px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+
+  /* ── Hero / avatar card ── */
+  .pf-hero {
+    background: linear-gradient(160deg, #3c0004 0%, #1a0002 100%);
+    border: 1px solid rgba(254,214,91,0.18);
+    border-radius: 24px;
+    padding: 28px 24px;
+    display: flex; align-items: center; gap: 18px;
+    position: relative; overflow: hidden;
+  }
+  .pf-hero::before {
+    content: "";
+    position: absolute; top: -60px; right: -40px;
+    width: 220px; height: 160px;
+    background: radial-gradient(ellipse, rgba(254,214,91,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .pf-avatar {
+    width: 72px; height: 72px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(254,214,91,0.1);
+    border: 2px solid rgba(254,214,91,0.35);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 24px rgba(254,214,91,0.12);
+  }
+  .pf-avatar .material-symbols-outlined {
+    font-size: 38px; color: #fed65b;
+    font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  }
+  .pf-hero-info { flex: 1; min-width: 0; position: relative; z-index: 1; }
+  .pf-hero-name {
+    font-family: "Amiri", serif;
+    font-size: 1.4rem; font-weight: 700; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 4px;
+  }
+  .pf-hero-phone {
+    font-size: 0.8rem; color: rgba(255,255,255,0.45);
+    direction: ltr; text-align: right;
+  }
+
+  /* ── Card ── */
+  .pf-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .pf-card-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .pf-card-row:last-child { border-bottom: none; }
+  .pf-row-icon {
+    width: 38px; height: 38px; flex-shrink: 0; border-radius: 12px;
+    background: rgba(254,214,91,0.08);
+    border: 1px solid rgba(254,214,91,0.14);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pf-row-icon .material-symbols-outlined { font-size: 18px; color: rgba(254,214,91,0.8); }
+  .pf-row-body { flex: 1; min-width: 0; }
+  .pf-row-label { font-size: 0.68rem; color: rgba(255,255,255,0.35); margin-bottom: 3px; }
+  .pf-row-value { font-size: 0.85rem; color: rgba(255,255,255,0.82); line-height: 1.5; }
+  .pf-row-action { flex-shrink: 0; }
+
+  /* ── Wallet card ── */
+  .pf-wallet {
+    background: rgba(254,214,91,0.06);
+    border: 1px solid rgba(254,214,91,0.14);
+    border-radius: 20px;
+    padding: 18px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .pf-wallet-label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.8rem; color: rgba(255,255,255,0.5);
+  }
+  .pf-wallet-label .material-symbols-outlined { font-size: 18px; color: rgba(254,214,91,0.65); }
+  .pf-wallet-balance {
+    font-family: "Manrope", sans-serif;
+    font-size: 1.15rem; font-weight: 700;
+    color: #fed65b; direction: ltr;
+  }
+
+  /* ── Invite code ── */
+  .pf-invite-code {
+    font-family: "Manrope", sans-serif;
+    font-size: 1.6rem; font-weight: 700;
+    color: #fed65b; letter-spacing: 0.12em;
+    text-align: center; direction: ltr;
+    padding: 14px;
+    background: rgba(254,214,91,0.07);
+    border: 1px solid rgba(254,214,91,0.15);
+    border-radius: 14px; margin-bottom: 10px;
+  }
+  .pf-copy-btn {
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, #fed65b, #f5c400);
+    color: #3c0004; border: none; border-radius: 12px;
+    font-family: "Amiri", serif; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .pf-copy-btn:hover { opacity: 0.88; }
+  .pf-copy-hint { text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-top: 8px; min-height: 18px; }
+
+  /* ── Section header ── */
+  .pf-section-title {
+    font-family: "Amiri", serif;
+    font-size: 0.82rem; font-weight: 700;
+    color: rgba(254,214,91,0.55);
+    letter-spacing: 0.06em;
+    padding: 0 4px;
+    margin-bottom: -4px;
+  }
+
+  /* ── Address inline edit ── */
+  .pf-addr-panel {
+    padding: 18px 18px 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .pf-addr-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 999px;
+    background: rgba(254,214,91,0.08);
+    border: 1px solid rgba(254,214,91,0.15);
+    color: rgba(255,255,255,0.65); font-size: 0.72rem;
+    margin-bottom: 14px;
+  }
+  .pf-addr-chip .material-symbols-outlined { color: #fed65b; font-size: 14px; }
+  .pf-addr-grid {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px; margin-bottom: 10px;
+  }
+  .pf-addr-field { margin-bottom: 10px; }
+  .pf-addr-label { display: block; margin-bottom: 8px; font-size: 0.74rem; color: rgba(255,255,255,0.45); }
+  .pf-addr-input-wrap { position: relative; }
+  .pf-addr-input-icon {
+    position: absolute; top: 50%; right: 14px; transform: translateY(-50%);
+    color: rgba(254,214,91,0.65); font-size: 18px; pointer-events: none;
+  }
+  .pf-addr-input {
+    width: 100%; min-height: 52px;
+    background: rgba(255,255,255,0.05) !important;
+    border: 1px solid rgba(254,214,91,0.14) !important;
+    border-radius: 14px;
+    color: #fff !important;
+    padding: 12px 44px 12px 14px !important;
+    font-size: 0.88rem; line-height: 1.6; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    font-family: "Manrope", sans-serif;
+    -webkit-appearance: none; appearance: none;
+  }
+  .pf-addr-input::placeholder { color: rgba(255,255,255,0.28) !important; }
+  .pf-addr-input:focus {
+    border-color: rgba(254,214,91,0.4) !important;
+    box-shadow: 0 0 0 3px rgba(254,214,91,0.08) !important;
+    background: rgba(255,255,255,0.08) !important;
+  }
+  .pf-addr-input:disabled { opacity: 0.4; cursor: not-allowed; }
+  .pf-addr-textarea { min-height: unset !important; resize: none; }
+  /* autocomplete */
+  .pf-addr-ac { position: relative; }
+  .pf-addr-suggestions {
+    position: absolute; top: calc(100% + 6px); right: 0; left: 0;
+    max-height: 200px; overflow-y: auto;
+    background: #1a0002;
+    border: 1px solid rgba(254,214,91,0.15);
+    border-radius: 14px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    padding: 6px; z-index: 10; display: none;
+  }
+  .pf-addr-suggestions.open { display: block; }
+  .pf-addr-suggestion {
+    width: 100%; border: none; background: transparent;
+    color: rgba(255,255,255,0.8); text-align: right;
+    padding: 10px 12px; border-radius: 10px;
+    cursor: pointer; font-size: 0.82rem;
+    transition: background 0.2s, color 0.2s;
+    font-family: "Manrope", sans-serif;
+  }
+  .pf-addr-suggestion:hover, .pf-addr-suggestion.active {
+    background: rgba(254,214,91,0.1); color: #fed65b;
+  }
+  .pf-addr-empty { padding: 10px; text-align: center; font-size: 0.74rem; color: rgba(255,255,255,0.3); }
+  /* actions */
+  .pf-addr-msg { text-align: center; font-size: 0.75rem; margin-bottom: 10px; min-height: 18px; }
+  .pf-addr-actions { display: flex; gap: 10px; }
+  .pf-addr-btn-primary {
+    flex: 1; min-height: 48px; border-radius: 13px;
+    font-family: "Manrope", sans-serif; font-size: 0.86rem; font-weight: 700;
+    cursor: pointer; border: none;
+    background: linear-gradient(135deg, #fed65b 0%, #f0bf1a 100%);
+    color: #3c0004;
+    box-shadow: 0 10px 28px rgba(254,214,91,0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .pf-addr-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 14px 32px rgba(254,214,91,0.3); }
+  .pf-addr-btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+  /* ── Logout ── */
+  .pf-logout {
+    width: 100%; padding: 14px 18px;
+    background: rgba(220,50,50,0.08);
+    border: 1px solid rgba(220,50,50,0.18);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer;
+    font-family: "Manrope", sans-serif; font-size: 0.88rem;
+    color: rgba(220,100,100,0.9);
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .pf-logout:hover { background: rgba(220,50,50,0.15); border-color: rgba(220,50,50,0.32); }
+  .pf-logout .material-symbols-outlined { font-size: 18px; }
+
+  /* ── Loading overlay ── */
+  #pf-loading {
+    position: fixed; inset: 0;
+    background: #0e0205;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200;
+    transition: opacity 0.4s ease;
+  }
+  #pf-loading.hidden { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="pf-loading">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;">
+    <div style="width:52px;height:52px;border-radius:50%;background:rgba(254,214,91,0.1);border:2px solid rgba(254,214,91,0.3);display:flex;align-items:center;justify-content:center;">
+      <span class="material-symbols-outlined" style="font-size:28px;color:#fed65b;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">account_circle</span>
+    </div>
+    <span style="font-family:'Amiri',serif;font-size:0.9rem;color:rgba(255,255,255,0.4);">جارٍ التحميل...</span>
+  </div>
+</div>
+
+<!-- Top bar -->
+<div class="pf-topbar">
+  <button class="pf-back-btn" id="pf-back" aria-label="رجوع">
+    <span class="material-symbols-outlined">arrow_forward_ios</span>
+  </button>
+  <span class="pf-topbar-title">الملف الشخصي</span>
+  <div style="width:36px;"></div>
+</div>
+
+<!-- Content -->
+<div class="pf-content">
+
+  <!-- Hero -->
+  <div class="pf-hero">
+    <div class="pf-avatar">
+      <span class="material-symbols-outlined">account_circle</span>
+    </div>
+    <div class="pf-hero-info">
+      <div class="pf-hero-name" id="pf-name">مستخدم</div>
+      <div class="pf-hero-phone" id="pf-phone">—</div>
+    </div>
+  </div>
+
+  <!-- Segment + Wallet -->
+  <div>
+    <div class="pf-section-title">معلومات الحساب</div>
+  </div>
+  <div class="pf-card">
+    <div class="pf-card-row">
+      <div class="pf-row-icon"><span class="material-symbols-outlined">sell</span></div>
+      <div class="pf-row-body">
+        <div class="pf-row-label">الشريحة</div>
+        <div class="pf-row-value" id="pf-segment">لم يتم تحديد الشريحة بعد</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pf-wallet">
+    <div class="pf-wallet-label">
+      <span class="material-symbols-outlined">account_balance_wallet</span>
+      رصيد المحفظة
+    </div>
+    <div class="pf-wallet-balance" id="pf-wallet">0.00 ج.م</div>
+  </div>
+
+  <!-- Invite -->
+  <div>
+    <div class="pf-section-title">كود الدعوة</div>
+  </div>
+  <div class="pf-card">
+    <div style="padding:18px 18px 20px;">
+      <div class="pf-invite-code" id="pf-invite-code">…</div>
+      <button class="pf-copy-btn" id="pf-copy-btn">نسخ الكود</button>
+      <div class="pf-copy-hint" id="pf-copy-hint"></div>
+    </div>
+  </div>
+
+  <!-- Address -->
+  <div>
+    <div class="pf-section-title">العنوان</div>
+  </div>
+  <div class="pf-card">
+    <div class="pf-card-row" style="border-bottom:1px solid rgba(255,255,255,0.05);">
+      <div class="pf-row-icon"><span class="material-symbols-outlined">edit_location_alt</span></div>
+      <div class="pf-row-body">
+        <div class="pf-row-label">العنوان الحالي</div>
+        <div class="pf-row-value" id="pf-addr-display">لم يتم تحديد العنوان بعد</div>
+      </div>
+    </div>
+    <div class="pf-addr-panel" id="pf-addr-panel">
+      <div class="pf-addr-chip">
+        <span class="material-symbols-outlined">auto_awesome</span>
+        ابدأ بكتابة اسم المحافظة لتصفية الاختيارات
+      </div>
+      <div class="pf-addr-grid">
+        <div class="pf-addr-field" style="margin-bottom:0;">
+          <label class="pf-addr-label" for="pf-gov">المحافظة</label>
+          <div class="pf-addr-ac">
+            <div class="pf-addr-input-wrap">
+              <span class="material-symbols-outlined pf-addr-input-icon">map</span>
+              <input class="pf-addr-input" id="pf-gov" type="text" autocomplete="off" placeholder="اختر المحافظة"/>
+            </div>
+            <div class="pf-addr-suggestions" id="pf-gov-sugg"></div>
+          </div>
+        </div>
+        <div class="pf-addr-field" style="margin-bottom:0;">
+          <label class="pf-addr-label" for="pf-city">المدينة</label>
+          <div class="pf-addr-ac">
+            <div class="pf-addr-input-wrap">
+              <span class="material-symbols-outlined pf-addr-input-icon">location_city</span>
+              <input class="pf-addr-input" id="pf-city" type="text" autocomplete="off" placeholder="اختر المحافظة أولاً" disabled/>
+            </div>
+            <div class="pf-addr-suggestions" id="pf-city-sugg"></div>
+          </div>
+        </div>
+      </div>
+      <div class="pf-addr-field">
+        <label class="pf-addr-label" for="pf-detail">العنوان التفصيلي</label>
+        <div class="pf-addr-input-wrap">
+          <span class="material-symbols-outlined pf-addr-input-icon" style="top:18px;transform:none;">home_pin</span>
+          <textarea class="pf-addr-input pf-addr-textarea" id="pf-detail" rows="2" placeholder="الشارع واسم العمارة ورقم الشقة أو الدور السكني"></textarea>
+        </div>
+      </div>
+      <div class="pf-addr-msg" id="pf-addr-msg"></div>
+      <div class="pf-addr-actions">
+        <button class="pf-addr-btn-primary" id="pf-save-btn" type="button">حفظ العنوان</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout -->
+  <button class="pf-logout" id="pf-logout">
+    <span class="material-symbols-outlined">logout</span>
+    تسجيل الخروج
+  </button>
+
+</div><!-- /pf-content -->
+
+<script src="js/v_id_bootstrap.js" defer></script>
+<script>
+(function () {
+  'use strict';
+
+  function getSession() {
+    try { return JSON.parse(localStorage.getItem('alm_session')); } catch { return null; }
+  }
+  function setSession(d) { localStorage.setItem('alm_session', JSON.stringify(d)); }
+
+  var SEGMENT_LABELS = { consumer: 'مستهلك', wholesale: 'جملة', corporate: 'جملة الجملة' };
+
+  function buildAddress(s) {
+    return [s.governorate, s.city, s.addressDetails || s.address_detail || s.address]
+      .filter(Boolean).join('، ') || 'لم يتم تحديد العنوان بعد';
+  }
+
+  function fmtWallet(val) {
+    return Number(val || 0).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م';
+  }
+
+  function norm(s) {
+    return (s || '').replace(/[أإآا]/g, 'ا').replace(/ى/g, 'ي').trim().toLowerCase();
+  }
+
+  /* ── Guard: redirect if not logged in ── */
+  var session = getSession();
+  if (!session) {
+    window.location.replace('index.html');
+    return;
+  }
+
+  /* ── Populate static fields ── */
+  function render() {
+    var s = getSession();
+    if (!s) return;
+    document.getElementById('pf-name').textContent = s.name || 'مستخدم';
+    document.getElementById('pf-phone').textContent = s.phone || '—';
+    document.getElementById('pf-segment').textContent = SEGMENT_LABELS[s.segment] || s.segment || 'لم يتم تحديد الشريحة بعد';
+    document.getElementById('pf-wallet').textContent = fmtWallet(s.wallet);
+    document.getElementById('pf-invite-code').textContent = s.referral_code || s.invitationCode || '—';
+    document.getElementById('pf-addr-display').textContent = buildAddress(s);
+    /* restore address form */
+    document.getElementById('pf-gov').value = s.governorate || '';
+    document.getElementById('pf-city').value = s.city || '';
+    selectedGovName  = s.governorate || '';
+    selectedCityName = s.city || '';
+    selectedGovId    = s.governorateId || null;
+    document.getElementById('pf-detail').value = s.addressDetails || s.address_detail || '';
+    var cityInp = document.getElementById('pf-city');
+    cityInp.disabled = !selectedGovId;
+    cityInp.placeholder = selectedGovId ? 'اكتب لاختيار المدينة...' : 'اختر المحافظة أولاً';
+    if (selectedGovId && !CITIES.length) fetchCities(selectedGovId);
+  }
+
+  /* ── Loading done ── */
+  var loading = document.getElementById('pf-loading');
+  loading.classList.add('hidden');
+  setTimeout(function () { loading.style.display = 'none'; }, 400);
+
+  render();
+
+  /* ── Back button ── */
+  document.getElementById('pf-back').addEventListener('click', function () {
+    if (history.length > 1) history.back();
+    else window.location.href = 'index.html';
+  });
+
+  /* ── Invite copy ── */
+  document.getElementById('pf-copy-btn').addEventListener('click', function () {
+    var code = document.getElementById('pf-invite-code').textContent;
+    var hint = document.getElementById('pf-copy-hint');
+    if (navigator.clipboard && code && code !== '—') {
+      navigator.clipboard.writeText(code).then(function () {
+        hint.style.color = 'rgba(100,220,130,0.9)';
+        hint.textContent = 'تم نسخ الكود ✓';
+        setTimeout(function () { hint.textContent = ''; }, 2500);
+      }).catch(function () {
+        hint.style.color = 'rgba(255,120,120,0.85)';
+        hint.textContent = 'تعذّر النسخ تلقائياً';
+      });
+    }
+  });
+
+  /* ── Address autocomplete ── */
+  var GOVS = [];
+  var CITIES = [];
+  var selectedGovId = null;
+  var selectedGovName = '';
+  var selectedCityName = '';
+
+  var govInput  = document.getElementById('pf-gov');
+  var cityInput = document.getElementById('pf-city');
+  var govSugg   = document.getElementById('pf-gov-sugg');
+  var citySugg  = document.getElementById('pf-city-sugg');
+
+  function fetchGovs() {
+    if (GOVS.length) return;
+    fetch('dat-docs/govs.json')
+      .then(function (r) { return r.json(); })
+      .then(function (d) { GOVS = d.data.listZonesDropdown || []; })
+      .catch(function () {});
+  }
+
+  function fetchCities(govId) {
+    CITIES = [];
+    cityInput.disabled = true;
+    cityInput.placeholder = 'جاري التحميل...';
+    fetch('dat-docs/cities/' + govId + '.json')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        CITIES = d.data.listZonesDropdown || [];
+        cityInput.disabled = false;
+        cityInput.placeholder = 'اكتب لاختيار المدينة...';
+      })
+      .catch(function () { cityInput.placeholder = 'تعذّر تحميل المدن'; });
+  }
+
+  function buildSugg(container, items, query, onSelect) {
+    container.innerHTML = '';
+    var q = norm(query);
+    var filtered = q ? items.filter(function (it) { return norm(it.name).includes(q); }) : items.slice(0, 40);
+    if (!filtered.length) {
+      var empty = document.createElement('div');
+      empty.className = 'pf-addr-empty';
+      empty.textContent = 'لا توجد نتائج';
+      container.appendChild(empty);
+    } else {
+      filtered.forEach(function (it) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pf-addr-suggestion';
+        btn.textContent = it.name;
+        btn.addEventListener('mousedown', function (e) { e.preventDefault(); onSelect(it); });
+        container.appendChild(btn);
+      });
+    }
+    container.classList.add('open');
+  }
+
+  function closeAllSugg() {
+    govSugg.classList.remove('open');
+    citySugg.classList.remove('open');
+  }
+
+  function onGovSelect(gov) {
+    govInput.value = gov.name;
+    selectedGovId = gov.id;
+    selectedGovName = gov.name;
+    govSugg.classList.remove('open');
+    selectedCityName = '';
+    cityInput.value = '';
+    fetchCities(gov.id);
+  }
+
+  govInput.addEventListener('focus', function () {
+    fetchGovs();
+    buildSugg(govSugg, GOVS, govInput.value, onGovSelect);
+  });
+  govInput.addEventListener('input', function () {
+    selectedGovId = null; selectedGovName = '';
+    buildSugg(govSugg, GOVS, govInput.value, onGovSelect);
+  });
+
+  cityInput.addEventListener('focus', function () {
+    if (!CITIES.length) return;
+    buildSugg(citySugg, CITIES, cityInput.value, function (city) {
+      cityInput.value = city.name; selectedCityName = city.name;
+      citySugg.classList.remove('open');
+    });
+  });
+  cityInput.addEventListener('input', function () {
+    selectedCityName = '';
+    if (!CITIES.length) return;
+    buildSugg(citySugg, CITIES, cityInput.value, function (city) {
+      cityInput.value = city.name; selectedCityName = city.name;
+      citySugg.classList.remove('open');
+    });
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!govInput.contains(e.target) && !govSugg.contains(e.target)) govSugg.classList.remove('open');
+    if (!cityInput.contains(e.target) && !citySugg.contains(e.target)) citySugg.classList.remove('open');
+  });
+
+  /* ── Save address ── */
+  document.getElementById('pf-save-btn').addEventListener('click', async function () {
+    var s = getSession();
+    if (!s) return;
+    var gov    = govInput.value.trim() || selectedGovName;
+    var city   = cityInput.value.trim() || selectedCityName;
+    var detail = document.getElementById('pf-detail').value.trim();
+    var msg    = document.getElementById('pf-addr-msg');
+    var btn    = document.getElementById('pf-save-btn');
+
+    btn.disabled = true;
+    btn.textContent = 'جارٍ الحفظ...';
+    msg.textContent = '';
+
+    try {
+      var res = await fetch('apis/users/profile.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          segment: s.segment || 'consumer',
+          governorate: gov,
+          city: city,
+          address_detail: detail,
+        }),
+      });
+      var data = await res.json();
+      if (!res.ok) {
+        msg.style.color = 'rgba(255,120,120,0.85)';
+        msg.textContent = data.error || 'تعذّر الحفظ';
+        return;
+      }
+      var updated = Object.assign({}, s, {
+        governorate: gov, city: city,
+        address_detail: detail, addressDetails: detail,
+        governorateId: selectedGovId,
+      });
+      setSession(updated);
+      document.getElementById('pf-addr-display').textContent = buildAddress(updated);
+      msg.style.color = 'rgba(100,220,130,0.9)';
+      msg.textContent = 'تم حفظ العنوان ✓';
+      setTimeout(function () { msg.textContent = ''; }, 2500);
+    } catch {
+      msg.style.color = 'rgba(255,120,120,0.85)';
+      msg.textContent = 'خطأ في الاتصال، يرجى المحاولة مجدداً';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'حفظ العنوان';
+    }
+  });
+
+  /* ── Logout ── */
+  document.getElementById('pf-logout').addEventListener('click', function () {
+    localStorage.removeItem('alm_session');
+    window.location.href = 'index.html';
+  });
+
+  /* ── Verify session ── */
+  fetchGovs();
+  fetch('apis/users/me.php')
+    .then(function (r) { return r.json(); })
+    .then(function (d) { if (!d.ok) { localStorage.removeItem('alm_session'); window.location.replace('index.html'); } })
+    .catch(function () {});
+
+})();
+</script>
+</body>
+</html>
