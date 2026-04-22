@@ -224,6 +224,50 @@
     }
   }
 
+  /* ─── Login guide toast ────────────────────────────────────── */
+  var guideStyle = document.createElement('style');
+  guideStyle.textContent =
+    '#alm-login-guide{position:fixed;inset:0;z-index:9200;display:flex;align-items:flex-end;justify-content:center;padding:24px;pointer-events:none;opacity:0;transition:opacity 0.3s ease;}' +
+    '#alm-login-guide.open{opacity:1;pointer-events:auto;}' +
+    '#alm-login-guide-card{width:100%;max-width:400px;background:rgba(22,10,3,0.97);border:1px solid rgba(254,214,91,0.25);border-radius:20px;padding:24px 20px 20px;box-shadow:0 20px 60px rgba(0,0,0,0.6);direction:rtl;transform:translateY(20px);transition:transform 0.3s ease;}' +
+    '#alm-login-guide.open #alm-login-guide-card{transform:translateY(0);}' +
+    '#alm-login-guide-title{font-family:"Amiri",serif;font-size:1.05rem;font-weight:700;color:#fed65b;margin-bottom:14px;display:flex;align-items:center;gap:8px;}' +
+    '#alm-login-guide-title .material-symbols-outlined{font-size:20px;}' +
+    '.alm-guide-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}' +
+    '.alm-guide-num{width:22px;height:22px;border-radius:50%;background:rgba(254,214,91,0.15);border:1px solid rgba(254,214,91,0.3);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#fed65b;flex-shrink:0;margin-top:1px;}' +
+    '.alm-guide-text{font-size:0.82rem;color:rgba(255,255,255,0.75);line-height:1.5;}' +
+    '.alm-guide-text strong{color:#fff;}' +
+    '#alm-guide-btns{display:flex;gap:10px;margin-top:16px;}' +
+    '#alm-guide-go-btn{flex:1;padding:11px;background:linear-gradient(135deg,#fed65b,#f5c400);color:#3c0004;border:none;border-radius:12px;font-family:"Amiri",serif;font-size:0.95rem;font-weight:700;cursor:pointer;}' +
+    '#alm-guide-dismiss{padding:11px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:rgba(255,255,255,0.5);font-family:"Manrope",sans-serif;font-size:0.8rem;cursor:pointer;}';
+  document.head.appendChild(guideStyle);
+
+  var guideEl = document.createElement('div');
+  guideEl.id = 'alm-login-guide';
+  guideEl.innerHTML =
+    '<div id="alm-login-guide-card">' +
+      '<div id="alm-login-guide-title"><span class="material-symbols-outlined">info</span>كيفية تسجيل الدخول</div>' +
+      '<div class="alm-guide-step"><div class="alm-guide-num">١</div><div class="alm-guide-text">انتقل إلى <strong>الصفحة الرئيسية</strong> للمتجر</div></div>' +
+      '<div class="alm-guide-step"><div class="alm-guide-num">٢</div><div class="alm-guide-text">اضغط على أيقونة <strong>person</strong> (الشخص) في شريط التنقل العلوي</div></div>' +
+      '<div class="alm-guide-step"><div class="alm-guide-num">٣</div><div class="alm-guide-text">ستظهر نافذة تسجيل الدخول — أدخل <strong>رقم هاتفك وكلمة المرور</strong></div></div>' +
+      '<div class="alm-guide-step"><div class="alm-guide-num">٤</div><div class="alm-guide-text">إذا لم يكن لديك حساب، اختر <strong>إنشاء حساب جديد</strong> من نفس النافذة</div></div>' +
+      '<div id="alm-guide-btns">' +
+        '<button id="alm-guide-go-btn">الذهاب إلى الصفحة الرئيسية</button>' +
+        '<button id="alm-guide-dismiss">إغلاق</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(guideEl);
+
+  document.getElementById('alm-guide-go-btn').addEventListener('click', function () {
+    window.location.href = 'index.html#login';
+  });
+  document.getElementById('alm-guide-dismiss').addEventListener('click', function () {
+    guideEl.classList.remove('open');
+  });
+  guideEl.addEventListener('click', function (e) {
+    if (e.target === guideEl) guideEl.classList.remove('open');
+  });
+
   /* ─── Account button ───────────────────────────────────────── */
   var accountBtn = document.getElementById('btn-account');
   if (accountBtn) {
@@ -234,7 +278,7 @@
       } else if (window.almAuth) {
         window.almAuth.open('login');
       } else {
-        window.location.href = 'index.html';
+        window.location.href = 'index.html#login';
       }
     });
   }
