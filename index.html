@@ -3385,7 +3385,7 @@
             activeProfileEditField = null;
         }
 
-        function saveProfileEdit() {
+        async function saveProfileEdit() {
             if (!activeProfileEditField) return;
             const governorate = profileGovernorateInput.value.trim();
             const city = profileCityInput.value.trim();
@@ -3405,6 +3405,37 @@
                 alert('يرجى كتابة العنوان التفصيلي.');
                 profileAddressDetails.focus();
                 return;
+            }
+
+            const saveBtn = document.getElementById('btn-profile-edit-save');
+            saveBtn.disabled = true;
+
+            try {
+                const session = getSession() || {};
+                const res = await fetch('apis/users/profile.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name:           session.name        || '',
+                        phone:          session.phone       || '',
+                        segment:        session.segment     || 'consumer',
+                        governorate:    governorate,
+                        governorate_id: selectedGovernorateId,
+                        city:           city,
+                        city_id:        selectedCityId,
+                        address_detail: details,
+                    })
+                });
+                const d = await res.json();
+                if (!d.ok) {
+                    alert(d.error || 'حدث خطأ أثناء الحفظ، حاول مجدداً.');
+                    return;
+                }
+            } catch {
+                alert('تعذّر الاتصال بالخادم، تحقق من اتصالك.');
+                return;
+            } finally {
+                saveBtn.disabled = false;
             }
 
             updateSessionData({
