@@ -3130,6 +3130,10 @@
                     if (!d.ok) {
                         localStorage.removeItem('alm_session');
                         updateAccountIcon();
+                    } else {
+                        // merge fresh server data into local session
+                        const current = getSession() || {};
+                        setSession({ ...current, ...d });
                     }
                 })
                 .catch(() => { /* offline — skip */ });
@@ -3551,62 +3555,7 @@
             
             // Mock transactions data - in real app this would come from backend
             const mockTransactions = [
-                {
-                    id: 1,
-                    type: 'deposit',
-                    title: 'شحن المحفظة',
-                    amount: 500,
-                    date: new Date(Date.now() - 86400000).toISOString() // 1 day ago
-                },
-                {
-                    id: 2,
-                    type: 'withdraw',
-                    title: 'شراء منتج',
-                    amount: -150,
-                    date: new Date(Date.now() - 172800000).toISOString() // 2 days ago
-                },
-                {
-                    id: 3,
-                    type: 'deposit',
-                    title: 'إضافة رصيد',
-                    amount: 200,
-                    date: new Date(Date.now() - 259200000).toISOString() // 3 days ago
-                },
-                {
-                    id: 4,
-                    type: 'withdraw',
-                    title: 'شراء منتج',
-                    amount: -75,
-                    date: new Date(Date.now() - 345600000).toISOString() // 4 days ago
-                },
-                {
-                    id: 5,
-                    type: 'deposit',
-                    title: 'شحن المحفظة',
-                    amount: 300,
-                    date: new Date(Date.now() - 432000000).toISOString() // 5 days ago
-                },
-                {
-                    id: 6,
-                    type: 'withdraw',
-                    title: 'شراء منتج',
-                    amount: -120,
-                    date: new Date(Date.now() - 518400000).toISOString() // 6 days ago
-                },
-                {
-                    id: 7,
-                    type: 'deposit',
-                    title: 'إضافة رصيد',
-                    amount: 400,
-                    date: new Date(Date.now() - 604800000).toISOString() // 7 days ago
-                },
-                {
-                    id: 8,
-                    type: 'withdraw',
-                    title: 'شراء منتج',
-                    amount: -90,
-                    date: new Date(Date.now() - 691200000).toISOString() // 8 days ago
-                }
+                
             ];
             
             if (mockTransactions.length === 0) {
