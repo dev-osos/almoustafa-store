@@ -111,7 +111,8 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     margin-bottom: 4px;
   }
-  .pf-name-row { display: flex; align-items: center; gap: 8px; }
+  .pf-name-row { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+  .pf-name-row .pf-hero-name { flex: 1; min-width: 0; margin-bottom: 0; }
   .pf-name-edit-btn {
     flex-shrink: 0; background: none; border: none; cursor: pointer;
     color: rgba(254,214,91,0.55); padding: 2px; line-height: 1;
@@ -904,7 +905,7 @@
         var res = await fetch('apis/users/profile.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: newName }),
+          body: JSON.stringify({ name: newName, segment: (getSession() || {}).segment || 'consumer' }),
         });
         var data = await res.json();
         if (!res.ok) { alert(data.error || 'تعذّر الحفظ'); return; }
