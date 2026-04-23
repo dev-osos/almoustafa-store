@@ -56,7 +56,40 @@
   var dd = document.createElement('div');
   dd.id = 'alm-profile-dd';
   dd.innerHTML =
-    "";
+    '<div class="apd-header">' +
+      '<div class="apd-avatar"><span class="material-symbols-outlined">account_circle</span></div>' +
+      '<div class="apd-info">' +
+        '<div class="apd-name" id="apd-name">مستخدم</div>' +
+        '<div class="apd-phone" id="apd-phone">—</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="apd-list">' +
+      '<div class="apd-item">' +
+        '<div class="apd-item-main"><span class="material-symbols-outlined">sell</span>' +
+          '<div class="apd-item-copy"><div class="apd-item-label">الشريحة</div><div class="apd-item-value" id="apd-segment">—</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<a class="apd-item" href="profile.html">' +
+        '<div class="apd-item-main"><span class="material-symbols-outlined">card_giftcard</span>' +
+          '<div class="apd-item-copy"><div class="apd-item-label">كود الدعوة</div><div class="apd-item-value" id="apd-invite">…</div></div>' +
+        '</div>' +
+        '<div class="apd-item-action"><span class="material-symbols-outlined">chevron_left</span></div>' +
+      '</a>' +
+      '<a class="apd-item" href="profile.html">' +
+        '<div class="apd-item-main"><span class="material-symbols-outlined">edit_location_alt</span>' +
+          '<div class="apd-item-copy"><div class="apd-item-label">العنوان</div><div class="apd-item-value" id="apd-address">—</div></div>' +
+        '</div>' +
+        '<div class="apd-item-action"><span class="material-symbols-outlined">chevron_left</span></div>' +
+      '</a>' +
+    '</div>' +
+    '<div class="apd-wallet">' +
+      '<div class="apd-wallet-label"><span class="material-symbols-outlined">account_balance_wallet</span>رصيد المحفظة</div>' +
+      '<div class="apd-wallet-balance" id="apd-wallet">0.00 ج.م</div>' +
+    '</div>' +
+    '<hr class="apd-divider"/>' +
+    '<button class="apd-logout" id="apd-logout" type="button">' +
+      '<span class="material-symbols-outlined">logout</span>تسجيل الخروج' +
+    '</button>';
   document.body.appendChild(dd);
 
   /* ─── Helpers ──────────────────────────────────────────────── */
