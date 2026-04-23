@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" dir="rtl" lang="ar">
+<head>
+<script src="js/no-double-tap-zoom.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>المصطفى | طلباتي</title>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#3c0004"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="المصطفى"/>
+<link rel="apple-touch-icon" href="logo.png"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Manrope:wght@200..800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="icons/bootstrap-icons/bootstrap-icons.min.css" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "on-secondary-fixed-variant": "#574500",
+          "surface-dim": "#dddad1",
+          "on-error": "#ffffff",
+          "surface-bright": "#fdf9f0",
+          "on-tertiary": "#ffffff",
+          "surface-container": "#f1eee5",
+          "inverse-primary": "#ffb3af",
+          "inverse-surface": "#31312b",
+          "inverse-on-surface": "#f4f0e7",
+          "secondary": "#735c00",
+          "on-primary-container": "#e37470",
+          "outline-variant": "#dcc0be",
+          "error": "#ba1a1a",
+          "on-tertiary-container": "#bd8e00",
+          "on-surface": "#1c1c17",
+          "surface-container-high": "#ece8df",
+          "on-background": "#1c1c17",
+          "on-primary-fixed": "#410005",
+          "primary-container": "#5d0e12",
+          "surface": "#fdf9f0",
+          "primary-fixed-dim": "#ffb3af",
+          "on-tertiary-fixed-variant": "#5b4300",
+          "surface-container-highest": "#e6e2d9",
+          "on-primary": "#ffffff",
+          "on-tertiary-fixed": "#261a00",
+          "on-secondary-fixed": "#241a00",
+          "surface-container-lowest": "#ffffff",
+          "tertiary": "#221700",
+          "on-secondary-container": "#745c00",
+          "on-secondary": "#ffffff",
+          "tertiary-container": "#3c2b00",
+          "error-container": "#ffdad6",
+          "tertiary-fixed": "#ffdf9e",
+          "primary": "#3c0004",
+          "primary-fixed": "#ffdad7",
+          "outline": "#897270",
+          "secondary-fixed-dim": "#e9c349",
+          "tertiary-fixed-dim": "#fabd00",
+          "on-error-container": "#93000a",
+          "secondary-fixed": "#ffe088",
+          "surface-tint": "#9f3f3e",
+          "surface-variant": "#e6e2d9",
+          "surface-container-low": "#f7f3ea",
+          "on-surface-variant": "#564241",
+          "on-primary-fixed-variant": "#802828",
+          "background": "#fdf9f0",
+          "secondary-container": "#fed65b"
+        },
+        fontFamily: {
+          "headline": ["Amiri", "serif"],
+          "body": ["Manrope", "sans-serif"],
+          "label": ["Manrope", "sans-serif"]
+        },
+        borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+      },
+    },
+  }
+</script>
+<style>
+  * { box-sizing: border-box; }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  }
+  .ms-fill { font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+
+  /* ── Skeleton ── */
+  .skeleton {
+    background-color: #e2e8f0;
+    background-image: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 8px;
+  }
+  @keyframes skeleton-loading {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ── Navbar ── */
+  #top-nav {
+    position: fixed; top: 0; width: 100%; z-index: 50;
+    background: rgba(253,249,240,0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(60,0,4,0.08);
+    box-shadow: 0 2px 20px rgba(60,0,4,0.06);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+  }
+  @media (min-width: 768px) { #top-nav { padding: 20px 48px; } }
+
+  /* ── Mobile menu ── */
+  #mobile-menu-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(28,28,23,0.5);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 80;
+  }
+  #mobile-menu-backdrop.open { opacity: 1; pointer-events: auto; }
+
+  #mobile-menu-panel {
+    position: fixed; top: 0; left: -280px;
+    width: 260px; max-width: 85vw; height: 100vh;
+    background: #fdf9f0;
+    border-right: 1px solid rgba(60,0,4,0.08);
+    box-shadow: 10px 0 40px rgba(0,0,0,0.2);
+    z-index: 90;
+    padding: 80px 18px 24px;
+    transition: left 0.25s ease;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  #mobile-menu-panel.open { left: 0; }
+
+  .mobile-menu-close-btn {
+    position: absolute; top: 18px; left: 16px;
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1px solid rgba(60,0,4,0.15);
+    background: rgba(60,0,4,0.06);
+    color: #3c0004;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .mobile-menu-link {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 14px; border-radius: 10px;
+    color: #3c0004; text-decoration: none;
+    font-family: 'Amiri', serif; font-size: 1rem; font-weight: 700;
+    border: 1px solid transparent;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .mobile-menu-link:hover { background: rgba(60,0,4,0.05); }
+  .mobile-menu-link.active {
+    background: rgba(60,0,4,0.08);
+    border-color: rgba(60,0,4,0.16);
+  }
+
+  /* ── Page layout ── */
+  body { background: #fdf9f0; font-family: 'Manrope', sans-serif; margin: 0; }
+  #page-content { padding-top: 76px; min-height: 100vh; }
+  @media (min-width: 768px) { #page-content { padding-top: 92px; } }
+
+  /* ── Page header banner ── */
+  .orders-hero {
+    background: linear-gradient(135deg, #3c0004 0%, #5d0e12 60%, #3c0004 100%);
+    padding: 36px 24px 32px;
+    position: relative; overflow: hidden;
+  }
+  .orders-hero::before {
+    content: '';
+    position: absolute; top: -80px; right: -60px;
+    width: 300px; height: 260px;
+    background: radial-gradient(ellipse, rgba(254,214,91,0.2) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .orders-hero::after {
+    content: '';
+    position: absolute; bottom: -50px; left: -40px;
+    width: 200px; height: 180px;
+    background: radial-gradient(circle, rgba(254,214,91,0.1) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  /* ── Filters bar ── */
+  .filter-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 16px; border-radius: 9999px;
+    font-family: 'Amiri', serif; font-size: 0.88rem; font-weight: 700;
+    border: 1.5px solid transparent; cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .filter-pill.active {
+    background: #3c0004; color: #fff; border-color: #3c0004;
+  }
+  .filter-pill:not(.active) {
+    background: transparent; color: #564241; border-color: #dcc0be;
+  }
+  .filter-pill:not(.active):hover {
+    border-color: #3c0004; color: #3c0004;
+  }
+
+  /* ── Search bar ── */
+  .order-search {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.7);
+    border: 1.5px solid #dcc0be;
+    border-radius: 12px; padding: 10px 14px;
+    transition: border-color 0.2s;
+  }
+  .order-search:focus-within { border-color: #3c0004; }
+  .order-search input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-family: 'Manrope', sans-serif; font-size: 0.88rem;
+    color: #1c1c17; direction: rtl;
+  }
+  .order-search input::placeholder { color: #897270; }
+
+  /* ── Order Card ── */
+  .order-card {
+    background: #fff;
+    border: 1.5px solid #ece8df;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: box-shadow 0.25s, border-color 0.25s, transform 0.25s;
+    cursor: pointer;
+  }
+  .order-card:hover {
+    box-shadow: 0 8px 32px rgba(60,0,4,0.1);
+    border-color: rgba(60,0,4,0.18);
+    transform: translateY(-1px);
+  }
+  .order-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid #f1eee5;
+  }
+  .order-id {
+    font-family: 'Manrope', sans-serif; font-size: 0.75rem;
+    font-weight: 700; color: #897270; letter-spacing: 0.08em;
+    direction: ltr; text-align: right;
+  }
+  .order-date { font-size: 0.75rem; color: #897270; margin-top: 2px; }
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 13px; border-radius: 9999px;
+    font-family: 'Amiri', serif; font-size: 0.82rem; font-weight: 700;
+  }
+  .status-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  /* Status colors */
+  .status-pending    { background: #fff8e1; color: #735c00; }
+  .status-pending    .status-dot { background: #fabd00; }
+  .status-confirmed  { background: #e8f5e9; color: #2e7d32; }
+  .status-confirmed  .status-dot { background: #43a047; }
+  .status-preparing  { background: #e3f2fd; color: #1565c0; }
+  .status-preparing  .status-dot { background: #1e88e5; animation: blink 1.4s infinite; }
+  .status-shipping   { background: #f3e5f5; color: #6a1b9a; }
+  .status-shipping   .status-dot { background: #8e24aa; animation: blink 1.4s infinite; }
+  .status-delivered  { background: #e8f5e9; color: #1b5e20; }
+  .status-delivered  .status-dot { background: #2e7d32; }
+  .status-cancelled  { background: #fce4ec; color: #b71c1c; }
+  .status-cancelled  .status-dot { background: #e53935; }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ── Product rows inside card ── */
+  .order-product-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 20px;
+  }
+  .order-product-row + .order-product-row {
+    border-top: 1px solid #f7f3ea;
+  }
+  .order-product-img {
+    width: 52px; height: 52px; border-radius: 12px;
+    background: #f1eee5; object-fit: cover; flex-shrink: 0;
+    border: 1px solid #ece8df;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .order-product-img .material-symbols-outlined {
+    font-size: 26px; color: #dcc0be;
+    font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  }
+  .order-product-name {
+    font-family: 'Amiri', serif; font-size: 0.95rem; font-weight: 700;
+    color: #1c1c17; flex: 1;
+  }
+  .order-product-qty { font-size: 0.78rem; color: #897270; margin-top: 2px; }
+  .order-product-price {
+    font-family: 'Manrope', sans-serif; font-size: 0.88rem;
+    font-weight: 700; color: #3c0004; flex-shrink: 0;
+  }
+
+  /* ── Card footer ── */
+  .order-card-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    background: #fdf9f0; border-top: 1px solid #f1eee5;
+  }
+  .order-total-label { font-size: 0.78rem; color: #897270; }
+  .order-total-amount {
+    font-family: 'Amiri', serif; font-size: 1.05rem; font-weight: 700;
+    color: #3c0004;
+  }
+  .btn-track {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 18px; border-radius: 10px;
+    background: #3c0004; color: #fff;
+    font-family: 'Amiri', serif; font-size: 0.88rem; font-weight: 700;
+    border: none; cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-track:hover { background: #5d0e12; transform: translateY(-1px); }
+  .btn-track .material-symbols-outlined { font-size: 17px; }
+
+  /* ── Order Detail Panel (accordion) ── */
+  .order-detail-panel {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.3s;
+    opacity: 0;
+    border-top: 0px solid #f1eee5;
+  }
+  .order-detail-panel.open {
+    max-height: 700px; opacity: 1;
+    border-top: 1px solid #f1eee5;
+  }
+  .order-detail-inner { padding: 20px 20px 8px; }
+
+  /* ── Timeline ── */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .timeline-step {
+    display: flex; gap: 14px; padding-bottom: 20px;
+    position: relative;
+  }
+  .timeline-step:last-child { padding-bottom: 0; }
+  .timeline-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 32px; right: 15px;
+    width: 2px; bottom: 0;
+    background: #ece8df;
+  }
+  .timeline-step.done::after { background: linear-gradient(180deg, #3c0004 0%, #ece8df 100%); }
+  .timeline-step.active-step::after { background: linear-gradient(180deg, #1e88e5 0%, #ece8df 100%); }
+
+  .tl-icon {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #ece8df; background: #fff;
+    position: relative; z-index: 1;
+  }
+  .tl-icon .material-symbols-outlined { font-size: 16px; color: #dcc0be; }
+  .timeline-step.done .tl-icon {
+    background: #3c0004; border-color: #3c0004;
+  }
+  .timeline-step.done .tl-icon .material-symbols-outlined {
+    color: #fff;
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .timeline-step.active-step .tl-icon {
+    background: #e3f2fd; border-color: #1e88e5;
+    box-shadow: 0 0 0 4px rgba(30,136,229,0.15);
+  }
+  .timeline-step.active-step .tl-icon .material-symbols-outlined { color: #1e88e5; }
+
+  .tl-body { flex: 1; padding-top: 4px; }
+  .tl-title {
+    font-family: 'Amiri', serif; font-size: 0.92rem; font-weight: 700;
+    color: #1c1c17;
+  }
+  .timeline-step:not(.done):not(.active-step) .tl-title { color: #897270; }
+  .tl-time { font-size: 0.72rem; color: #897270; margin-top: 2px; }
+  .tl-note {
+    font-size: 0.78rem; color: #564241; margin-top: 5px;
+    background: #f7f3ea; border-radius: 8px; padding: 7px 10px;
+    line-height: 1.5;
+  }
+
+  /* ── Address detail ── */
+  .order-address-block {
+    background: #f7f3ea; border-radius: 12px;
+    padding: 12px 14px; margin-top: 14px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .order-address-block .material-symbols-outlined {
+    font-size: 20px; color: #3c0004; margin-top: 1px; flex-shrink: 0;
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 64px 24px 48px; text-align: center;
+  }
+  .empty-icon-ring {
+    width: 96px; height: 96px; border-radius: 50%;
+    background: rgba(60,0,4,0.05);
+    border: 2px dashed rgba(60,0,4,0.18);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 24px;
+  }
+  .empty-icon-ring .material-symbols-outlined {
+    font-size: 42px; color: rgba(60,0,4,0.25);
+    font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 48;
+  }
+
+  /* ── Guest banner ── */
+  .guest-banner {
+    background: linear-gradient(135deg, rgba(60,0,4,0.06) 0%, rgba(115,92,0,0.06) 100%);
+    border: 1.5px dashed rgba(60,0,4,0.2);
+    border-radius: 16px; padding: 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .guest-banner-icon {
+    width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(60,0,4,0.08);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .guest-banner-icon .material-symbols-outlined {
+    font-size: 24px; color: #3c0004;
+  }
+
+  /* ── Track by number form ── */
+  .track-form {
+    background: #fff; border: 1.5px solid #ece8df;
+    border-radius: 20px; padding: 24px 20px;
+  }
+  .track-input-row {
+    display: flex; gap: 8px; align-items: stretch;
+  }
+  .track-input-row input {
+    flex: 1; padding: 12px 16px;
+    border: 1.5px solid #dcc0be; border-radius: 12px;
+    font-family: 'Manrope', sans-serif; font-size: 0.88rem;
+    color: #1c1c17; background: #fdf9f0;
+    outline: none; direction: ltr; letter-spacing: 0.05em;
+    transition: border-color 0.2s;
+  }
+  .track-input-row input::placeholder { color: #897270; letter-spacing: 0; direction: rtl; }
+  .track-input-row input:focus { border-color: #3c0004; }
+  .btn-track-search {
+    padding: 12px 20px; border-radius: 12px;
+    background: #3c0004; color: #fff; border: none; cursor: pointer;
+    font-family: 'Amiri', serif; font-size: 0.95rem; font-weight: 700;
+    display: flex; align-items: center; gap: 6px;
+    transition: background 0.2s, transform 0.15s;
+    white-space: nowrap;
+  }
+  .btn-track-search:hover { background: #5d0e12; transform: translateY(-1px); }
+
+  /* ── Stats row ── */
+  .stat-chip {
+    background: #fff; border: 1px solid #ece8df;
+    border-radius: 14px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 3px;
+    flex: 1; min-width: 0;
+  }
+  .stat-chip-num {
+    font-family: 'Amiri', serif; font-size: 1.4rem; font-weight: 700;
+    color: #3c0004;
+  }
+  .stat-chip-lbl { font-size: 0.72rem; color: #897270; }
+
+  /* ── Animate ── */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .anim-card {
+    animation: fadeSlideUp 0.4s cubic-bezier(0.4,0,0.2,1) both;
+  }
+  .anim-card:nth-child(1) { animation-delay: 0.05s; }
+  .anim-card:nth-child(2) { animation-delay: 0.12s; }
+  .anim-card:nth-child(3) { animation-delay: 0.19s; }
+  .anim-card:nth-child(4) { animation-delay: 0.26s; }
+
+  /* ── Sticky filter bar ── */
+  .filter-bar {
+    position: sticky; top: 76px; z-index: 40;
+    background: rgba(253,249,240,0.96);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(60,0,4,0.06);
+    padding: 10px 0;
+  }
+  @media (min-width: 768px) { .filter-bar { top: 92px; } }
+
+  /* scrollbar hidden for filter row */
+  .filter-scroll { overflow-x: auto; scrollbar-width: none; }
+  .filter-scroll::-webkit-scrollbar { display: none; }
+
+  /* ── Copy badge ── */
+  .copy-btn {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 0.72rem; color: #897270; cursor: pointer;
+    background: #f7f3ea; border-radius: 6px; padding: 3px 7px;
+    border: none; font-family: 'Manrope', sans-serif;
+    transition: background 0.2s, color 0.2s;
+  }
+  .copy-btn:hover { background: #ece8df; color: #3c0004; }
+  .copy-btn .material-symbols-outlined { font-size: 13px; }
+
+  /* ── Divider ── */
+  .section-divider {
+    display: flex; align-items: center; gap: 10px;
+    margin: 6px 0;
+  }
+  .section-divider::before, .section-divider::after {
+    content: ''; flex: 1; height: 1px; background: #ece8df;
+  }
+
+  /* ── Responsive ── */
+  @media (min-width: 768px) {
+    .order-card-header { padding: 20px 24px 16px; }
+    .order-product-row { padding: 14px 24px; }
+    .order-card-footer { padding: 16px 24px; }
+    .order-detail-inner { padding: 24px 24px 10px; }
+  }
+</style>
+</head>
+
+<body>
+
+<!-- ══════════ TOP NAV ══════════ -->
+<nav id="top-nav">
+  <!-- Brand -->
+  <div class="flex items-center gap-3">
+    <img src="logo.png" alt="المصطفى" class="h-10 md:h-12 w-auto drop-shadow-md"/>
+    <div class="flex flex-col">
+      <span class="text-xl md:text-2xl font-bold font-headline text-primary tracking-wide leading-none">متجر المصطفى</span>
+      <span class="text-[11px] tracking-widest font-body text-secondary mt-0.5">إسم يعني الثقه</span>
+    </div>
+  </div>
+
+  <!-- Desktop links -->
+  <div class="hidden md:flex items-center gap-10">
+    <a href="index.html" class="flex items-center gap-2 text-primary/70 font-headline font-semibold text-base tracking-wide hover:text-secondary transition-colors">
+      <i class="bi bi-house-door text-sm"></i>تراثنا
+    </a>
+    <a href="collections.html" class="flex items-center gap-2 text-primary/70 font-headline font-semibold text-base tracking-wide hover:text-secondary transition-colors">
+      <i class="bi bi-shop text-sm"></i>منتجاتنا
+    </a>
+    <a href="reviews.html" class="flex items-center gap-2 text-primary/70 font-headline font-semibold text-base tracking-wide hover:text-secondary transition-colors">
+      <i class="bi bi-star text-sm"></i>آراء العملاء
+    </a>
+    <a href="about.html" class="flex items-center gap-2 text-primary/70 font-headline font-semibold text-base tracking-wide hover:text-secondary transition-colors">
+      <i class="bi bi-people text-sm"></i>من نحن
+    </a>
+    <a href="orders.html" class="flex items-center gap-2 text-primary border-b-2 border-primary pb-0.5 font-headline font-semibold text-base tracking-wide">
+      <i class="bi bi-bag-check text-sm"></i>طلباتي
+    </a>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex items-center gap-4">
+    <a href="collections.html" class="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white font-headline font-bold text-sm hover:bg-primary-container transition-colors">
+      <span class="material-symbols-outlined" style="font-size:17px;">shopping_bag</span>
+      تسوق الآن
+    </a>
+    <!-- Mobile menu toggle -->
+    <button class="md:hidden text-primary" id="btn-mobile-menu" aria-label="القائمة">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ══════════ MOBILE SIDEBAR ══════════ -->
+<div id="mobile-menu-backdrop" class="md:hidden"></div>
+<aside id="mobile-menu-panel" class="md:hidden" aria-hidden="true">
+  <button id="btn-mobile-menu-close" class="mobile-menu-close-btn" type="button" aria-label="إغلاق القائمة">
+    <span class="material-symbols-outlined" style="font-size:20px;">close</span>
+  </button>
+  <a href="index.html" class="mobile-menu-link"><i class="bi bi-house-door text-sm"></i><span>تراثنا</span></a>
+  <a href="collections.html" class="mobile-menu-link"><i class="bi bi-shop text-sm"></i><span>منتجاتنا</span></a>
+  <a href="reviews.html" class="mobile-menu-link"><i class="bi bi-star text-sm"></i><span>آراء العملاء</span></a>
+  <a href="about.html" class="mobile-menu-link"><i class="bi bi-people text-sm"></i><span>من نحن</span></a>
+  <a href="orders.html" class="mobile-menu-link active"><i class="bi bi-bag-check text-sm"></i><span>طلباتي</span></a>
+  <div class="mt-auto pt-4 border-t border-primary/10">
+    <a href="collections.html" class="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary text-white font-headline font-bold text-base">
+      <span class="material-symbols-outlined" style="font-size:18px;">shopping_bag</span>
+      تسوق الآن
+    </a>
+  </div>
+</aside>
+
+<!-- ══════════ PAGE CONTENT ══════════ -->
+<div id="page-content">
+
+  <!-- Hero banner -->
+  <div class="orders-hero">
+    <div class="relative z-10 max-w-3xl mx-auto">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+          <span class="material-symbols-outlined ms-fill" style="font-size:22px;color:#fed65b;">package_2</span>
+        </div>
+        <h1 class="font-headline text-2xl md:text-3xl font-bold text-white">طلباتي</h1>
+      </div>
+      <p class="text-white/60 font-body text-sm md:text-base mt-1">تابع جميع طلباتك ومعرفة حالتها بشكل فوري</p>
+
+      <!-- Guest notice inside hero -->
+      <div id="guest-banner" class="mt-5 bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-4 flex items-center gap-3 hidden">
+        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-content-center flex-shrink-0 flex items-center justify-center">
+          <span class="material-symbols-outlined" style="font-size:20px;color:#fed65b;">info</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-headline font-bold text-white text-sm">أنت تتصفح كزائر</p>
+          <p class="text-white/55 text-xs mt-0.5 font-body">سجّل دخولك لعرض جميع طلباتك، أو ابحث بواسطة رقم الطلب</p>
+        </div>
+        <button onclick="openLoginModal()" class="flex-shrink-0 bg-secondary-container text-primary font-headline font-bold text-sm rounded-xl px-4 py-2 hover:opacity-90 transition-opacity">
+          دخول
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main container -->
+  <div class="max-w-3xl mx-auto px-4 md:px-6 pb-16">
+
+    <!-- Stats row (logged in only) -->
+    <div id="stats-row" class="flex gap-3 mt-5 mb-1">
+      <div class="stat-chip">
+        <span class="stat-chip-num" id="stat-total">—</span>
+        <span class="stat-chip-lbl">إجمالي الطلبات</span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-chip-num" id="stat-active">—</span>
+        <span class="stat-chip-lbl">قيد التنفيذ</span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-chip-num" id="stat-delivered">—</span>
+        <span class="stat-chip-lbl">تم التوصيل</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Filter bar (sticky) ── -->
+  <div class="filter-bar">
+    <div class="max-w-3xl mx-auto">
+      <div class="filter-scroll px-4 md:px-6">
+        <div class="flex gap-2 pb-1" id="filter-tabs">
+          <button class="filter-pill active" data-filter="all">
+            <span class="material-symbols-outlined" style="font-size:15px;">apps</span>
+            الكل
+          </button>
+          <button class="filter-pill" data-filter="pending">
+            <span style="width:7px;height:7px;border-radius:50%;background:#fabd00;display:inline-block;flex-shrink:0;"></span>
+            قيد الانتظار
+          </button>
+          <button class="filter-pill" data-filter="preparing">
+            <span style="width:7px;height:7px;border-radius:50%;background:#1e88e5;display:inline-block;flex-shrink:0;"></span>
+            جاري التجهيز
+          </button>
+          <button class="filter-pill" data-filter="shipping">
+            <span style="width:7px;height:7px;border-radius:50%;background:#8e24aa;display:inline-block;flex-shrink:0;"></span>
+            في الطريق
+          </button>
+          <button class="filter-pill" data-filter="delivered">
+            <span style="width:7px;height:7px;border-radius:50%;background:#2e7d32;display:inline-block;flex-shrink:0;"></span>
+            تم التوصيل
+          </button>
+          <button class="filter-pill" data-filter="cancelled">
+            <span style="width:7px;height:7px;border-radius:50%;background:#e53935;display:inline-block;flex-shrink:0;"></span>
+            ملغي
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders list area -->
+  <div class="max-w-3xl mx-auto px-4 md:px-6 mt-5">
+
+    <!-- Search + track by number -->
+    <div class="flex flex-col gap-3 mb-6">
+      <!-- Search (logged in) -->
+      <div class="order-search" id="search-bar">
+        <span class="material-symbols-outlined" style="font-size:20px;color:#897270;">search</span>
+        <input type="text" placeholder="ابحث برقم الطلب أو اسم المنتج…" id="search-input" oninput="filterOrders()"/>
+      </div>
+
+      <!-- Track by order number (guest) -->
+      <div id="track-form-wrap" class="track-form hidden">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="material-symbols-outlined ms-fill" style="font-size:22px;color:#3c0004;">local_shipping</span>
+          <div>
+            <p class="font-headline font-bold text-on-surface text-sm">تتبع طلبك</p>
+            <p class="text-xs text-outline font-body mt-0.5">أدخل رقم الطلب الذي استلمته عبر الواتساب</p>
+          </div>
+        </div>
+        <div class="track-input-row">
+          <input type="text" id="track-number-input" placeholder="مثال: ORD-20240001" maxlength="20"/>
+          <button class="btn-track-search" onclick="trackByNumber()">
+            <span class="material-symbols-outlined" style="font-size:17px;">search</span>
+            تتبع
+          </button>
+        </div>
+        <p class="text-xs text-outline mt-3 font-body text-center">
+          لا تعرف رقم طلبك؟
+          <button onclick="openLoginModal()" class="text-primary font-bold underline bg-transparent border-none cursor-pointer font-body text-xs">سجّل دخولك</button>
+          لعرض جميع طلباتك
+        </p>
+      </div>
+    </div>
+
+    <!-- Loading skeleton -->
+    <div id="orders-skeleton" class="flex flex-col gap-4">
+      <div class="bg-white border border-outline-variant/50 rounded-2xl p-5">
+        <div class="flex justify-between mb-4">
+          <div class="skeleton h-4 w-32"></div>
+          <div class="skeleton h-6 w-20 rounded-full"></div>
+        </div>
+        <div class="flex gap-3 mb-4">
+          <div class="skeleton w-12 h-12 rounded-xl flex-shrink-0"></div>
+          <div class="flex-1 flex flex-col gap-2 pt-1">
+            <div class="skeleton h-3 w-3/4"></div>
+            <div class="skeleton h-3 w-1/2"></div>
+          </div>
+        </div>
+        <div class="skeleton h-10 w-full rounded-xl"></div>
+      </div>
+      <div class="bg-white border border-outline-variant/50 rounded-2xl p-5">
+        <div class="flex justify-between mb-4">
+          <div class="skeleton h-4 w-28"></div>
+          <div class="skeleton h-6 w-24 rounded-full"></div>
+        </div>
+        <div class="flex gap-3 mb-4">
+          <div class="skeleton w-12 h-12 rounded-xl flex-shrink-0"></div>
+          <div class="flex-1 flex flex-col gap-2 pt-1">
+            <div class="skeleton h-3 w-2/3"></div>
+            <div class="skeleton h-3 w-1/3"></div>
+          </div>
+        </div>
+        <div class="skeleton h-10 w-full rounded-xl"></div>
+      </div>
+    </div>
+
+    <!-- Orders list -->
+    <div id="orders-list" class="flex flex-col gap-4 hidden"></div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="empty-state hidden">
+      <div class="empty-icon-ring">
+        <span class="material-symbols-outlined">package_2</span>
+      </div>
+      <h3 class="font-headline font-bold text-on-surface text-xl mb-2">لا توجد طلبات</h3>
+      <p class="text-outline text-sm font-body max-w-xs leading-relaxed" id="empty-msg">لم تقم بأي طلب بعد. ابدأ تسوقك واستمتع بأجود أنواع العسل!</p>
+      <a href="collections.html" class="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-headline font-bold text-base hover:bg-primary-container transition-colors">
+        <span class="material-symbols-outlined" style="font-size:18px;">shopping_bag</span>
+        تسوق الآن
+      </a>
+    </div>
+
+  </div>
+</div><!-- /page-content -->
+
+
+<!-- ══════════ ORDER DETAIL MODAL ══════════ -->
+<div id="order-modal-backdrop" style="
+  position:fixed;inset:0;background:rgba(28,28,23,0.6);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  z-index:700;display:flex;align-items:flex-end;justify-content:center;
+  padding:0;opacity:0;pointer-events:none;
+  transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1);
+" onclick="closeOrderModal(event)">
+  <div id="order-modal" style="
+    width:100%;max-width:600px;
+    background:#fdf9f0;
+    border-radius:24px 24px 0 0;
+    max-height:90vh;overflow-y:auto;
+    transform:translateY(40px);
+    transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    direction:rtl;
+  " onclick="event.stopPropagation()">
+    <!-- Modal handle -->
+    <div style="display:flex;justify-content:center;padding:12px 0 0;">
+      <div style="width:40px;height:4px;border-radius:2px;background:#dcc0be;"></div>
+    </div>
+
+    <!-- Modal header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid #f1eee5;">
+      <div>
+        <p style="font-family:'Amiri',serif;font-size:1.1rem;font-weight:700;color:#1c1c17;" id="modal-order-id">تفاصيل الطلب</p>
+        <p style="font-size:0.73rem;color:#897270;margin-top:2px;" id="modal-order-date">—</p>
+      </div>
+      <button onclick="closeOrderModal()" style="
+        width:34px;height:34px;border-radius:50%;
+        border:1px solid #ece8df;background:transparent;cursor:pointer;
+        display:flex;align-items:center;justify-content:center;
+        color:#564241;
+      ">
+        <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+      </button>
+    </div>
+
+    <div style="padding:20px;">
+
+      <!-- Status badge large -->
+      <div id="modal-status-wrap" style="margin-bottom:20px;"></div>
+
+      <!-- Timeline -->
+      <p style="font-family:'Amiri',serif;font-size:0.8rem;font-weight:700;color:#897270;letter-spacing:0.08em;margin-bottom:14px;text-transform:uppercase;">مراحل الطلب</p>
+      <div class="timeline" id="modal-timeline"></div>
+
+      <!-- Address -->
+      <div style="margin-top:20px;">
+        <p style="font-family:'Amiri',serif;font-size:0.8rem;font-weight:700;color:#897270;letter-spacing:0.08em;margin-bottom:10px;">عنوان التوصيل</p>
+        <div class="order-address-block" id="modal-address">
+          <span class="material-symbols-outlined ms-fill" style="font-size:20px;color:#3c0004;">location_on</span>
+          <p style="font-size:0.85rem;color:#1c1c17;font-family:'Manrope',sans-serif;line-height:1.5;" id="modal-address-text">—</p>
+        </div>
+      </div>
+
+      <!-- Products in modal -->
+      <div style="margin-top:20px;">
+        <p style="font-family:'Amiri',serif;font-size:0.8rem;font-weight:700;color:#897270;letter-spacing:0.08em;margin-bottom:10px;">المنتجات</p>
+        <div id="modal-products" style="border:1.5px solid #ece8df;border-radius:14px;overflow:hidden;background:#fff;"></div>
+      </div>
+
+      <!-- Totals -->
+      <div id="modal-totals" style="margin-top:16px;background:#fff;border:1.5px solid #ece8df;border-radius:14px;overflow:hidden;"></div>
+
+      <!-- Action buttons -->
+      <div id="modal-actions" style="display:flex;gap:10px;margin-top:20px;padding-bottom:8px;"></div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════ SCRIPTS ══════════ -->
+<script>
+/* ─── Demo data ─── */
+const DEMO_ORDERS = [
+  {
+    id: 'ORD-20240047',
+    date: '2024-04-18',
+    status: 'shipping',
+    statusLabel: 'في الطريق',
+    address: 'القاهرة، مدينة نصر، شارع عباس العقاد، برج النيل، الدور 5',
+    products: [
+      { name: 'عسل السدر الملكي', qty: 2, price: 480, weight: '500 جم' },
+      { name: 'عسل الغابة السوداء', qty: 1, price: 320, weight: '250 جم' },
+    ],
+    subtotal: 1280,
+    shipping: 50,
+    discount: 0,
+    total: 1330,
+    timeline: [
+      { icon: 'shopping_cart', title: 'تم استلام الطلب', time: '18 أبريل، 10:32 ص', done: true },
+      { icon: 'check_circle', title: 'تم تأكيد الطلب', time: '18 أبريل، 11:05 ص', done: true },
+      { icon: 'inventory_2', title: 'جاري التجهيز', time: '18 أبريل، 2:00 م', done: true },
+      { icon: 'local_shipping', title: 'خرج للتوصيل', time: 'اليوم، 9:20 ص', done: false, active: true, note: 'السائق: أحمد محمد — 01012345678' },
+      { icon: 'where_to_vote', title: 'تم التوصيل', time: '—', done: false },
+    ],
+  },
+  {
+    id: 'ORD-20240031',
+    date: '2024-04-05',
+    status: 'delivered',
+    statusLabel: 'تم التوصيل',
+    address: 'الجيزة، المهندسين، شارع جامعة الدول العربية',
+    products: [
+      { name: 'عسل السدر الأصيل', qty: 3, price: 350, weight: '500 جم' },
+    ],
+    subtotal: 1050,
+    shipping: 0,
+    discount: 100,
+    total: 950,
+    timeline: [
+      { icon: 'shopping_cart', title: 'تم استلام الطلب', time: '5 أبريل، 8:45 ص', done: true },
+      { icon: 'check_circle', title: 'تم تأكيد الطلب', time: '5 أبريل، 9:10 ص', done: true },
+      { icon: 'inventory_2', title: 'جاري التجهيز', time: '5 أبريل، 1:00 م', done: true },
+      { icon: 'local_shipping', title: 'خرج للتوصيل', time: '6 أبريل، 10:00 ص', done: true },
+      { icon: 'where_to_vote', title: 'تم التوصيل', time: '6 أبريل، 3:15 م', done: true },
+    ],
+  },
+  {
+    id: 'ORD-20240019',
+    date: '2024-03-20',
+    status: 'delivered',
+    statusLabel: 'تم التوصيل',
+    address: 'الإسكندرية، سيدي جابر، شارع الجيش',
+    products: [
+      { name: 'عسل المانوكا الفاخر', qty: 1, price: 890, weight: '250 جم' },
+      { name: 'عسل الزيزفون', qty: 2, price: 260, weight: '500 جم' },
+    ],
+    subtotal: 1410,
+    shipping: 80,
+    discount: 0,
+    total: 1490,
+    timeline: [
+      { icon: 'shopping_cart', title: 'تم استلام الطلب', time: '20 مارس، 6:00 م', done: true },
+      { icon: 'check_circle', title: 'تم تأكيد الطلب', time: '20 مارس، 6:30 م', done: true },
+      { icon: 'inventory_2', title: 'جاري التجهيز', time: '21 مارس، 9:00 ص', done: true },
+      { icon: 'local_shipping', title: 'خرج للتوصيل', time: '22 مارس، 8:00 ص', done: true },
+      { icon: 'where_to_vote', title: 'تم التوصيل', time: '22 مارس، 4:45 م', done: true },
+    ],
+  },
+  {
+    id: 'ORD-20240008',
+    date: '2024-03-02',
+    status: 'cancelled',
+    statusLabel: 'ملغي',
+    address: 'القاهرة، المعادي، شارع النيل',
+    products: [
+      { name: 'عسل السدر الملكي', qty: 1, price: 480, weight: '500 جم' },
+    ],
+    subtotal: 480,
+    shipping: 50,
+    discount: 0,
+    total: 530,
+    timeline: [
+      { icon: 'shopping_cart', title: 'تم استلام الطلب', time: '2 مارس، 2:10 م', done: true },
+      { icon: 'cancel', title: 'تم الإلغاء', time: '2 مارس، 3:00 م', done: true, cancelled: true, note: 'تم الإلغاء بناءً على طلب العميل' },
+    ],
+  },
+];
+
+/* ─── State ─── */
+let currentFilter = 'all';
+let currentSearch = '';
+let isLoggedIn = false; // toggle to true to simulate login
+
+/* ─── Status config ─── */
+const STATUS_CFG = {
+  pending:   { label: 'قيد الانتظار', cls: 'status-pending',   icon: 'schedule' },
+  confirmed: { label: 'تم التأكيد',   cls: 'status-confirmed', icon: 'check_circle' },
+  preparing: { label: 'جاري التجهيز', cls: 'status-preparing', icon: 'inventory_2' },
+  shipping:  { label: 'في الطريق',    cls: 'status-shipping',  icon: 'local_shipping' },
+  delivered: { label: 'تم التوصيل',   cls: 'status-delivered', icon: 'where_to_vote' },
+  cancelled: { label: 'ملغي',         cls: 'status-cancelled', icon: 'cancel' },
+};
+
+/* ─── Init ─── */
+window.addEventListener('DOMContentLoaded', () => {
+  // Simulate async load
+  setTimeout(() => {
+    document.getElementById('orders-skeleton').classList.add('hidden');
+    document.getElementById('orders-list').classList.remove('hidden');
+
+    // Toggle UI based on auth state
+    if (isLoggedIn) {
+      document.getElementById('search-bar').classList.remove('hidden');
+      document.getElementById('track-form-wrap').classList.add('hidden');
+      document.getElementById('guest-banner').classList.add('hidden');
+      updateStats();
+    } else {
+      document.getElementById('search-bar').classList.add('hidden');
+      document.getElementById('track-form-wrap').classList.remove('hidden');
+      document.getElementById('guest-banner').classList.remove('hidden');
+      // Hide stats
+      document.getElementById('stats-row').classList.add('hidden');
+    }
+
+    renderOrders();
+  }, 900);
+
+  // Filter tabs
+  document.querySelectorAll('.filter-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      renderOrders();
+    });
+  });
+});
+
+/* ─── Stats ─── */
+function updateStats() {
+  const total = DEMO_ORDERS.length;
+  const active = DEMO_ORDERS.filter(o => ['pending','confirmed','preparing','shipping'].includes(o.status)).length;
+  const delivered = DEMO_ORDERS.filter(o => o.status === 'delivered').length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-active').textContent = active;
+  document.getElementById('stat-delivered').textContent = delivered;
+}
+
+/* ─── Render orders ─── */
+function renderOrders() {
+  const list = document.getElementById('orders-list');
+  const empty = document.getElementById('empty-state');
+  const emptyMsg = document.getElementById('empty-msg');
+
+  let orders = DEMO_ORDERS;
+
+  // Filter by status tab
+  if (currentFilter !== 'all') {
+    orders = orders.filter(o => o.status === currentFilter);
+  }
+
+  // Filter by search
+  if (currentSearch.trim()) {
+    const q = currentSearch.toLowerCase();
+    orders = orders.filter(o =>
+      o.id.toLowerCase().includes(q) ||
+      o.products.some(p => p.name.includes(q))
+    );
+  }
+
+  list.innerHTML = '';
+
+  if (orders.length === 0) {
+    empty.classList.remove('hidden');
+    if (!isLoggedIn) {
+      emptyMsg.textContent = 'ابحث بواسطة رقم الطلب أعلاه، أو سجّل دخولك لعرض طلباتك.';
+    } else {
+      emptyMsg.textContent = 'لا توجد طلبات تطابق هذا الفلتر.';
+    }
+    return;
+  }
+  empty.classList.add('hidden');
+
+  orders.forEach((order, i) => {
+    const cfg = STATUS_CFG[order.status] || STATUS_CFG.pending;
+    const card = document.createElement('div');
+    card.className = 'order-card anim-card';
+    card.style.animationDelay = (i * 0.07) + 's';
+
+    const productsHTML = order.products.map(p => `
+      <div class="order-product-row">
+        <div class="order-product-img">
+          <span class="material-symbols-outlined">hexagon</span>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div class="order-product-name">${p.name}</div>
+          <div class="order-product-qty">${p.weight} &nbsp;·&nbsp; الكمية: ${p.qty}</div>
+        </div>
+        <div class="order-product-price">${(p.price * p.qty).toLocaleString('ar-EG')} ج.م</div>
+      </div>
+    `).join('');
+
+    card.innerHTML = `
+      <div class="order-card-header">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="order-id">#${order.id}</span>
+            <button class="copy-btn" onclick="copyOrderId('${order.id}',event)">
+              <span class="material-symbols-outlined">content_copy</span>نسخ
+            </button>
+          </div>
+          <div class="order-date">${formatDate(order.date)}</div>
+        </div>
+        <span class="status-badge ${cfg.cls}">
+          <span class="status-dot"></span>
+          ${cfg.label}
+        </span>
+      </div>
+
+      ${productsHTML}
+
+      <div class="order-card-footer">
+        <div>
+          <div class="order-total-label">الإجمالي</div>
+          <div class="order-total-amount">${order.total.toLocaleString('ar-EG')} ج.م</div>
+        </div>
+        <button class="btn-track" onclick="openOrderModal('${order.id}')">
+          <span class="material-symbols-outlined" style="font-size:17px;">local_shipping</span>
+          تتبع الطلب
+        </button>
+      </div>
+    `;
+
+    list.appendChild(card);
+  });
+}
+
+/* ─── Search ─── */
+function filterOrders() {
+  currentSearch = document.getElementById('search-input').value;
+  renderOrders();
+}
+
+/* ─── Track by number (guest) ─── */
+function trackByNumber() {
+  const val = document.getElementById('track-number-input').value.trim().toUpperCase();
+  if (!val) return;
+  const found = DEMO_ORDERS.find(o => o.id === val || o.id === 'ORD-' + val);
+  if (found) {
+    openOrderModal(found.id);
+  } else {
+    showToast('لم يتم العثور على طلب بهذا الرقم');
+  }
+}
+
+/* ─── Order modal ─── */
+function openOrderModal(orderId) {
+  const order = DEMO_ORDERS.find(o => o.id === orderId);
+  if (!order) return;
+  const cfg = STATUS_CFG[order.status] || STATUS_CFG.pending;
+
+  // Header
+  document.getElementById('modal-order-id').textContent = '#' + order.id;
+  document.getElementById('modal-order-date').textContent = formatDate(order.date);
+
+  // Status badge
+  document.getElementById('modal-status-wrap').innerHTML = `
+    <span class="status-badge ${cfg.cls}" style="font-size:0.92rem;padding:8px 18px;">
+      <span class="status-dot"></span>
+      ${cfg.label}
+    </span>
+  `;
+
+  // Timeline
+  const tl = document.getElementById('modal-timeline');
+  tl.innerHTML = order.timeline.map(step => {
+    const cls = step.cancelled ? 'timeline-step' :
+                step.done && !step.active ? 'timeline-step done' :
+                step.active ? 'timeline-step active-step' :
+                'timeline-step';
+    return `
+      <div class="${cls}">
+        <div class="tl-icon">
+          <span class="material-symbols-outlined">${step.icon}</span>
+        </div>
+        <div class="tl-body">
+          <div class="tl-title">${step.title}</div>
+          <div class="tl-time">${step.time}</div>
+          ${step.note ? `<div class="tl-note">${step.note}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Address
+  document.getElementById('modal-address-text').textContent = order.address;
+
+  // Products
+  document.getElementById('modal-products').innerHTML = order.products.map((p, i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;${i > 0 ? 'border-top:1px solid #f7f3ea;' : ''}">
+      <div style="width:44px;height:44px;border-radius:10px;background:#f1eee5;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span class="material-symbols-outlined" style="font-size:22px;color:#dcc0be;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;">hexagon</span>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Amiri',serif;font-size:0.9rem;font-weight:700;color:#1c1c17;">${p.name}</div>
+        <div style="font-size:0.72rem;color:#897270;margin-top:1px;">${p.weight} · الكمية: ${p.qty}</div>
+      </div>
+      <div style="font-family:'Manrope',sans-serif;font-size:0.85rem;font-weight:700;color:#3c0004;flex-shrink:0;">${(p.price * p.qty).toLocaleString('ar-EG')} ج.م</div>
+    </div>
+  `).join('');
+
+  // Totals
+  const rows = [
+    ['المجموع الجزئي', order.subtotal],
+    order.shipping > 0 ? ['رسوم التوصيل', order.shipping] : null,
+    order.discount > 0 ? ['خصم', -order.discount] : null,
+  ].filter(Boolean);
+
+  document.getElementById('modal-totals').innerHTML = `
+    ${rows.map(([label, val]) => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid #f7f3ea;">
+        <span style="font-size:0.82rem;color:#564241;">${label}</span>
+        <span style="font-family:'Manrope',sans-serif;font-size:0.82rem;font-weight:600;color:${val < 0 ? '#2e7d32' : '#1c1c17'};">${val < 0 ? '-' : ''}${Math.abs(val).toLocaleString('ar-EG')} ج.م</span>
+      </div>
+    `).join('')}
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#fdf9f0;">
+      <span style="font-family:'Amiri',serif;font-size:0.95rem;font-weight:700;color:#1c1c17;">الإجمالي</span>
+      <span style="font-family:'Amiri',serif;font-size:1.05rem;font-weight:700;color:#3c0004;">${order.total.toLocaleString('ar-EG')} ج.م</span>
+    </div>
+  `;
+
+  // Actions
+  const actions = document.getElementById('modal-actions');
+  actions.innerHTML = '';
+  if (order.status === 'shipping') {
+    actions.innerHTML += `<button style="flex:1;padding:13px;border-radius:12px;background:#3c0004;color:#fff;border:none;cursor:pointer;font-family:'Amiri',serif;font-size:0.95rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;" onclick="showToast('سيتم فتح خريطة التتبع قريباً')">
+      <span class="material-symbols-outlined" style="font-size:18px;">map</span> تتبع على الخريطة
+    </button>`;
+  }
+  if (['pending','confirmed'].includes(order.status)) {
+    actions.innerHTML += `<button style="flex:1;padding:13px;border-radius:12px;background:transparent;color:#b71c1c;border:1.5px solid rgba(183,28,28,0.3);cursor:pointer;font-family:'Amiri',serif;font-size:0.95rem;font-weight:700;" onclick="showToast('سيتم إرسال طلب الإلغاء')">
+      إلغاء الطلب
+    </button>`;
+  }
+  if (order.status === 'delivered') {
+    actions.innerHTML += `<button style="flex:1;padding:13px;border-radius:12px;background:rgba(60,0,4,0.07);color:#3c0004;border:1.5px solid rgba(60,0,4,0.15);cursor:pointer;font-family:'Amiri',serif;font-size:0.95rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;" onclick="reorder('${order.id}')">
+      <span class="material-symbols-outlined" style="font-size:18px;">refresh</span> إعادة الطلب
+    </button>`;
+  }
+  actions.innerHTML += `<button style="padding:13px 18px;border-radius:12px;background:transparent;color:#564241;border:1.5px solid #dcc0be;cursor:pointer;font-family:'Manrope',sans-serif;font-size:0.88rem;display:flex;align-items:center;gap:5px;" onclick="contactSupport()">
+    <span class="material-symbols-outlined" style="font-size:17px;">support_agent</span> دعم
+  </button>`;
+
+  // Show modal
+  const backdrop = document.getElementById('order-modal-backdrop');
+  const modal = document.getElementById('order-modal');
+  backdrop.style.opacity = '1';
+  backdrop.style.pointerEvents = 'auto';
+  modal.style.transform = 'translateY(0)';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeOrderModal(e) {
+  if (e && e.target !== document.getElementById('order-modal-backdrop')) return;
+  _closeModal();
+}
+function _closeModal() {
+  const backdrop = document.getElementById('order-modal-backdrop');
+  const modal = document.getElementById('order-modal');
+  backdrop.style.opacity = '0';
+  backdrop.style.pointerEvents = 'none';
+  modal.style.transform = 'translateY(40px)';
+  document.body.style.overflow = '';
+}
+// Close button inside modal
+document.querySelector('#order-modal button[onclick="closeOrderModal()"]') && null;
+
+/* ─── Helpers ─── */
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function copyOrderId(id, e) {
+  e.stopPropagation();
+  navigator.clipboard.writeText(id).then(() => showToast('تم نسخ رقم الطلب')).catch(() => {});
+}
+
+function reorder(id) { showToast('سيتم إضافة المنتجات لسلة التسوق'); }
+function contactSupport() { showToast('سيتم التواصل مع الدعم الفني'); }
+function openLoginModal() { showToast('تسجيل الدخول سيتاح هنا'); }
+
+/* ─── Toast ─── */
+let _toastTimer;
+function showToast(msg) {
+  let t = document.getElementById('orders-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'orders-toast';
+    t.style.cssText = `
+      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+      background:#1c1c17;color:#fff;padding:12px 22px;border-radius:12px;
+      font-family:'Amiri',serif;font-size:0.95rem;font-weight:700;
+      z-index:9999;pointer-events:none;
+      transition:transform 0.35s cubic-bezier(0.4,0,0.2,1),opacity 0.35s;
+      opacity:0;white-space:nowrap;max-width:90vw;text-align:center;
+    `;
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.transform = 'translateX(-50%) translateY(0)';
+  t.style.opacity = '1';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => {
+    t.style.transform = 'translateX(-50%) translateY(80px)';
+    t.style.opacity = '0';
+  }, 2800);
+}
+
+/* ─── Mobile menu ─── */
+(function () {
+  const btn = document.getElementById('btn-mobile-menu');
+  const panel = document.getElementById('mobile-menu-panel');
+  const backdrop = document.getElementById('mobile-menu-backdrop');
+  const closeBtn = document.getElementById('btn-mobile-menu-close');
+
+  function open() {
+    panel.classList.add('open');
+    backdrop.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+  function close() {
+    panel.classList.remove('open');
+    backdrop.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  btn.addEventListener('click', open);
+  closeBtn.addEventListener('click', close);
+  backdrop.addEventListener('click', close);
+})();
+</script>
+
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
+</body>
+</html>
