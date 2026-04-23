@@ -625,7 +625,7 @@
   'use strict';
 
   function getSession() {
-    try { return JSON.parse(localStorage.getItem('alm_session')); } catch { return null; }
+    try { return JSON.parse(localStorage.getItem('alm_session')); } catch (e) { return null; }
   }
   function setSession(d) { localStorage.setItem('alm_session', JSON.stringify(d)); }
 
@@ -859,7 +859,7 @@
   });
 
   /* ── Save address ── */
-  document.getElementById('pf-save-btn').addEventListener('click', async function () {
+  document.getElementById('pf-save-btn').addEventListener('click', function () {
     var s = getSession();
     if (!s) return;
     var gov    = govInput.value.trim() || selectedGovName;
@@ -872,43 +872,49 @@
     btn.textContent = 'جارٍ الحفظ...';
     msg.textContent = '';
 
-    try {
-      var res = await fetch('apis/users/profile.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          segment: s.segment || 'consumer',
-          governorate: gov,
-          city: city,
-          address_detail: detail,
-          governorate_id: selectedGovId,
-          city_id: selectedCityId,
-        }),
-      });
-      var data = await res.json();
-      if (!res.ok) {
+    fetch('apis/users/profile.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        segment: s.segment || 'consumer',
+        governorate: gov,
+        city: city,
+        address_detail: detail,
+        governorate_id: selectedGovId,
+        city_id: selectedCityId,
+      }),
+    })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          return { ok: res.ok, data: data };
+        });
+      })
+      .then(function (result) {
+        if (!result.ok) {
+          msg.style.color = 'rgba(255,120,120,0.85)';
+          msg.textContent = result.data.error || 'تعذّر الحفظ';
+          return;
+        }
+        var updated = Object.assign({}, s, {
+          governorate: gov, city: city,
+          address_detail: detail, addressDetails: detail,
+          governorateId: selectedGovId,
+          cityId: selectedCityId,
+        });
+        setSession(updated);
+        document.getElementById('pf-addr-display').textContent = buildAddress(updated);
+        msg.style.color = 'rgba(100,220,130,0.9)';
+        msg.textContent = 'تم حفظ العنوان ✓';
+        setTimeout(function () { msg.textContent = ''; }, 2500);
+      })
+      .catch(function () {
         msg.style.color = 'rgba(255,120,120,0.85)';
-        msg.textContent = data.error || 'تعذّر الحفظ';
-        return;
-      }
-      var updated = Object.assign({}, s, {
-        governorate: gov, city: city,
-        address_detail: detail, addressDetails: detail,
-        governorateId: selectedGovId,
-        cityId: selectedCityId,
+        msg.textContent = 'خطأ في الاتصال، يرجى المحاولة مجدداً';
+      })
+      .finally(function () {
+        btn.disabled = false;
+        btn.textContent = 'حفظ العنوان';
       });
-      setSession(updated);
-      document.getElementById('pf-addr-display').textContent = buildAddress(updated);
-      msg.style.color = 'rgba(100,220,130,0.9)';
-      msg.textContent = 'تم حفظ العنوان ✓';
-      setTimeout(function () { msg.textContent = ''; }, 2500);
-    } catch {
-      msg.style.color = 'rgba(255,120,120,0.85)';
-      msg.textContent = 'خطأ في الاتصال، يرجى المحاولة مجدداً';
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'حفظ العنوان';
-    }
   });
 
   /* ── Edit name ── */
