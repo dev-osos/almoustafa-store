@@ -944,6 +944,172 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }());
 </script>
+<!-- Cart Modal -->
+<style>
+  #cart-backdrop{position:fixed;inset:0;background:rgba(28,28,23,0.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:600;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1)}
+  #cart-backdrop.open{opacity:1;pointer-events:auto}
+  #cart-modal{position:relative;width:100%;max-width:520px;background:#fdf9f0;border-radius:24px;border:1px solid rgba(60,0,4,0.1);box-shadow:0 40px 100px rgba(0,0,0,0.25);display:flex;flex-direction:column;max-height:85vh;direction:rtl;transform:scale(0.95);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);overflow:hidden}
+  #cart-backdrop.open #cart-modal{transform:scale(1)}
+  .cart-modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px;border-bottom:1px solid rgba(60,0,4,0.08);flex-shrink:0}
+  .cart-modal-title{font-family:'Amiri',serif;font-size:1.2rem;font-weight:700;color:#3c0004;display:flex;align-items:center;gap:8px}
+  .cart-modal-close{width:32px;height:32px;border-radius:50%;border:1px solid rgba(60,0,4,0.12);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(60,0,4,0.4);transition:background 0.2s}
+  .cart-modal-close:hover{background:rgba(60,0,4,0.06);color:#3c0004}
+  .cart-items-list{flex:1;overflow-y:auto;padding:12px 24px}
+  .cart-items-list::-webkit-scrollbar{width:4px}
+  .cart-items-list::-webkit-scrollbar-track{background:transparent}
+  .cart-items-list::-webkit-scrollbar-thumb{background:rgba(60,0,4,0.15);border-radius:4px}
+  .cart-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(60,0,4,0.06)}
+  .cart-row:last-child{border-bottom:none}
+  .cart-row-img{width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;border:1px solid rgba(60,0,4,0.08)}
+  .cart-row-name{font-family:'Amiri',serif;font-size:0.95rem;font-weight:700;color:#3c0004}
+  .cart-row-price{font-family:'Manrope',sans-serif;font-size:0.8rem;color:#735c00;font-weight:700;margin-top:2px}
+  .cart-qty-ctrl{display:flex;align-items:center;gap:6px;margin-right:auto;flex-shrink:0}
+  .cart-qty-btn{width:26px;height:26px;border-radius:50%;border:1px solid rgba(60,0,4,0.15);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3c0004;transition:background 0.2s;font-family:'Manrope',sans-serif;font-weight:700}
+  .cart-qty-btn:hover{background:rgba(60,0,4,0.07)}
+  .cart-qty-num{font-family:'Amiri',serif;font-size:0.95rem;font-weight:700;color:#3c0004;min-width:20px;text-align:center}
+  .cart-row-remove{width:28px;height:28px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(60,0,4,0.25);transition:color 0.2s;flex-shrink:0}
+  .cart-row-remove:hover{color:rgba(192,57,43,0.8)}
+  .cart-modal-footer{padding:16px 24px 20px;border-top:1px solid rgba(60,0,4,0.08);flex-shrink:0;background:#fdf9f0}
+  .cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .cart-total-label{font-family:'Amiri',serif;font-size:0.88rem;color:rgba(60,0,4,0.5)}
+  .cart-total-value{font-family:'Amiri',serif;font-size:1.3rem;font-weight:700;color:#3c0004}
+  .cart-checkout-btn{width:100%;padding:14px;background:linear-gradient(135deg,#3c0004,#5d0e12);color:#fff;border:none;border-radius:14px;font-family:'Amiri',serif;font-size:1.05rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 24px rgba(60,0,4,0.25);transition:transform 0.15s,box-shadow 0.15s}
+  .cart-checkout-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(60,0,4,0.35)}
+  .cart-empty{text-align:center;padding:40px 0;color:rgba(60,0,4,0.3)}
+  .cart-empty span{font-size:48px;display:block;margin-bottom:10px}
+  .cart-empty p{font-family:'Amiri',serif;font-size:1rem}
+</style>
+<div id="cart-backdrop">
+  <div id="cart-modal">
+    <div class="cart-modal-header">
+      <div class="cart-modal-title">
+        <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24;color:#3c0004">shopping_bag</span>
+        سلة التسوق
+        <span id="cart-modal-count" class="text-xs font-body text-on-surface-variant font-normal"></span>
+      </div>
+      <button class="cart-modal-close" id="btn-cart-close">
+        <span class="material-symbols-outlined" style="font-size:16px">close</span>
+      </button>
+    </div>
+    <div class="cart-items-list" id="cart-items-list">
+      <div class="cart-empty">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 0,'wght' 200,'GRAD' 0,'opsz' 24">shopping_cart</span>
+        <p>السلة فارغة</p>
+      </div>
+    </div>
+    <div class="cart-modal-footer">
+      <div class="cart-total-row">
+        <span class="cart-total-label">الإجمالي</span>
+        <span class="cart-total-value" id="cart-total">0.00 ج.م</span>
+      </div>
+      <button class="cart-checkout-btn" id="btn-checkout">
+        تأكيد و إتمام الطلب
+        <span class="material-symbols-outlined" style="font-size:18px;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">verified</span>
+      </button>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function toArabicNum(n) { return String(n).replace(/\d/g, function(d) { return '٠١٢٣٤٥٦٧٨٩'[d]; }); }
+  function formatPrice(n) { return n.toLocaleString('ar-EG', {minimumFractionDigits:2,maximumFractionDigits:2}) + ' ج.م'; }
+  function readCart() { try { return JSON.parse(localStorage.getItem('alm_cart')) || []; } catch(e) { return []; } }
+  function saveCart(c) { localStorage.setItem('alm_cart', JSON.stringify(c)); }
+
+  function updateBadge(items) {
+    var badge = document.getElementById('cart-badge');
+    if (!badge) return;
+    var total = items.reduce(function(s,i){return s+i.qty;},0);
+    badge.textContent = total > 9 ? '9+' : String(total);
+    badge.style.display = total > 0 ? 'flex' : 'none';
+  }
+
+  function buildRow(item, idx) {
+    var row = document.createElement('div'); row.className = 'cart-row';
+    var img = document.createElement('img'); img.className = 'cart-row-img';
+    img.src = (typeof item.img === 'string' && item.img.startsWith('https://')) ? item.img : ''; img.alt = '';
+    var info = document.createElement('div'); info.style.cssText = 'flex:1;min-width:0';
+    var name = document.createElement('div'); name.className = 'cart-row-name'; name.textContent = item.name;
+    var price = document.createElement('div'); price.className = 'cart-row-price'; price.textContent = formatPrice(item.price);
+    info.append(name, price);
+    var ctrl = document.createElement('div'); ctrl.className = 'cart-qty-ctrl';
+    var dec = document.createElement('button'); dec.className = 'cart-qty-btn'; dec.dataset.action = 'dec'; dec.dataset.idx = idx; dec.textContent = '−';
+    var num = document.createElement('span'); num.className = 'cart-qty-num'; num.textContent = toArabicNum(item.qty);
+    var inc = document.createElement('button'); inc.className = 'cart-qty-btn'; inc.dataset.action = 'inc'; inc.dataset.idx = idx; inc.textContent = '+';
+    ctrl.append(dec, num, inc);
+    var rm = document.createElement('button'); rm.className = 'cart-row-remove'; rm.dataset.action = 'remove'; rm.dataset.idx = idx;
+    var rmIcon = document.createElement('span'); rmIcon.className = 'material-symbols-outlined'; rmIcon.style.fontSize = '16px'; rmIcon.textContent = 'delete';
+    rm.appendChild(rmIcon);
+    row.append(img, info, ctrl, rm);
+    return row;
+  }
+
+  function renderCart() {
+    var cartItems = readCart();
+    var list = document.getElementById('cart-items-list');
+    var totalEl = document.getElementById('cart-total');
+    var countEl = document.getElementById('cart-modal-count');
+    list.textContent = '';
+    if (!cartItems.length) {
+      var empty = document.createElement('div'); empty.className = 'cart-empty';
+      var ic = document.createElement('span'); ic.className = 'material-symbols-outlined';
+      ic.style.fontVariationSettings = "'FILL' 0,'wght' 200,'GRAD' 0,'opsz' 24"; ic.textContent = 'shopping_cart';
+      var p = document.createElement('p'); p.textContent = 'السلة فارغة';
+      empty.append(ic, p); list.appendChild(empty);
+      totalEl.textContent = '0.00 ج.م'; if (countEl) countEl.textContent = '';
+      updateBadge(cartItems); return;
+    }
+    var totalQty = cartItems.reduce(function(s,i){return s+i.qty;},0);
+    if (countEl) countEl.textContent = '(' + toArabicNum(totalQty) + ' منتج)';
+    totalEl.textContent = formatPrice(cartItems.reduce(function(s,i){return s+i.price*i.qty;},0));
+    cartItems.forEach(function(item,idx){ list.appendChild(buildRow(item,idx)); });
+    updateBadge(cartItems);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    updateBadge(readCart());
+    var backdrop = document.getElementById('cart-backdrop');
+    var cartBtn = document.getElementById('btn-cart');
+    if (cartBtn) {
+      cartBtn.addEventListener('click', function () {
+        renderCart(); backdrop.classList.add('open'); document.body.style.overflow = 'hidden';
+      });
+    }
+    document.getElementById('btn-cart-close').addEventListener('click', function () {
+      backdrop.classList.remove('open'); document.body.style.overflow = '';
+    });
+    backdrop.addEventListener('click', function (e) {
+      if (e.target === backdrop) { backdrop.classList.remove('open'); document.body.style.overflow = ''; }
+    });
+    document.getElementById('btn-checkout').addEventListener('click', function () {
+      if (!readCart().length) return;
+      window.location.href = 'checkout.html';
+    });
+    document.getElementById('cart-items-list').addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-action]'); if (!btn) return;
+      var cartItems = readCart();
+      var idx = +btn.dataset.idx;
+      var action = btn.dataset.action;
+      if (action === 'remove') { cartItems.splice(idx,1); saveCart(cartItems); renderCart(); return; }
+      if (action === 'inc') cartItems[idx].qty++;
+      else if (action === 'dec') {
+        cartItems[idx].qty--;
+        if (cartItems[idx].qty <= 0) { cartItems.splice(idx,1); saveCart(cartItems); renderCart(); return; }
+      }
+      var row = btn.closest('.cart-row');
+      if (row) { var numEl = row.querySelector('.cart-qty-num'); if (numEl) numEl.textContent = toArabicNum(cartItems[idx].qty); }
+      var totalQty = cartItems.reduce(function(s,i){return s+i.qty;},0);
+      var countEl = document.getElementById('cart-modal-count');
+      if (countEl) countEl.textContent = '(' + toArabicNum(totalQty) + ' منتج)';
+      document.getElementById('cart-total').textContent = formatPrice(cartItems.reduce(function(s,i){return s+i.price*i.qty;},0));
+      saveCart(cartItems); updateBadge(cartItems);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && backdrop.classList.contains('open')) { backdrop.classList.remove('open'); document.body.style.overflow = ''; }
+    });
+  });
+}());
+</script>
 <script src="js/nav-shared.js"></script>
 <script src="js/auth-modal.js"></script>
 <script src="js/profile-dropdown.js"></script>
