@@ -1,44 +1,56 @@
 <!DOCTYPE html>
 
-<html class="scroll-smooth" dir="rtl" lang="ar"><head>
+<html class="scroll-smooth" dir="rtl" lang="ar" role="application"><head>
 <script src="js/no-double-tap-zoom.js"></script>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<meta name="robots" content="noarchive"/>
+<meta name="robots" content="noarchive,nosnippet"/>
 <meta name="format-detection" content="telephone=no,date=no,address=no,email=no,url=no"/>
-<style>
-  #rm-css-probe{display:none!important}
-  @media print{#rm-print-probe{display:block!important}}
-  #rm-print-probe{display:none!important}
-</style>
+<meta name="HandheldFriendly" content="True"/>
+<!-- Prevent reader mode: CSS probe — reader mode strips custom stylesheets, making the probe visible -->
+<style id="rm-style">#rm-css-probe{display:none!important;visibility:hidden!important}</style>
 <script>
-(function(){
-  function showReaderModeBlock(){
-    var o=document.getElementById('rm-overlay');
-    if(o){o.style.display='flex';return;}
-    o=document.createElement('div');
-    o.id='rm-overlay';
-    o.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#fdf9f0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;font-family:Amiri,serif;direction:rtl;text-align:center;';
-    o.innerHTML='<img src="logo.png" style="width:72px;height:72px;border-radius:50%;object-fit:contain;border:2px solid #3c0004;padding:8px;" onerror="this.style.display=\'none\'"/>'
-      +'<p style="font-size:1.4rem;font-weight:700;color:#3c0004;margin:0;">متجر المصطفى</p>'
-      +'<p style="font-size:0.95rem;color:#564241;max-width:320px;line-height:1.7;margin:0;">وضع القراءة غير مدعوم في هذه الصفحة.<br/>يرجى إيقاف وضع القارئ للمتابعة.</p>'
-      +'<button onclick="window.location.reload()" style="margin-top:8px;padding:12px 28px;background:#3c0004;color:#fff;border:none;border-radius:12px;font-family:Amiri,serif;font-size:1rem;font-weight:700;cursor:pointer;">تحديث الصفحة</button>';
-    var r=document.getElementById('rm-css-probe');
-    if(r)r.parentNode.insertBefore(o,r);
-    else(document.body||document.documentElement).appendChild(o);
+!function(){
+  /* Run immediately — before any DOM parsing continues */
+  function block(){
+    var b=document.getElementById('rm-overlay');
+    if(b)return;
+    var s='position:fixed;inset:0;z-index:2147483647;background:#fdf9f0;'
+        +'display:flex;flex-direction:column;align-items:center;justify-content:center;'
+        +'gap:20px;padding:32px;font-family:serif;direction:rtl;text-align:center;';
+    var d=document.createElement('div');
+    d.id='rm-overlay';d.setAttribute('style',s);
+    d.innerHTML='<img src="logo.png" width="72" height="72" style="border-radius:50%;border:2px solid #3c0004;padding:8px;object-fit:contain" onerror="this.style.display=\'none\'">'
+      +'<p style="font-size:1.5rem;font-weight:700;color:#3c0004;margin:0">متجر المصطفى</p>'
+      +'<p style="font-size:0.95rem;color:#564241;max-width:300px;line-height:1.8;margin:0">'
+      +'وضع القراءة غير مدعوم.<br>يرجى إيقاف وضع القارئ للمتابعة.</p>'
+      +'<button onclick="location.reload()" style="padding:12px 32px;background:#3c0004;color:#fff;'
+      +'border:none;border-radius:12px;font-family:serif;font-size:1rem;font-weight:700;cursor:pointer">'
+      +'تحديث الصفحة</button>';
+    (document.body||document.documentElement).appendChild(d);
   }
-  function check(){
+  function probe(){
     var p=document.getElementById('rm-css-probe');
-    if(p&&window.getComputedStyle(p).display!=='none'){showReaderModeBlock();return true;}
-    return false;
+    if(!p)return false;
+    var cs=window.getComputedStyle(p);
+    /* In reader mode: display becomes non-none OR visibility becomes visible */
+    return cs.display!=='none'||cs.visibility!=='hidden';
   }
-  document.addEventListener('DOMContentLoaded',function(){
-    check();
-    setTimeout(check,300);
-    setTimeout(check,1200);
+  function check(){ if(probe())block(); }
+  /* 1. Earliest possible check after body exists */
+  document.addEventListener('readystatechange',check);
+  document.addEventListener('DOMContentLoaded',function(){ check(); setTimeout(check,200); setTimeout(check,800); });
+  window.addEventListener('load',function(){ check(); setTimeout(check,400); });
+  /* 2. MutationObserver: catches reader mode that rewrites DOM after load */
+  var obs=new MutationObserver(function(ml){
+    for(var i=0;i<ml.length;i++){
+      if(probe()){block();obs.disconnect();break;}
+    }
   });
-  window.addEventListener('load',function(){check();setTimeout(check,500);});
-})();
+  document.addEventListener('DOMContentLoaded',function(){
+    obs.observe(document.documentElement,{childList:true,subtree:true,attributes:true});
+  });
+}();
 </script>
 <title>المصطفى | خبراء العسل الصافي</title>
 <link rel="manifest" href="manifest.json"/>
@@ -2148,8 +2160,8 @@
         }
     </style>
 </head>
-<body class="bg-background text-on-background font-body selection:bg-secondary-container selection:text-on-secondary-container overflow-x-hidden">
-<div id="rm-css-probe" aria-hidden="true"></div>
+<body class="bg-background text-on-background font-body selection:bg-secondary-container selection:text-on-secondary-container overflow-x-hidden" role="application">
+<div id="rm-css-probe" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;"></div>
 <!-- Skeleton Overlay — full page structure -->
 <div class="fixed inset-0 z-[100] bg-background overflow-y-auto pointer-events-none transition-opacity duration-700" id="loading-overlay">
 
