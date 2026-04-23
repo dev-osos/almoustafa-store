@@ -667,6 +667,7 @@
     selectedGovName  = s.governorate || '';
     selectedCityName = s.city || '';
     selectedGovId    = s.governorateId || null;
+    selectedCityId   = s.cityId || null;
     document.getElementById('pf-detail').value = s.addressDetails || s.address_detail || '';
     var cityInp = document.getElementById('pf-city');
     cityInp.disabled = !selectedGovId;
@@ -758,6 +759,7 @@
   var GOVS = [];
   var CITIES = [];
   var selectedGovId = null;
+  var selectedCityId = null;
   var selectedGovName = '';
   var selectedCityName = '';
 
@@ -821,6 +823,7 @@
     selectedGovName = gov.name;
     govSugg.classList.remove('open');
     selectedCityName = '';
+    selectedCityId = null;
     cityInput.value = '';
     fetchCities(gov.id);
   }
@@ -837,15 +840,15 @@
   cityInput.addEventListener('focus', function () {
     if (!CITIES.length) return;
     buildSugg(citySugg, CITIES, cityInput.value, function (city) {
-      cityInput.value = city.name; selectedCityName = city.name;
+      cityInput.value = city.name; selectedCityName = city.name; selectedCityId = city.id;
       citySugg.classList.remove('open');
     });
   });
   cityInput.addEventListener('input', function () {
-    selectedCityName = '';
+    selectedCityName = ''; selectedCityId = null;
     if (!CITIES.length) return;
     buildSugg(citySugg, CITIES, cityInput.value, function (city) {
-      cityInput.value = city.name; selectedCityName = city.name;
+      cityInput.value = city.name; selectedCityName = city.name; selectedCityId = city.id;
       citySugg.classList.remove('open');
     });
   });
@@ -878,6 +881,8 @@
           governorate: gov,
           city: city,
           address_detail: detail,
+          governorate_id: selectedGovId,
+          city_id: selectedCityId,
         }),
       });
       var data = await res.json();
@@ -890,6 +895,7 @@
         governorate: gov, city: city,
         address_detail: detail, addressDetails: detail,
         governorateId: selectedGovId,
+        cityId: selectedCityId,
       });
       setSession(updated);
       document.getElementById('pf-addr-display').textContent = buildAddress(updated);
