@@ -109,36 +109,56 @@
     font-family: "Amiri", serif;
     font-size: 1.4rem; font-weight: 700; color: #fff;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
-  .pf-name-row { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+  .pf-name-row { display: flex; align-items: center; gap: 6px; overflow: hidden; margin-bottom: 2px; }
   .pf-name-row .pf-hero-name { flex: 1; min-width: 0; margin-bottom: 0; }
   .pf-name-edit-btn {
-    flex-shrink: 0; background: none; border: none; cursor: pointer;
-    color: rgba(254,214,91,0.55); padding: 2px; line-height: 1;
-    transition: color 0.2s;
+    flex-shrink: 0; background: rgba(254,214,91,0.08);
+    border: 1px solid rgba(254,214,91,0.2); border-radius: 6px;
+    cursor: pointer; color: rgba(254,214,91,0.7);
+    padding: 3px 5px; line-height: 1; transition: background 0.2s, color 0.2s;
   }
-  .pf-name-edit-btn:hover { color: #fed65b; }
-  .pf-name-edit-btn .material-symbols-outlined { font-size: 16px; }
-  .pf-name-input-row {
-    display: none; align-items: center; gap: 8px; margin-bottom: 4px;
+  .pf-name-edit-btn:hover { background: rgba(254,214,91,0.18); color: #fed65b; }
+  .pf-name-edit-btn .material-symbols-outlined { font-size: 14px; }
+  /* Edit panel */
+  .pf-name-edit-panel {
+    display: none; flex-direction: column; gap: 8px;
+    background: rgba(0,0,0,0.35); border: 1px solid rgba(254,214,91,0.2);
+    border-radius: 14px; padding: 12px 14px; margin-bottom: 6px;
   }
-  .pf-name-input-row.active { display: flex; }
+  .pf-name-edit-panel.active { display: flex; }
+  .pf-name-edit-label {
+    font-size: 0.68rem; color: rgba(254,214,91,0.6);
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
   .pf-name-input {
-    flex: 1; background: rgba(10,0,2,0.6); border: 1px solid rgba(254,214,91,0.35);
-    border-radius: 10px; color: #fff; -webkit-text-fill-color: #fff;
-    font-family: "Amiri", serif; font-size: 1.1rem; padding: 6px 10px;
-    outline: none; min-width: 0;
+    width: 100%; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+    color: #fff; -webkit-text-fill-color: #fff;
+    font-family: "Amiri", serif; font-size: 1.15rem; font-weight: 700;
+    padding: 10px 12px; outline: none; direction: rtl;
+    transition: border-color 0.2s;
   }
-  .pf-name-input::placeholder { color: rgba(255,255,255,0.3); -webkit-text-fill-color: rgba(255,255,255,0.3); }
-  .pf-name-input:focus { border-color: rgba(254,214,91,0.7); }
+  .pf-name-input::placeholder { color: rgba(255,255,255,0.25); -webkit-text-fill-color: rgba(255,255,255,0.25); }
+  .pf-name-input:focus { border-color: rgba(254,214,91,0.55); background: rgba(255,255,255,0.09); }
+  .pf-name-actions { display: flex; gap: 8px; }
   .pf-name-save-btn {
-    flex-shrink: 0; background: rgba(254,214,91,0.15); border: 1px solid rgba(254,214,91,0.3);
-    border-radius: 8px; color: #fed65b; cursor: pointer; padding: 6px 12px;
-    font-size: 0.75rem; font-family: "Manrope", sans-serif;
-    transition: background 0.2s; white-space: nowrap;
+    flex: 1; background: rgba(254,214,91,0.18); border: 1px solid rgba(254,214,91,0.35);
+    border-radius: 10px; color: #fed65b; cursor: pointer;
+    font-size: 0.82rem; font-family: "Manrope", sans-serif; font-weight: 600;
+    padding: 9px; transition: background 0.2s;
   }
-  .pf-name-save-btn:hover { background: rgba(254,214,91,0.25); }
+  .pf-name-save-btn:hover { background: rgba(254,214,91,0.28); }
+  .pf-name-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .pf-name-cancel-btn {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px; color: rgba(255,255,255,0.5); cursor: pointer;
+    font-size: 0.82rem; font-family: "Manrope", sans-serif;
+    padding: 9px 14px; transition: background 0.2s;
+  }
+  .pf-name-cancel-btn:hover { background: rgba(255,255,255,0.1); }
+  .pf-name-msg { font-size: 0.75rem; min-height: 16px; }
   .pf-hero-phone {
     font-size: 0.8rem; color: rgba(255,255,255,0.45);
     direction: ltr; text-align: right;
@@ -428,11 +448,18 @@
       <span class="material-symbols-outlined">account_circle</span>
     </div>
     <div class="pf-hero-info">
-      <div class="pf-name-input-row" id="pf-name-input-row">
-        <input class="pf-name-input" id="pf-name-input" maxlength="60" placeholder="اكتب اسمك" type="text"/>
-        <button class="pf-name-save-btn" id="pf-name-save-btn" type="button">حفظ</button>
+      <!-- Edit panel -->
+      <div class="pf-name-edit-panel" id="pf-name-edit-panel">
+        <div class="pf-name-edit-label">تعديل الاسم</div>
+        <input class="pf-name-input" id="pf-name-input" maxlength="60" placeholder="اكتب اسمك الكامل" type="text"/>
+        <div class="pf-name-actions">
+          <button class="pf-name-save-btn" id="pf-name-save-btn" type="button">حفظ</button>
+          <button class="pf-name-cancel-btn" id="pf-name-cancel-btn" type="button">إلغاء</button>
+        </div>
+        <div class="pf-name-msg" id="pf-name-msg"></div>
       </div>
-      <div class="pf-name-row">
+      <!-- Display row -->
+      <div class="pf-name-row" id="pf-name-row">
         <div class="pf-hero-name" id="pf-name">مستخدم</div>
         <button class="pf-name-edit-btn" id="pf-name-edit-btn" title="تعديل الاسم" type="button">
           <span class="material-symbols-outlined">edit</span>
@@ -880,43 +907,67 @@
 
   /* ── Edit name ── */
   (function () {
-    var editBtn  = document.getElementById('pf-name-edit-btn');
-    var saveBtn  = document.getElementById('pf-name-save-btn');
-    var inputRow = document.getElementById('pf-name-input-row');
-    var nameEl   = document.getElementById('pf-name');
-    var input    = document.getElementById('pf-name-input');
+    var editBtn   = document.getElementById('pf-name-edit-btn');
+    var cancelBtn = document.getElementById('pf-name-cancel-btn');
+    var saveBtn   = document.getElementById('pf-name-save-btn');
+    var panel     = document.getElementById('pf-name-edit-panel');
+    var nameRow   = document.getElementById('pf-name-row');
+    var nameEl    = document.getElementById('pf-name');
+    var input     = document.getElementById('pf-name-input');
+    var msg       = document.getElementById('pf-name-msg');
 
-    editBtn.addEventListener('click', function () {
-      input.value = nameEl.textContent.trim() === 'مستخدم' ? '' : nameEl.textContent.trim();
-      inputRow.classList.add('active');
+    function openPanel() {
+      var cur = nameEl.textContent.trim();
+      input.value = cur === 'مستخدم' ? '' : cur;
+      msg.textContent = '';
+      panel.classList.add('active');
+      nameRow.style.display = 'none';
       input.focus();
+    }
+
+    function closePanel() {
+      panel.classList.remove('active');
+      nameRow.style.display = '';
+      msg.textContent = '';
+    }
+
+    editBtn.addEventListener('click', openPanel);
+    cancelBtn.addEventListener('click', closePanel);
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); doSave(); }
+      if (e.key === 'Escape') closePanel();
     });
+    saveBtn.addEventListener('click', doSave);
 
-    saveBtn.addEventListener('click', saveName);
-    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') saveName(); if (e.key === 'Escape') cancel(); });
-
-    function cancel() { inputRow.classList.remove('active'); }
-
-    async function saveName() {
+    function doSave() {
       var newName = input.value.trim();
-      if (!newName) return;
+      if (!newName) { showMsg('أدخل الاسم أولاً', false); return; }
       saveBtn.disabled = true;
-      saveBtn.textContent = '...';
-      try {
-        var res = await fetch('apis/users/profile.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: newName, segment: (getSession() || {}).segment || 'consumer' }),
-        });
-        var data = await res.json();
-        if (!res.ok) { alert(data.error || 'تعذّر الحفظ'); return; }
+      saveBtn.textContent = 'جارٍ الحفظ...';
+      msg.textContent = '';
+
+      var s = getSession() || {};
+      fetch('apis/users/profile.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName, segment: s.segment || 'consumer' }),
+      })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (r) {
+        if (!r.ok) { showMsg(r.data.error || 'تعذّر الحفظ', false); return; }
         nameEl.textContent = newName;
-        var s = getSession() || {};
         s.name = newName;
         setSession(s);
-        cancel();
-      } catch { alert('خطأ في الاتصال'); }
-      finally { saveBtn.disabled = false; saveBtn.textContent = 'حفظ'; }
+        showMsg('تم الحفظ ✓', true);
+        setTimeout(closePanel, 900);
+      })
+      .catch(function (e) { showMsg('تعذّر الاتصال بالخادم', false); })
+      .finally(function () { saveBtn.disabled = false; saveBtn.textContent = 'حفظ'; });
+    }
+
+    function showMsg(text, success) {
+      msg.textContent = text;
+      msg.style.color = success ? 'rgba(100,220,130,0.9)' : 'rgba(255,110,110,0.9)';
     }
   })();
 
