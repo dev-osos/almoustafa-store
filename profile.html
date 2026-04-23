@@ -651,6 +651,11 @@
   var selectedGovName = '';
   var selectedCityName = '';
 
+  var govInput  = document.getElementById('pf-gov');
+  var cityInput = document.getElementById('pf-city');
+  var govSugg   = document.getElementById('pf-gov-sugg');
+  var citySugg  = document.getElementById('pf-city-sugg');
+
   /* ── Guard: redirect if not logged in ── */
   var session = getSession();
   if (!session) {
@@ -763,11 +768,6 @@
   }
 
   /* ── Address autocomplete ── */
-  var govInput  = document.getElementById('pf-gov');
-  var cityInput = document.getElementById('pf-city');
-  var govSugg   = document.getElementById('pf-gov-sugg');
-  var citySugg  = document.getElementById('pf-city-sugg');
-
   function fetchGovs() {
     if (GOVS.length) return;
     fetch('dat-docs/govs.json')
