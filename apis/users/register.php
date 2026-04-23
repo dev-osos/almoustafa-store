@@ -148,12 +148,12 @@ try {
             KEY idx_wt_created (created_at)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
-    // Create wallet and add 50 EGP welcome gift
-    $pdo->prepare("INSERT IGNORE INTO wallets (customer_id, balance) VALUES (:cid, 50.00)")
+    // Create wallet and add 100 EGP welcome gift
+    $pdo->prepare("INSERT IGNORE INTO wallets (customer_id, balance) VALUES (:cid, 100.00)")
         ->execute([':cid' => $customerId]);
     $pdo->prepare("
         INSERT INTO wallet_transactions (customer_id, amount, type, reason)
-        VALUES (:cid, 50.00, 'credit', 'welcome_bonus')
+        VALUES (:cid, 100.00, 'credit', 'welcome_bonus')
     ")->execute([':cid' => $customerId]);
 } catch (Throwable) { /* non-fatal */ }
 
