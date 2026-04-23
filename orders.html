@@ -499,6 +499,27 @@
   .filter-scroll { overflow-x: auto; scrollbar-width: none; }
   .filter-scroll::-webkit-scrollbar { display: none; }
 
+  /* ── Pagination ── */
+  .pg-btn {
+    min-width: 38px; height: 38px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 10px; border: 1.5px solid #dcc0be;
+    background: #fff; color: #564241;
+    font-family: 'Manrope', sans-serif; font-size: 0.88rem; font-weight: 700;
+    cursor: pointer; padding: 0 6px;
+    transition: all 0.18s;
+    user-select: none;
+  }
+  .pg-btn:hover:not(:disabled) { border-color: #3c0004; color: #3c0004; background: rgba(60,0,4,0.04); }
+  .pg-btn.active { background: #3c0004; border-color: #3c0004; color: #fff; }
+  .pg-btn:disabled { opacity: 0.35; cursor: default; }
+  .pg-btn .material-symbols-outlined { font-size: 18px; }
+  .pg-ellipsis {
+    min-width: 38px; height: 38px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'Manrope', sans-serif; font-size: 0.9rem; color: #897270;
+  }
+
   /* ── Copy badge ── */
   .copy-btn {
     display: inline-flex; align-items: center; gap: 3px;
@@ -616,9 +637,11 @@
           <p class="font-headline font-bold text-white text-sm">أنت تتصفح كزائر</p>
           <p class="text-white/55 text-xs mt-0.5 font-body">سجّل دخولك لعرض جميع طلباتك، أو ابحث بواسطة رقم الطلب</p>
         </div>
-        <button onclick="openLoginModal()" class="flex-shrink-0 bg-secondary-container text-primary font-headline font-bold text-sm rounded-xl px-4 py-2 hover:opacity-90 transition-opacity">
-          دخول
-        </button>
+        <a href="login.html">
+          <button class="flex-shrink-0 bg-secondary-container text-primary font-headline font-bold text-sm rounded-xl px-4 py-2 hover:opacity-90 transition-opacity">
+            تسجيل الدخول
+          </button>
+        </a>
       </div>
     </div>
   </div>
@@ -699,7 +722,7 @@
           </div>
         </div>
         <div class="track-input-row">
-          <input type="text" id="track-number-input" placeholder="مثال: ORD-20240001" maxlength="20"/>
+          <input type="text" id="track-number-input" placeholder="مثال: 20240001" maxlength="20"/>
           <button class="btn-track-search" onclick="trackByNumber()">
             <span class="material-symbols-outlined" style="font-size:17px;">search</span>
             تتبع
@@ -707,7 +730,7 @@
         </div>
         <p class="text-xs text-outline mt-3 font-body text-center">
           لا تعرف رقم طلبك؟
-          <button onclick="openLoginModal()" class="text-primary font-bold underline bg-transparent border-none cursor-pointer font-body text-xs">سجّل دخولك</button>
+          <a href="login.html" class="text-primary font-bold underline bg-transparent border-none cursor-pointer font-body text-xs">سجّل دخولك</a>
           لعرض جميع طلباتك
         </p>
       </div>
@@ -747,6 +770,9 @@
 
     <!-- Orders list -->
     <div id="orders-list" class="flex flex-col gap-4 hidden"></div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="hidden flex items-center justify-center gap-2 mt-8 mb-2"></div>
 
     <!-- Empty state -->
     <div id="empty-state" class="empty-state hidden">
@@ -930,6 +956,8 @@ const DEMO_ORDERS = [
 /* ─── State ─── */
 let currentFilter = 'all';
 let currentSearch = '';
+let currentPage   = 1;
+const ORDERS_PER_PAGE = 3;
 let isLoggedIn = false; // toggle to true to simulate login
 
 /* ─── Status config ─── */
@@ -972,6 +1000,7 @@ window.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentFilter = btn.dataset.filter;
+      currentPage = 1;
       renderOrders();
     });
   });
@@ -989,18 +1018,15 @@ function updateStats() {
 
 /* ─── Render orders ─── */
 function renderOrders() {
-  const list = document.getElementById('orders-list');
+  const list  = document.getElementById('orders-list');
   const empty = document.getElementById('empty-state');
   const emptyMsg = document.getElementById('empty-msg');
 
   let orders = DEMO_ORDERS;
 
-  // Filter by status tab
   if (currentFilter !== 'all') {
     orders = orders.filter(o => o.status === currentFilter);
   }
-
-  // Filter by search
   if (currentSearch.trim()) {
     const q = currentSearch.toLowerCase();
     orders = orders.filter(o =>
@@ -1013,16 +1039,22 @@ function renderOrders() {
 
   if (orders.length === 0) {
     empty.classList.remove('hidden');
-    if (!isLoggedIn) {
-      emptyMsg.textContent = 'ابحث بواسطة رقم الطلب أعلاه، أو سجّل دخولك لعرض طلباتك.';
-    } else {
-      emptyMsg.textContent = 'لا توجد طلبات تطابق هذا الفلتر.';
-    }
+    renderPagination(0, 0);
+    emptyMsg.textContent = !isLoggedIn
+      ? 'ابحث بواسطة رقم الطلب أعلاه، أو سجّل دخولك لعرض طلباتك.'
+      : 'لا توجد طلبات تطابق هذا الفلتر.';
     return;
   }
   empty.classList.add('hidden');
 
-  orders.forEach((order, i) => {
+  const totalPages = Math.ceil(orders.length / ORDERS_PER_PAGE);
+  currentPage = Math.min(currentPage, totalPages);
+  const start = (currentPage - 1) * ORDERS_PER_PAGE;
+  const pageOrders = orders.slice(start, start + ORDERS_PER_PAGE);
+
+  renderPagination(totalPages, orders.length);
+
+  pageOrders.forEach((order, i) => {
     const cfg = STATUS_CFG[order.status] || STATUS_CFG.pending;
     const card = document.createElement('div');
     card.className = 'order-card anim-card';
@@ -1076,9 +1108,71 @@ function renderOrders() {
   });
 }
 
+/* ─── Pagination renderer ─── */
+function renderPagination(totalPages, totalItems) {
+  const pg = document.getElementById('pagination');
+  pg.innerHTML = '';
+
+  if (totalPages <= 1) { pg.classList.add('hidden'); return; }
+  pg.classList.remove('hidden');
+
+  // Info text
+  const info = document.createElement('span');
+  info.style.cssText = 'font-size:0.75rem;color:#897270;font-family:Manrope,sans-serif;margin-left:4px;white-space:nowrap;';
+  const start = (currentPage - 1) * ORDERS_PER_PAGE + 1;
+  const end   = Math.min(currentPage * ORDERS_PER_PAGE, totalItems);
+  info.textContent = `${start}–${end} من ${totalItems}`;
+
+  // Prev button
+  const prev = document.createElement('button');
+  prev.className = 'pg-btn';
+  prev.innerHTML = '<span class="material-symbols-outlined">chevron_right</span>';
+  prev.disabled = currentPage === 1;
+  prev.addEventListener('click', () => { currentPage--; renderOrders(); scrollToList(); });
+
+  // Page buttons
+  const pages = buildPageRange(currentPage, totalPages);
+
+  const next = document.createElement('button');
+  next.className = 'pg-btn';
+  next.innerHTML = '<span class="material-symbols-outlined">chevron_left</span>';
+  next.disabled = currentPage === totalPages;
+  next.addEventListener('click', () => { currentPage++; renderOrders(); scrollToList(); });
+
+  pg.appendChild(info);
+  pg.appendChild(prev);
+  pages.forEach(p => {
+    if (p === '…') {
+      const el = document.createElement('span');
+      el.className = 'pg-ellipsis'; el.textContent = '…';
+      pg.appendChild(el);
+    } else {
+      const btn = document.createElement('button');
+      btn.className = 'pg-btn' + (p === currentPage ? ' active' : '');
+      btn.textContent = p;
+      btn.addEventListener('click', () => { currentPage = p; renderOrders(); scrollToList(); });
+      pg.appendChild(btn);
+    }
+  });
+  pg.appendChild(next);
+}
+
+function buildPageRange(cur, total) {
+  if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+  if (cur <= 3) return [1, 2, 3, '…', total];
+  if (cur >= total - 2) return [1, '…', total - 2, total - 1, total];
+  return [1, '…', cur - 1, cur, cur + 1, '…', total];
+}
+
+function scrollToList() {
+  const el = document.getElementById('orders-list');
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 /* ─── Search ─── */
 function filterOrders() {
   currentSearch = document.getElementById('search-input').value;
+  currentPage = 1;
   renderOrders();
 }
 
