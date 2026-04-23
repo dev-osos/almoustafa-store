@@ -157,7 +157,7 @@ try {
     ")->execute([':cid' => $customerId]);
 } catch (Throwable) { /* non-fatal */ }
 
-// ── Reward referrer: +20 EGP if a valid referral code was used ───────────────
+// ── Reward referrer: +15 EGP if a valid referral code was used ───────────────
 if ($referredBy !== '') {
     try {
         // Find referrer's customer_id
@@ -166,11 +166,11 @@ if ($referredBy !== '') {
         $referrerId = $refOwner->fetchColumn();
 
         if ($referrerId) {
-            // Ensure referrer has a wallet row, then add 20 EGP
+            // Ensure referrer has a wallet row, then add 15 EGP
             $pdo->prepare("INSERT IGNORE INTO wallets (customer_id) VALUES (:cid)")
                 ->execute([':cid' => $referrerId]);
 
-            $pdo->prepare("UPDATE wallets SET balance = balance + 20.00 WHERE customer_id = :cid")
+            $pdo->prepare("UPDATE wallets SET balance = balance + 15.00 WHERE customer_id = :cid")
                 ->execute([':cid' => $referrerId]);
 
             // Log the transaction
@@ -189,7 +189,7 @@ if ($referredBy !== '') {
             ");
             $pdo->prepare("
                 INSERT INTO wallet_transactions (customer_id, amount, type, reason, ref_id)
-                VALUES (:cid, 20.00, 'credit', 'referral_bonus', :ref_id)
+                VALUES (:cid, 15.00, 'credit', 'referral_bonus', :ref_id)
             ")->execute([':cid' => $referrerId, ':ref_id' => $customerId]);
         }
     } catch (Throwable) { /* non-fatal — registration still succeeds */ }
