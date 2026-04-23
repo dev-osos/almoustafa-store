@@ -644,6 +644,13 @@
     return (s || '').replace(/[أإآا]/g, 'ا').replace(/ى/g, 'ي').trim().toLowerCase();
   }
 
+  var GOVS = [];
+  var CITIES = [];
+  var selectedGovId = null;
+  var selectedCityId = null;
+  var selectedGovName = '';
+  var selectedCityName = '';
+
   /* ── Guard: redirect if not logged in ── */
   var session = getSession();
   if (!session) {
@@ -756,13 +763,6 @@
   }
 
   /* ── Address autocomplete ── */
-  var GOVS = [];
-  var CITIES = [];
-  var selectedGovId = null;
-  var selectedCityId = null;
-  var selectedGovName = '';
-  var selectedCityName = '';
-
   var govInput  = document.getElementById('pf-gov');
   var cityInput = document.getElementById('pf-city');
   var govSugg   = document.getElementById('pf-gov-sugg');
