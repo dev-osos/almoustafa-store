@@ -33,22 +33,22 @@ try {
     $pdo  = api_pdo();
     $stmt = $pdo->prepare("
         UPDATE customers
-        SET name             = :name,
+        SET name             = COALESCE(NULLIF(:name, ''), name),
             phone            = COALESCE(NULLIF(:phone, ''), phone),
             segment          = :segment,
-            governorate      = NULLIF(:gov, ''),
-            governorate_id   = :gov_id,
-            city             = NULLIF(:city, ''),
-            city_id          = :city_id,
-            address_detail   = NULLIF(:addr, ''),
-            lat              = :lat,
-            lng              = :lng,
+            governorate      = CASE WHEN :gov != '' THEN :gov ELSE governorate END,
+            governorate_id   = COALESCE(:gov_id, governorate_id),
+            city             = CASE WHEN :city != '' THEN :city ELSE city END,
+            city_id          = COALESCE(:city_id, city_id),
+            address_detail   = CASE WHEN :addr != '' THEN :addr ELSE address_detail END,
+            lat              = COALESCE(:lat, lat),
+            lng              = COALESCE(:lng, lng),
             referred_by      = CASE WHEN referred_by IS NULL AND :ref_code != '' THEN :ref_code2 ELSE referred_by END,
             profile_complete = 1
         WHERE id = :id
     ");
     $stmt->execute([
-        ':name'      => $name    !== '' ? $name    : null,
+        ':name'      => $name,
         ':phone'     => $phone,
         ':segment'   => $segment,
         ':gov'       => $govName,
