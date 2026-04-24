@@ -3925,10 +3925,6 @@
             if (e.target === logoutBackdrop) closeLogoutModal();
         });
 
-        document.getElementById('btn-join').addEventListener('click', () => {
-            showPanel('register-1');
-            openModal();
-        });
 
         // Auto-open login modal when redirected from another page
         if (window.location.hash === '#login') {
