@@ -964,24 +964,33 @@ window.addEventListener('DOMContentLoaded', () => {
   isLoggedIn = hasActiveSession();
   // Simulate async load
   setTimeout(() => {
-    document.getElementById('orders-skeleton').classList.add('hidden');
-    document.getElementById('orders-list').classList.remove('hidden');
+    const skeleton = document.getElementById('orders-skeleton');
+    const listEl = document.getElementById('orders-list');
+    const searchBar = document.getElementById('search-bar');
+    const trackWrap = document.getElementById('track-form-wrap');
+    const guestBanner = document.getElementById('guest-banner');
+    const statsRow = document.getElementById('stats-row');
+
+    if (skeleton) skeleton.classList.add('hidden');
+    if (listEl) listEl.classList.remove('hidden');
+
+    // Always render orders even if some optional UI nodes are missing.
+    renderOrders();
 
     // Toggle UI based on auth state
     if (isLoggedIn) {
-      document.getElementById('search-bar').classList.remove('hidden');
-      document.getElementById('track-form-wrap').classList.add('hidden');
-      document.getElementById('guest-banner').classList.add('hidden');
+      if (searchBar) searchBar.classList.remove('hidden');
+      if (trackWrap) trackWrap.classList.add('hidden');
+      if (guestBanner) guestBanner.classList.add('hidden');
+      if (statsRow) statsRow.classList.remove('hidden');
       updateStats();
     } else {
-      document.getElementById('search-bar').classList.add('hidden');
-      document.getElementById('track-form-wrap').classList.remove('hidden');
-      document.getElementById('guest-banner').classList.remove('hidden');
+      if (searchBar) searchBar.classList.add('hidden');
+      if (trackWrap) trackWrap.classList.remove('hidden');
+      if (guestBanner) guestBanner.classList.remove('hidden');
       // Hide stats
-      document.getElementById('stats-row').classList.add('hidden');
+      if (statsRow) statsRow.classList.add('hidden');
     }
-
-    renderOrders();
   }, 900);
 
   // Filter tabs
