@@ -146,8 +146,9 @@
   }
 
   /* ─── Account button ───────────────────────────────────────── */
+  /* Skip if the page has its own inline profile dropdown handler */
   var accountBtn = document.getElementById('btn-account');
-  if (accountBtn) {
+  if (accountBtn && !document.getElementById('profile-dropdown')) {
     accountBtn.addEventListener('click', function (e) {
       e.stopPropagation();
       if (getSession()) {
