@@ -171,11 +171,12 @@ try {
     if ($walletDiscount > 0) {
         $updateWallet = $pdo->prepare("
             UPDATE wallets
-            SET balance = balance - :amount
-            WHERE customer_id = :cid AND balance >= :amount
+            SET balance = balance - :amount_set
+            WHERE customer_id = :cid AND balance >= :amount_check
         ");
         $updateWallet->execute([
-            ':amount' => round($walletDiscount, 2),
+            ':amount_set' => round($walletDiscount, 2),
+            ':amount_check' => round($walletDiscount, 2),
             ':cid' => $customerId,
         ]);
         if ($updateWallet->rowCount() < 1) {
