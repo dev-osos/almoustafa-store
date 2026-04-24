@@ -719,7 +719,8 @@
     const useWallet = balance > 0 && document.getElementById('wallet-use-cb').checked;
     const orderTotalBeforeWallet = subtotal + shipping;
     const walletCapByOrder = orderTotalBeforeWallet * 0.20;
-    const walletDeduct = useWallet ? Math.min(balance, walletCapByOrder) : 0;
+    const walletDeductRaw = useWallet ? Math.min(balance, walletCapByOrder) : 0;
+    const walletDeduct = Math.round(walletDeductRaw);
     document.getElementById('subtotal-val').textContent  = fmtPrice(subtotal);
     document.getElementById('shipping-val').textContent  = shippingText;
     const walletRow = document.getElementById('wallet-discount-row');
