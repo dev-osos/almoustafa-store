@@ -956,6 +956,11 @@
             display: flex;
             align-items: center;
             gap: 0;
+            opacity: 0;
+            transition: opacity 0.4s ease 0.1s;
+        }
+        #contact-fab.fab-ready {
+            opacity: 1;
         }
         #contact-fab::before {
             content: '';
@@ -2497,10 +2502,12 @@
                     <i class="bi bi-bag-heart"></i>
                     استكشف منتجاتنا
                 </a>
+<a href="login.html">  
 <button id="btn-join" class="border-2 border-primary/80 text-primary bg-background/60 backdrop-blur-sm px-8 py-4 rounded-full font-headline text-lg font-bold hover:bg-primary hover:text-on-primary hover:border-primary transition-all duration-300 hover:scale-105 active:scale-95 inline-flex items-center gap-2 shadow-lg">
                     <i class="bi bi-person-plus"></i>
                     إنضم الينا
                 </button>
+                </a>
 </div>
 </div>
 </div>
@@ -2831,6 +2838,8 @@
             loadingOverlay.style.opacity = '0';
             mainContent.classList.remove('content-hidden');
             mainContent.classList.add('content-visible');
+            const fab = document.getElementById('contact-fab');
+            if (fab) fab.classList.add('fab-ready');
             setTimeout(() => {
                 loadingOverlay.style.display = 'none';
                 initScrollReveal();
