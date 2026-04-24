@@ -71,6 +71,11 @@ if (count($normalizedItems) === 0) {
     api_error('تفاصيل المنتجات غير صالحة', 422);
 }
 
+$itemsJson = json_encode($normalizedItems, JSON_UNESCAPED_UNICODE);
+if (!is_string($itemsJson) || $itemsJson === '') {
+    api_error('تعذر تجهيز بيانات المنتجات', 422);
+}
+
 try {
     $pdo = api_pdo();
 
@@ -87,7 +92,7 @@ try {
             full_address VARCHAR(500) DEFAULT NULL,
             note TEXT DEFAULT NULL,
             status VARCHAR(24) NOT NULL DEFAULT 'pending',
-            items_json JSON NOT NULL,
+            items_json LONGTEXT NOT NULL,
             subtotal DECIMAL(12,2) NOT NULL DEFAULT 0.00,
             shipping DECIMAL(12,2) NOT NULL DEFAULT 0.00,
             wallet_discount DECIMAL(12,2) NOT NULL DEFAULT 0.00,
@@ -155,7 +160,7 @@ try {
         ':address_detail' => $addressDetail !== '' ? $addressDetail : null,
         ':full_address' => $fullAddress !== '' ? $fullAddress : null,
         ':note' => $note !== '' ? $note : null,
-        ':items_json' => json_encode($normalizedItems, JSON_UNESCAPED_UNICODE),
+        ':items_json' => $itemsJson,
         ':subtotal' => round($subtotal, 2),
         ':shipping' => round($shipping, 2),
         ':wallet_discount' => round($walletDiscount, 2),
@@ -202,5 +207,7 @@ try {
     if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    api_error('حدث خطأ أثناء حفظ الطلب', 500);
+    api_error('حدث خطأ أثناء حفظ الطلب', 500, [
+        'debug' => $e->getMessage(),
+    ]);
 }
