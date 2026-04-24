@@ -565,17 +565,33 @@
       getItems() { return items; },
       getValue() { return input.value.trim(); },
       setInput(val) { input.value = val; },
+      setSelected(item, triggerSelect = true) {
+        if (!item) return false;
+        selected = item;
+        input.value = item.name;
+        input.style.borderColor = '';
+        setHint('', '');
+        if (triggerSelect && onSelect) onSelect(item);
+        return true;
+      },
+      selectStored(storedId, storedName, triggerSelect = true) {
+        const byId = storedId != null ? items.find(i => String(i.id) === String(storedId)) : null;
+        const byName = !byId && storedName ? items.find(i => acNorm(i.name) === acNorm(storedName)) : null;
+        return this.setSelected(byId || byName || null, triggerSelect);
+      },
       highlight(bad) { input.style.borderColor = bad ? '#c0392b' : ''; },
     };
   }
 
+  const DEFAULT_SHIPPING_FEE = 50;
   // shippingCost: null = pending (address not selected), number = fetched fee from TG API
   let shippingCost = null;
+  let shippingFallbackUsed = false;
 
   // Governorate AC
   const govAC = makeAC({
     wrapId: 'co-gov-wrap', inputId: 'co-gov-input', listId: 'co-gov-list', hintId: 'co-gov-hint',
-    onSelect(gov) { shippingCost = null; updateTotals(); cityACObj.reset(gov.id); }
+    onSelect(gov) { shippingCost = null; shippingFallbackUsed = false; updateTotals(); cityACObj.reset(gov.id); }
   });
 
   // City AC
@@ -595,7 +611,7 @@
     }
   });
   cityACObj.reset = function(govId) {
-    shippingCost = null; updateTotals();
+    shippingCost = null; shippingFallbackUsed = false; updateTotals();
     cityInput.value = ''; cityInput.placeholder = 'جاري التحميل...'; cityInput.style.borderColor = '';
     document.getElementById('co-city-hint').textContent = ''; document.getElementById('co-city-hint').className = 'co-ac-hint';
     fetch('dat-docs/cities/' + govId + '.json')
@@ -608,18 +624,38 @@
   fetch('dat-docs/govs.json')
     .then(r => r.json())
     .then(d => {
-      govAC.load(d.data.listZonesDropdown || []);
-      // Pre-fill from session
-      if (session.governorate) {
-        govAC.setInput(session.governorate);
-        if (session.governorateId) {
-          cityACObj.reset(session.governorateId);
-          if (session.city) {
-            // wait for cities to load then set
-            setTimeout(() => cityACObj.setInput(session.city), 600);
+      const govItems = d.data.listZonesDropdown || [];
+      govAC.load(govItems);
+
+      // Pre-fill from session and auto-calculate shipping if address is fully known.
+      const govMatched = govAC.selectStored(session.governorateId, session.governorate, false);
+      if (!govMatched) return;
+
+      const selectedGov = govAC.getSelected();
+      if (!selectedGov || !selectedGov.id) return;
+
+      cityInput.value = '';
+      cityInput.placeholder = 'جاري التحميل...';
+      cityInput.style.borderColor = '';
+      document.getElementById('co-city-hint').textContent = '';
+      document.getElementById('co-city-hint').className = 'co-ac-hint';
+
+      fetch('dat-docs/cities/' + selectedGov.id + '.json')
+        .then(r => r.json())
+        .then(cityData => {
+          const cities = cityData.data.listZonesDropdown || [];
+          cityACObj.load(cities, 'اكتب لاختيار المدينة...');
+          const cityMatched = cityACObj.selectStored(session.cityId, session.city, false);
+          if (cityMatched && !isWholesale) {
+            fetchShipping();
+          } else {
+            updateTotals();
           }
-        }
-      }
+        })
+        .catch(() => {
+          cityInput.placeholder = 'تعذّر تحميل المدن';
+          updateTotals();
+        });
     })
     .catch(() => {});
 
@@ -638,15 +674,29 @@
     const subtotal  = cart.reduce((s, i) => s + i.price * i.qty, 0);
     const weightKg  = calcWeightKg();
     document.getElementById('shipping-val').textContent = '...';
-    try {
-      const res  = await fetch('apis/shippeng/TG/del-cost.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ govId: govSelected.id, cityId: citySelected.id, price: subtotal, weight: weightKg }),
-      });
-      const data = await res.json();
-      shippingCost = data.ok ? (data.delivery || 0) : null;
-    } catch { shippingCost = null; }
+    shippingFallbackUsed = false;
+    let success = false;
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const res  = await fetch('apis/shippeng/TG/del-cost.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ govId: govSelected.id, cityId: citySelected.id, price: subtotal, weight: weightKg }),
+        });
+        if (!res.ok) throw new Error('shipping request failed');
+        const data = await res.json();
+        if (!data.ok) throw new Error('shipping api not ok');
+        shippingCost = data.delivery || 0;
+        success = true;
+        break;
+      } catch (_) {}
+    }
+
+    if (!success) {
+      shippingCost = DEFAULT_SHIPPING_FEE;
+      shippingFallbackUsed = true;
+    }
     updateTotals();
   }
 
@@ -659,6 +709,9 @@
       shippingText = 'تحدد تلقائيا بعد ادخال العنوان';
     } else if (shippingCost === 0) {
       shippingText = 'مجاني';
+    } else if (shippingFallbackUsed) {
+      shipping     = DEFAULT_SHIPPING_FEE;
+      shippingText = fmtPrice(shipping);
     } else {
       shipping     = Math.round(shippingCost * 0.65);
       shippingText = fmtPrice(shipping);
