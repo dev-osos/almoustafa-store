@@ -13,6 +13,9 @@
   function getSession() {
     try { return JSON.parse(localStorage.getItem('alm_session')); } catch { return null; }
   }
+  function setSession(data) {
+    localStorage.setItem('alm_session', JSON.stringify(data));
+  }
 
   /* ─── CSS ──────────────────────────────────────────────────── */
   var style = document.createElement('style');
@@ -104,6 +107,37 @@
     return Number(val || 0).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م';
   }
 
+  function applySessionToDropdown(s) {
+    if (!s) return;
+    document.getElementById('apd-name').textContent = s.name || 'مستخدم';
+    document.getElementById('apd-phone').textContent = s.phone || '—';
+    document.getElementById('apd-segment').textContent = SEGMENT_LABELS[s.segment] || 'لم يتم تحديد الشريحة بعد';
+    document.getElementById('apd-invite').textContent = s.referral_code || s.invitationCode || '…';
+    document.getElementById('apd-address').textContent = buildAddress(s);
+    document.getElementById('apd-wallet').textContent = fmtWallet(s.wallet);
+  }
+
+  function refreshSessionFromServer() {
+    var current = getSession();
+    if (!current) return Promise.resolve(null);
+    return fetch('apis/users/me.php')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ok) {
+          localStorage.removeItem('alm_session');
+          updateIcon();
+          apdClose();
+          return null;
+        }
+        var merged = Object.assign({}, current, d);
+        setSession(merged);
+        return merged;
+      })
+      .catch(function () {
+        return current;
+      });
+  }
+
   /* ─── Dropdown positioning ─────────────────────────────────── */
   function apdPosition() {
     var btn = document.getElementById('btn-account');
@@ -118,14 +152,14 @@
   function apdOpen() {
     var s = getSession();
     if (!s) return;
-    document.getElementById('apd-name').textContent = s.name || 'مستخدم';
-    document.getElementById('apd-phone').textContent = s.phone || '—';
-    document.getElementById('apd-segment').textContent = SEGMENT_LABELS[s.segment] || 'لم يتم تحديد الشريحة بعد';
-    document.getElementById('apd-invite').textContent = s.referral_code || s.invitationCode || '…';
-    document.getElementById('apd-address').textContent = buildAddress(s);
-    document.getElementById('apd-wallet').textContent = fmtWallet(s.wallet);
+    applySessionToDropdown(s);
     apdPosition();
     dd.classList.add('open');
+    refreshSessionFromServer().then(function (fresh) {
+      if (!fresh || !dd.classList.contains('open')) return;
+      applySessionToDropdown(fresh);
+      apdPosition();
+    });
   }
 
   function apdClose() { dd.classList.remove('open'); }
@@ -177,22 +211,13 @@
 
   /* ─── Session verification on load ────────────────────────── */
   updateIcon();
-  if (getSession()) {
-    fetch('apis/users/me.php')
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d.ok) {
-          localStorage.removeItem('alm_session');
-          updateIcon();
-        }
-      })
-      .catch(function () {});
-  }
+  refreshSessionFromServer();
 
   /* ─── Listen to session changes (from auth-modal.js) ──────── */
   document.addEventListener('alm:session-changed', function () {
     updateIcon();
     apdClose();
+    refreshSessionFromServer();
   });
 
   /* ─── Public API ───────────────────────────────────────────── */

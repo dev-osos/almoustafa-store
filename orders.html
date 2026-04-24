@@ -958,7 +958,16 @@ let currentFilter = 'all';
 let currentSearch = '';
 let currentPage   = 1;
 const ORDERS_PER_PAGE = 3;
-let isLoggedIn = false; // toggle to true to simulate login
+function hasActiveSession() {
+  try {
+    const session = JSON.parse(localStorage.getItem('alm_session'));
+    return !!(session && (session.customer_id || session.phone));
+  } catch (e) {
+    return false;
+  }
+}
+
+let isLoggedIn = hasActiveSession();
 
 /* ─── Status config ─── */
 const STATUS_CFG = {
@@ -972,6 +981,8 @@ const STATUS_CFG = {
 
 /* ─── Init ─── */
 window.addEventListener('DOMContentLoaded', () => {
+  // Keep auth state synced with the latest stored session.
+  isLoggedIn = hasActiveSession();
   // Simulate async load
   setTimeout(() => {
     document.getElementById('orders-skeleton').classList.add('hidden');
