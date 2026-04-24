@@ -3099,8 +3099,32 @@
         function getSession() {
             try { return JSON.parse(localStorage.getItem('alm_session')); } catch { return null; }
         }
+        function readWalletLock() {
+            try {
+                const lock = JSON.parse(localStorage.getItem('alm_wallet_lock'));
+                if (!lock || typeof lock !== 'object') return null;
+                const minBalance = Number(lock.minBalance);
+                const expiresAt = Number(lock.expiresAt);
+                if (!Number.isFinite(minBalance) || !Number.isFinite(expiresAt)) return null;
+                if (Date.now() > expiresAt) {
+                    localStorage.removeItem('alm_wallet_lock');
+                    return null;
+                }
+                return { minBalance: Math.max(0, minBalance), expiresAt };
+            } catch {
+                return null;
+            }
+        }
+        function applyWalletLock(sessionData) {
+            const lock = readWalletLock();
+            if (!lock || !sessionData) return sessionData;
+            const wallet = Number(sessionData.wallet);
+            if (!Number.isFinite(wallet)) return sessionData;
+            if (wallet > lock.minBalance) sessionData.wallet = lock.minBalance;
+            return sessionData;
+        }
         function setSession(data) {
-            localStorage.setItem('alm_session', JSON.stringify(data));
+            localStorage.setItem('alm_session', JSON.stringify(applyWalletLock(data)));
         }
 
         // ── Global 401 interceptor ────────────────────────────────────────────

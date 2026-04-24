@@ -414,6 +414,7 @@
   const arabicNums = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
   function toAr(n) { return String(n).split('').map(d => arabicNums[+d] ?? d).join(''); }
   function fmtPrice(n) { const w = n % 1 === 0; return n.toLocaleString('ar-EG',{minimumFractionDigits:w?0:2,maximumFractionDigits:w?0:2}) + ' ج.م'; }
+  function showToast(msg) { window.alert(String(msg || 'حدث خطأ')); }
 
   // --- Load cart ---
   let cart = [];
@@ -436,6 +437,47 @@
   // --- Load session ---
   let session = {};
   try { session = JSON.parse(localStorage.getItem('alm_session')) || {}; } catch {}
+  const WALLET_LOCK_KEY = 'alm_wallet_lock';
+  const WALLET_LOCK_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
+
+  function readWalletLock() {
+    try {
+      const lock = JSON.parse(localStorage.getItem(WALLET_LOCK_KEY));
+      if (!lock || typeof lock !== 'object') return null;
+      const minBalance = Number(lock.minBalance);
+      const expiresAt = Number(lock.expiresAt);
+      if (!Number.isFinite(minBalance) || !Number.isFinite(expiresAt)) return null;
+      if (Date.now() > expiresAt) {
+        localStorage.removeItem(WALLET_LOCK_KEY);
+        return null;
+      }
+      return { minBalance: Math.max(0, minBalance), expiresAt };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeWalletLock(minBalance) {
+    const currentLock = readWalletLock();
+    const safeMin = Math.max(0, Number(minBalance) || 0);
+    const mergedMin = currentLock ? Math.min(currentLock.minBalance, safeMin) : safeMin;
+    try {
+      localStorage.setItem(WALLET_LOCK_KEY, JSON.stringify({
+        minBalance: mergedMin,
+        expiresAt: Date.now() + WALLET_LOCK_TTL_MS,
+      }));
+    } catch (_) {}
+  }
+
+  function applyWalletLockToSession() {
+    const lock = readWalletLock();
+    if (!lock) return;
+    const walletValue = parseWalletAmount(session.wallet);
+    if (walletValue > lock.minBalance) {
+      session.wallet = lock.minBalance;
+      try { localStorage.setItem('alm_session', JSON.stringify(session)); } catch (_) {}
+    }
+  }
 
   // --- Order ID & date ---
   const orderId = Math.floor(100000 + Math.random() * 900000);  
@@ -474,6 +516,8 @@
     const parsed = parseFloat(normalized);
     return Number.isFinite(parsed) ? parsed : 0;
   }
+
+  applyWalletLockToSession();
 
   let currentBalance = parseWalletAmount(session.wallet);
   document.getElementById('user-wallet').textContent = fmtPrice(currentBalance);
@@ -764,6 +808,21 @@
     };
   }
 
+  async function submitOrderToServer(payload) {
+    const res = await fetch('apis/orders/create.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    let data = {};
+    try { data = await res.json(); } catch (_) {}
+    if (!res.ok || !data?.ok) {
+      const msg = data?.error || 'تعذر إرسال الطلب للخادم';
+      throw new Error(msg);
+    }
+    return data;
+  }
+
   function renderItem(item, idx) {
     const row = document.createElement('div');
     row.className = 'order-row';
@@ -858,7 +917,7 @@
   updateTotals();
 
   // --- Place order ---
-  document.getElementById('btn-place-order').addEventListener('click', () => {
+  document.getElementById('btn-place-order').addEventListener('click', async () => {
     const name          = nameInput.value.trim();
     const phone         = phoneInput.value.trim();
     const govVal        = govAC.getValue();
@@ -890,6 +949,39 @@
       return;
     }
 
+    const orderNote = document.getElementById('order-note')?.value?.trim() || '';
+
+    let serverResult = null;
+    try {
+      serverResult = await submitOrderToServer({
+        order_id: String(orderId),
+        name,
+        phone,
+        governorate: govSelected ? govSelected.name : govVal,
+        city: citySelected ? citySelected.name : cityVal,
+        address_detail: addressDetail,
+        address: [govVal, cityVal, addressDetail].filter(Boolean).join('، '),
+        note: orderNote,
+        products: cart.map(item => ({
+          name: item.name,
+          qty: item.qty,
+          price: item.price,
+          weight: String(item.weight || '0').includes('جم') ? String(item.weight) : (String(item.weight || '0') + ' جم'),
+          img: item.img || '',
+          image_url: item.image_url || item.img || '',
+          category: item.category || item.cat || '',
+        })),
+        subtotal: pricing.subtotal,
+        shipping: pricing.shipping,
+        wallet_discount: pricing.walletDeduct,
+        total: pricing.total,
+      });
+    } catch (err) {
+      const msg = (err && err.message) ? err.message : 'تعذر حفظ الطلب، حاول مرة أخرى';
+      showToast(msg);
+      return;
+    }
+
     // Persist back to session
     session.name           = name;
     session.phone          = phone;
@@ -899,15 +991,16 @@
     session.cityId         = citySelected ? citySelected.id   : null;
     session.addressDetails = addressDetail;
     session.address        = [govVal, cityVal, addressDetail].filter(Boolean).join('، ');
-    if (pricing.useWallet && pricing.walletDeduct > 0) {
-      currentBalance = Math.max(0, currentBalance - pricing.walletDeduct);
+    if (typeof serverResult?.wallet_balance === 'number') {
+      currentBalance = Math.max(0, serverResult.wallet_balance);
       session.wallet = currentBalance;
+      writeWalletLock(currentBalance);
       document.getElementById('user-wallet').textContent = fmtPrice(currentBalance);
     }
     try { localStorage.setItem('alm_session', JSON.stringify(session)); } catch {}
 
     const savedOrder = {
-      id: String(orderId),
+      id: String(serverResult?.order_id || orderId),
       date: now.toISOString().slice(0, 10),
       status: 'pending',
       statusLabel: 'بإنتظار التأكيد',

@@ -627,7 +627,33 @@
   function getSession() {
     try { return JSON.parse(localStorage.getItem('alm_session')); } catch (e) { return null; }
   }
-  function setSession(d) { localStorage.setItem('alm_session', JSON.stringify(d)); }
+  function readWalletLock() {
+    try {
+      var lock = JSON.parse(localStorage.getItem('alm_wallet_lock'));
+      if (!lock || typeof lock !== 'object') return null;
+      var minBalance = Number(lock.minBalance);
+      var expiresAt = Number(lock.expiresAt);
+      if (!Number.isFinite(minBalance) || !Number.isFinite(expiresAt)) return null;
+      if (Date.now() > expiresAt) {
+        localStorage.removeItem('alm_wallet_lock');
+        return null;
+      }
+      return { minBalance: Math.max(0, minBalance), expiresAt: expiresAt };
+    } catch (e) {
+      return null;
+    }
+  }
+  function applyWalletLock(data) {
+    var lock = readWalletLock();
+    if (!lock || !data) return data;
+    var wallet = Number(data.wallet);
+    if (!Number.isFinite(wallet)) return data;
+    if (wallet > lock.minBalance) data.wallet = lock.minBalance;
+    return data;
+  }
+  function setSession(d) {
+    localStorage.setItem('alm_session', JSON.stringify(applyWalletLock(d)));
+  }
 
   var SEGMENT_LABELS = { consumer: 'مستهلك', wholesale: 'جملة', corporate: 'جملة الجملة' };
 
