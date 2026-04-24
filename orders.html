@@ -1379,5 +1379,50 @@ function showToast(msg) {
 </script>
 
 <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
+
+<!-- Floating Contact Button -->
+<div id="contact-fab">
+    <a class="fab-link" id="fab-anchor" href="https://wa.me/201037966515" aria-label="تواصل معنا">
+        <span class="mode-badge" id="fab-badge">واتساب</span>
+        <span class="fab-icon" id="fab-icon"></span>
+    </a>
+    <span class="fab-text" id="fab-text">تواصل معنا</span>
+</div>
+<script>
+  (function () {
+    var btn = document.getElementById('btn-mobile-menu');
+    var panel = document.getElementById('mobile-menu-panel');
+    var backdrop = document.getElementById('mobile-menu-backdrop');
+    var closeBtn = document.getElementById('btn-mobile-menu-close');
+    if (!btn || !panel || !backdrop) return;
+
+    function setMenu(open) {
+      panel.classList.toggle('open', open);
+      backdrop.classList.toggle('open', open);
+      panel.setAttribute('aria-hidden', String(!open));
+      var icon = btn.querySelector('.material-symbols-outlined');
+      if (icon) icon.textContent = open ? 'close' : 'menu';
+      document.body.style.overflow = open ? 'hidden' : '';
+    }
+
+    btn.addEventListener('click', function () {
+      setMenu(!panel.classList.contains('open'));
+    });
+    backdrop.addEventListener('click', function () {
+      setMenu(false);
+    });
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function () {
+        setMenu(false);
+      });
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') setMenu(false);
+    });
+    panel.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () { setMenu(false); });
+    });
+  }());
+</script>
 </body>
 </html>
