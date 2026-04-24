@@ -970,10 +970,24 @@ const STATUS_CFG = {
   cancelled: { label: 'ملغي',         cls: 'status-cancelled', icon: 'cancel' },
 };
 
+const PRODUCT_MEDIA_BY_NAME = Object.create(null);
+
+function normalizeProductName(name) {
+  return String(name || '').trim().toLowerCase();
+}
+
+function normalizeImageUrl(url) {
+  const raw = String(url || '').trim();
+  if (!raw) return '';
+  if (/^(https?:|data:|blob:|\/\/)/i.test(raw)) return raw;
+  if (raw.startsWith('/')) return raw;
+  return raw.replace(/^\.\//, '');
+}
+
 function getProductImage(product) {
   const imageCandidate = product?.image || product?.image_url || product?.img || product?.thumbnail || product?.photo;
   if (typeof imageCandidate !== 'string') return '';
-  const normalized = imageCandidate.trim();
+  const normalized = normalizeImageUrl(imageCandidate);
   return normalized || '';
 }
 
@@ -997,10 +1011,47 @@ function buildProductMediaHTML(product, size = 52, radius = 12) {
   return `<span class="material-symbols-outlined">${getCategoryIcon(product)}</span>`;
 }
 
+async function hydrateProductMediaFromCatalog() {
+  try {
+    const res = await fetch('apis/products/list.php');
+    if (!res.ok) return;
+    const data = await res.json();
+    const products = Array.isArray(data?.products) ? data.products : [];
+    products.forEach((p) => {
+      const key = normalizeProductName(p.store_name || p.name);
+      if (!key) return;
+      PRODUCT_MEDIA_BY_NAME[key] = {
+        image: normalizeImageUrl(p.image_url || p.image || ''),
+        category: p.category_name || p.category || '',
+      };
+    });
+
+    ORDERS_DATA.forEach((order) => {
+      if (!Array.isArray(order?.products)) return;
+      order.products.forEach((product) => {
+        const key = normalizeProductName(product?.name);
+        const catalog = PRODUCT_MEDIA_BY_NAME[key];
+        if (!catalog) return;
+        if (!getProductImage(product) && catalog.image) {
+          product.image = catalog.image;
+          product.image_url = catalog.image;
+          product.img = catalog.image;
+        }
+        if (!product.category && catalog.category) {
+          product.category = catalog.category;
+        }
+      });
+    });
+  } catch (e) {
+    // Keep graceful fallback to category icon only.
+  }
+}
+
 /* ─── Init ─── */
 window.addEventListener('DOMContentLoaded', () => {
   // Keep auth state synced with the latest stored session.
   isLoggedIn = hasActiveSession();
+  hydrateProductMediaFromCatalog().then(() => renderOrders());
   // Simulate async load
   setTimeout(() => {
     const skeleton = document.getElementById('orders-skeleton');
