@@ -465,9 +465,19 @@
     note.style.display = 'flex';
   }
 
-  const balance = parseFloat(session.wallet) || 0;
-  document.getElementById('user-wallet').textContent = fmtPrice(balance);
-  if (!balance) {
+  function parseWalletAmount(value) {
+    if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+    if (value == null) return 0;
+    const normalized = String(value)
+      .replace(/[٠-٩]/g, d => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
+      .replace(/[^\d.\-]/g, '');
+    const parsed = parseFloat(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  let currentBalance = parseWalletAmount(session.wallet);
+  document.getElementById('user-wallet').textContent = fmtPrice(currentBalance);
+  if (!currentBalance) {
     document.getElementById('wallet-row').style.display = 'none';
   }
 
@@ -716,10 +726,10 @@
       shipping     = Math.round(shippingCost * 0.65);
       shippingText = fmtPrice(shipping);
     }
-    const useWallet = balance > 0 && document.getElementById('wallet-use-cb').checked;
+    const useWallet = currentBalance > 0 && document.getElementById('wallet-use-cb').checked;
     const orderTotalBeforeWallet = subtotal + shipping;
     const walletCapByOrder = orderTotalBeforeWallet * 0.20;
-    const walletDeductRaw = useWallet ? Math.min(balance, walletCapByOrder) : 0;
+    const walletDeductRaw = useWallet ? Math.min(currentBalance, walletCapByOrder) : 0;
     const walletDeduct = Math.round(walletDeductRaw);
     document.getElementById('subtotal-val').textContent  = fmtPrice(subtotal);
     document.getElementById('shipping-val').textContent  = shippingText;
@@ -742,9 +752,9 @@
       else if (shippingFallbackUsed) shipping = DEFAULT_SHIPPING_FEE;
       else shipping = Math.round(shippingCost * 0.65);
     }
-    const useWallet = balance > 0 && document.getElementById('wallet-use-cb').checked;
+    const useWallet = currentBalance > 0 && document.getElementById('wallet-use-cb').checked;
     const orderTotalBeforeWallet = subtotal + shipping;
-    const walletDeduct = useWallet ? Math.round(Math.min(balance, orderTotalBeforeWallet * 0.20)) : 0;
+    const walletDeduct = useWallet ? Math.round(Math.min(currentBalance, orderTotalBeforeWallet * 0.20)) : 0;
     return {
       subtotal,
       shipping,
@@ -890,7 +900,9 @@
     session.addressDetails = addressDetail;
     session.address        = [govVal, cityVal, addressDetail].filter(Boolean).join('، ');
     if (pricing.useWallet && pricing.walletDeduct > 0) {
-      session.wallet = Math.max(0, (parseFloat(session.wallet) || 0) - pricing.walletDeduct);
+      currentBalance = Math.max(0, currentBalance - pricing.walletDeduct);
+      session.wallet = currentBalance;
+      document.getElementById('user-wallet').textContent = fmtPrice(currentBalance);
     }
     try { localStorage.setItem('alm_session', JSON.stringify(session)); } catch {}
 
