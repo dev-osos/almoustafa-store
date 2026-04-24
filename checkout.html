@@ -733,6 +733,27 @@
     document.getElementById('total-val').textContent = fmtPrice(orderTotalBeforeWallet - walletDeduct);
   }
 
+  function getPricingSnapshot() {
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    let shipping = 0;
+    if (!isWholesale) {
+      if (shippingCost === null) return null;
+      if (shippingCost === 0) shipping = 0;
+      else if (shippingFallbackUsed) shipping = DEFAULT_SHIPPING_FEE;
+      else shipping = Math.round(shippingCost * 0.65);
+    }
+    const useWallet = balance > 0 && document.getElementById('wallet-use-cb').checked;
+    const orderTotalBeforeWallet = subtotal + shipping;
+    const walletDeduct = useWallet ? Math.round(Math.min(balance, orderTotalBeforeWallet * 0.20)) : 0;
+    return {
+      subtotal,
+      shipping,
+      walletDeduct,
+      total: Math.max(0, orderTotalBeforeWallet - walletDeduct),
+      useWallet,
+    };
+  }
+
   function renderItem(item, idx) {
     const row = document.createElement('div');
     row.className = 'order-row';
@@ -834,25 +855,32 @@
     const cityVal       = cityACObj.getValue();
     const addressDetail = addressDetailInp.value.trim();
 
+    const govSelected  = govAC.getSelected();
+    const citySelected = cityACObj.getSelected();
+    const phoneOk = /^[0-9+\-\s]{8,15}$/.test(phone);
     const hlInput = (el, bad) => { el.style.borderBottomColor = bad ? '#c0392b' : 'transparent'; };
     hlInput(nameInput,       !name);
-    hlInput(phoneInput,      !phone);
-    govAC.highlight(!govVal);
-    cityACObj.highlight(!cityVal);
+    hlInput(phoneInput,      !phone || !phoneOk);
+    govAC.highlight(!govVal || !govSelected);
+    cityACObj.highlight(!cityVal || !citySelected);
     hlInput(addressDetailInp, !addressDetail);
 
-    if (!name || !phone || !govVal || !cityVal || !addressDetail) {
+    if (!name || !phone || !phoneOk || !govVal || !cityVal || !addressDetail || !govSelected || !citySelected) {
       const govInputEl = document.getElementById('co-gov-input');
       const cityInputEl = document.getElementById('co-city-input');
       const firstEmpty = [nameInput, phoneInput, govInputEl, cityInputEl, addressDetailInp]
         .find(i => !i.value.trim() && !i.disabled);
-      if (firstEmpty) firstEmpty.focus();
+      if (firstEmpty) firstEmpty.focus(); else if (!phoneOk) phoneInput.focus();
+      return;
+    }
+
+    const pricing = getPricingSnapshot();
+    if (!pricing) {
+      document.getElementById('shipping-val').textContent = 'يجب تحديد الشحن أولاً';
       return;
     }
 
     // Persist back to session
-    const govSelected  = govAC.getSelected();
-    const citySelected = cityACObj.getSelected();
     session.name           = name;
     session.phone          = phone;
     session.governorate    = govSelected ? govSelected.name : govVal;
@@ -861,7 +889,37 @@
     session.cityId         = citySelected ? citySelected.id   : null;
     session.addressDetails = addressDetail;
     session.address        = [govVal, cityVal, addressDetail].filter(Boolean).join('، ');
+    if (pricing.useWallet && pricing.walletDeduct > 0) {
+      session.wallet = Math.max(0, (parseFloat(session.wallet) || 0) - pricing.walletDeduct);
+    }
     try { localStorage.setItem('alm_session', JSON.stringify(session)); } catch {}
+
+    const savedOrder = {
+      id: String(orderId),
+      date: now.toISOString().slice(0, 10),
+      status: 'pending',
+      statusLabel: 'بإنتظار التأكيد',
+      address: session.address,
+      products: cart.map(item => ({
+        name: item.name,
+        qty: item.qty,
+        price: item.price,
+        weight: String(item.weight || '0').includes('جم') ? String(item.weight) : (String(item.weight || '0') + ' جم'),
+      })),
+      subtotal: pricing.subtotal,
+      shipping: pricing.shipping,
+      discount: pricing.walletDeduct,
+      total: pricing.total,
+      timeline: [
+        { icon: 'shopping_cart', title: 'تم استلام الطلب', time: new Date().toLocaleString('ar-EG'), done: true, active: true },
+        { icon: 'schedule', title: 'بإنتظار التأكيد', time: '—', done: false },
+      ],
+      customer_phone: session.phone || '',
+    };
+    let existingOrders = [];
+    try { existingOrders = JSON.parse(localStorage.getItem('alm_orders')) || []; } catch {}
+    existingOrders.unshift(savedOrder);
+    try { localStorage.setItem('alm_orders', JSON.stringify(existingOrders)); } catch {}
 
     try { localStorage.setItem('alm_cart', JSON.stringify(cart)); } catch {}
     localStorage.removeItem('alm_cart');

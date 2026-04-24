@@ -932,6 +932,18 @@ const DEMO_ORDERS = [
   },
 ];
 
+function loadStoredOrders() {
+  try {
+    const raw = JSON.parse(localStorage.getItem('alm_orders')) || [];
+    if (!Array.isArray(raw)) return [];
+    return raw.filter(o => o && o.id && Array.isArray(o.products));
+  } catch (e) {
+    return [];
+  }
+}
+
+const ORDERS_DATA = [...loadStoredOrders(), ...DEMO_ORDERS];
+
 /* ─── State ─── */
 let currentFilter = 'all';
 let currentSearch = '';
@@ -1007,9 +1019,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
 /* ─── Stats ─── */
 function updateStats() {
-  const total = DEMO_ORDERS.length;
-  const active = DEMO_ORDERS.filter(o => ['pending','confirmed','preparing','shipping'].includes(o.status)).length;
-  const delivered = DEMO_ORDERS.filter(o => o.status === 'delivered').length;
+  const total = ORDERS_DATA.length;
+  const active = ORDERS_DATA.filter(o => ['pending','confirmed','preparing','shipping'].includes(o.status)).length;
+  const delivered = ORDERS_DATA.filter(o => o.status === 'delivered').length;
   document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-active').textContent = active;
   document.getElementById('stat-delivered').textContent = delivered;
@@ -1021,7 +1033,7 @@ function renderOrders() {
   const empty = document.getElementById('empty-state');
   const emptyMsg = document.getElementById('empty-msg');
 
-  let orders = DEMO_ORDERS;
+  let orders = ORDERS_DATA;
 
   if (currentFilter !== 'all') {
     orders = orders.filter(o => o.status === currentFilter);
@@ -1179,7 +1191,7 @@ function filterOrders() {
 function trackByNumber() {
   const val = document.getElementById('track-number-input').value.trim().toUpperCase();
   if (!val) return;
-  const found = DEMO_ORDERS.find(o => o.id === val || o.id === 'ORD-' + val);
+  const found = ORDERS_DATA.find(o => o.id === val || o.id === 'ORD-' + val);
   if (found) {
     openOrderModal(found.id);
   } else {
@@ -1189,7 +1201,7 @@ function trackByNumber() {
 
 /* ─── Order modal ─── */
 function openOrderModal(orderId) {
-  const order = DEMO_ORDERS.find(o => o.id === orderId);
+  const order = ORDERS_DATA.find(o => o.id === orderId);
   if (!order) return;
   const cfg = STATUS_CFG[order.status] || STATUS_CFG.pending;
 
