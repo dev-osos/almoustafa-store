@@ -208,6 +208,56 @@
     color: #fed65b; direction: ltr;
   }
 
+  /* سجل حركات المحفظة (من قاعدة البيانات) */
+  .pf-wallet-ledger-hint {
+    font-size: 0.72rem; color: rgba(255,255,255,0.38);
+    line-height: 1.5; margin: 0 0 12px;
+  }
+  .pf-wallet-ledger-wrap {
+    min-height: 100px; max-height: 340px; overflow-y: auto;
+    padding-inline-end: 2px; margin: 0 -2px 0 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(254,214,91,0.35) rgba(255,255,255,0.05);
+  }
+  .pf-wallet-ledger-wrap::-webkit-scrollbar { width: 6px; }
+  .pf-wallet-ledger-wrap::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
+  .pf-wallet-ledger-wrap::-webkit-scrollbar-thumb { background: rgba(254,214,91,0.35); border-radius: 4px; }
+  .pf-wallet-tx-loading, .pf-wallet-tx-error {
+    text-align: center; padding: 20px; font-size: 0.82rem; color: rgba(255,255,255,0.45);
+  }
+  .pf-wallet-tx-error { color: rgba(248,113,113,0.85); }
+  .pf-wallet-tx-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 14px 16px; border-radius: 12px; margin-bottom: 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  }
+  .pf-wallet-tx-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  .pf-wallet-tx-ico {
+    width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .pf-wallet-tx-ico.credit  { background: rgba(34,197,94,0.12); color: #22c55e; }
+  .pf-wallet-tx-ico.debit { background: rgba(239,68,68,0.12); color: #f87171; }
+  .pf-wallet-tx-title { font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.86); }
+  .pf-wallet-tx-meta  { font-size: 0.65rem; color: rgba(255,255,255,0.35); margin-top: 3px; }
+  .pf-wallet-tx-ref  { font-size: 0.6rem; color: rgba(255,255,255,0.28); margin-top: 2px; }
+  .pf-wallet-tx-amt { font-family: "Manrope", sans-serif; font-size: 0.84rem; font-weight: 700; direction: ltr; white-space: nowrap; }
+  .pf-wallet-tx-amt.credit  { color: #22c55e; }
+  .pf-wallet-tx-amt.debit { color: #f87171; }
+  .pf-wallet-ledger-empty { text-align: center; padding: 28px 12px; color: rgba(255,255,255,0.35); font-size: 0.82rem; }
+  .pf-wallet-pagination {
+    display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .pf-wallet-pg-btn {
+    display: flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 8px; border-radius: 8px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.7); font-size: 0.8rem; cursor: pointer; font-family: "Manrope", sans-serif; transition: background 0.15s;
+  }
+  .pf-wallet-pg-btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); color: #fff; }
+  .pf-wallet-pg-btn:disabled { opacity: 0.35; cursor: default; }
+  .pf-wallet-pg-btn.active { background: rgba(254,214,91,0.18); border-color: rgba(254,214,91,0.35); color: #fed65b; }
+  #pf-wallet-page-numbers { display: flex; flex-direction: row; align-items: center; gap: 4px; }
+
   /* ── Invite section (matches invitation modal in index.html) ── */
   .pf-referral-header {
     text-align: center;
@@ -491,6 +541,28 @@
     <div class="pf-wallet-balance" id="pf-wallet">0.00 ج.م</div>
   </div>
 
+  <div class="pf-info-section" style="margin-top: 8px; margin-bottom: 8px;">
+    <div class="pf-info-section-title">
+      <span class="material-symbols-outlined">history</span>
+      سجل معاملات المحفظة
+    </div>
+    <p class="pf-wallet-ledger-hint">يُسجَّل في قاعدة البيانات كل تغيير في الرصيد (إيداع أو خصم).</p>
+    <div class="pf-wallet-ledger-wrap" id="pf-wallet-ledger-wrap">
+      <div id="pf-wallet-transactions">
+        <div class="pf-wallet-tx-loading">جاري تحميل السجل…</div>
+      </div>
+    </div>
+    <div id="pf-wallet-pagination" class="pf-wallet-pagination" style="display: none;" aria-label="تصفح سجل المعاملات">
+      <button type="button" class="pf-wallet-pg-btn" id="pf-wallet-prev-btn" disabled aria-label="الصفحة السابقة">
+        <span class="material-symbols-outlined" style="font-size:18px;">chevron_right</span>
+      </button>
+      <div id="pf-wallet-page-numbers"></div>
+      <button type="button" class="pf-wallet-pg-btn" id="pf-wallet-next-btn" disabled aria-label="الصفحة التالية">
+        <span class="material-symbols-outlined" style="font-size:18px;">chevron_left</span>
+      </button>
+    </div>
+  </div>
+
   <!-- Invite -->
   <div>
     <div class="pf-section-title">كود الدعوة</div>
@@ -666,6 +738,109 @@
     return Number(val || 0).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م';
   }
 
+  function escPfTx(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  var pfWalletMaxPage = 1;
+
+  function goToProfileWalletPage(page) {
+    var p = parseInt(String(page), 10) || 1;
+    if (p < 1) p = 1;
+    if (p > pfWalletMaxPage) p = pfWalletMaxPage;
+    window.pfWalletTxPage = p;
+    loadProfileWalletTx();
+  }
+  window.goToProfileWalletPage = goToProfileWalletPage;
+
+  function updateProfileWalletPagination(current, total) {
+    var prev = document.getElementById('pf-wallet-prev-btn');
+    var next = document.getElementById('pf-wallet-next-btn');
+    var nums = document.getElementById('pf-wallet-page-numbers');
+    if (!prev || !next || !nums) return;
+    prev.disabled = current <= 1;
+    next.disabled = current >= total;
+    var maxVis = 3, start = Math.max(1, current - 1);
+    var end = Math.min(total, start + maxVis - 1);
+    if (end - start < maxVis - 1) {
+      start = Math.max(1, end - maxVis + 1);
+    }
+    var html = '';
+    for (var i = start; i <= end; i++) {
+      html += '<button type="button" class="pf-wallet-pg-btn' + (i === current ? ' active' : '') + '" onclick="goToProfileWalletPage(' + i + ')">' + i + '</button>';
+    }
+    nums.innerHTML = html;
+  }
+
+  function loadProfileWalletTx() {
+    var box = document.getElementById('pf-wallet-transactions');
+    var pg = document.getElementById('pf-wallet-pagination');
+    if (!box) return;
+    var p = window.pfWalletTxPage || 1;
+    var per = 5;
+    box.innerHTML = '<div class="pf-wallet-tx-loading">جاري تحميل السجل…</div>';
+    if (pg) pg.style.display = 'none';
+    fetch('apis/wallet/transactions.php?page=' + p + '&per_page=' + per, { credentials: 'same-origin' })
+      .then(function (r) {
+        return r.json().then(function (d) { return { ok: r.ok, status: r.status, data: d }; });
+      })
+      .then(function (out) {
+        if (out.status === 401) {
+          box.innerHTML = '<div class="pf-wallet-tx-error">انتهت الجلسة. سجّل دخولك مرة أخرى.</div>';
+          return;
+        }
+        if (!out.ok || !out.data || !out.data.ok) {
+          throw new Error((out.data && out.data.error) || 'تعذر تحميل السجل');
+        }
+        var d = out.data;
+        var list = d.transactions || [];
+        pfWalletMaxPage = Math.max(1, parseInt(String(d.total_pages), 10) || 1);
+        if (p > pfWalletMaxPage) {
+          window.pfWalletTxPage = 1;
+          loadProfileWalletTx();
+          return;
+        }
+        if (list.length === 0) {
+          box.innerHTML = '<div class="pf-wallet-ledger-empty">لا توجد معاملات بعد.</div>';
+          if (pg) pg.style.display = 'none';
+          return;
+        }
+        box.innerHTML = list.map(function (tx) {
+          var isC = tx.type === 'credit';
+          var w = new Date(tx.created_at);
+          var bad = isNaN(w.getTime());
+          var ds = bad ? '—' : w.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' });
+          var ts = bad ? '' : w.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+          var ref = '';
+          if (tx.ref_id != null && String(tx.ref_id) !== '' && (tx.reason === 'order_payment' || tx.reason === 'referral_bonus')) {
+            ref = '<div class="pf-wallet-tx-ref">مرجع: #' + escPfTx(String(tx.ref_id)) + '</div>';
+          }
+          return (
+            '<div class="pf-wallet-tx-item">' +
+            '<div class="pf-wallet-tx-left">' +
+            '<div class="pf-wallet-tx-ico ' + (isC ? 'credit' : 'debit') + '">' +
+            '<span class="material-symbols-outlined">' + (isC ? 'add_circle' : 'remove_circle') + '</span></div>' +
+            '<div><div class="pf-wallet-tx-title">' + escPfTx(tx.label || tx.reason) + '</div>' +
+            '<div class="pf-wallet-tx-meta">' + escPfTx(ds) + (ts ? ' — ' + escPfTx(ts) : '') + '</div>' + ref + '</div></div>' +
+            '<div class="pf-wallet-tx-amt ' + (isC ? 'credit' : 'debit') + '">' +
+            (isC ? '+' : '−') + Number(tx.amount).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ج.م</div></div>'
+          );
+        }).join('');
+        if (pfWalletMaxPage > 1 && pg) {
+          pg.style.display = 'flex';
+          updateProfileWalletPagination(p, pfWalletMaxPage);
+        } else if (pg) {
+          pg.style.display = 'none';
+        }
+      })
+      .catch(function (e) {
+        box.innerHTML = '<div class="pf-wallet-tx-error">' + escPfTx(e && e.message ? e.message : 'خطأ في الاتصال') + '</div>';
+      });
+  }
+
   function norm(s) {
     return (s || '').replace(/[أإآا]/g, 'ا').replace(/ى/g, 'ي').trim().toLowerCase();
   }
@@ -711,6 +886,7 @@
     cityInp.disabled = !selectedGovId;
     cityInp.placeholder = selectedGovId ? 'اكتب لاختيار المدينة...' : 'اختر المحافظة أولاً';
     if (selectedGovId && !CITIES.length) fetchCities(selectedGovId);
+    loadProfileWalletTx();
   }
 
   /* ── Loading done ── */
@@ -720,6 +896,23 @@
 
   render();
   loadReferralUsers();
+
+  (function initPfWalletPagination() {
+    var pr = document.getElementById('pf-wallet-prev-btn');
+    var nx = document.getElementById('pf-wallet-next-btn');
+    if (pr) {
+      pr.addEventListener('click', function () {
+        var c = window.pfWalletTxPage || 1;
+        if (c > 1) { window.pfWalletTxPage = c - 1; loadProfileWalletTx(); }
+      });
+    }
+    if (nx) {
+      nx.addEventListener('click', function () {
+        var c = window.pfWalletTxPage || 1;
+        if (c < pfWalletMaxPage) { window.pfWalletTxPage = c + 1; loadProfileWalletTx(); }
+      });
+    }
+  })();
 
   /* ── Back button ── */
   document.getElementById('pf-back').addEventListener('click', function () {

@@ -783,6 +783,44 @@
             color: rgba(255,255,255,0.25);
             line-height: 1.5;
         }
+        .wallet-ledger-wrap {
+            min-height: 120px;
+            max-height: 360px;
+            overflow-y: auto;
+            padding-inline-end: 4px;
+            margin: 0 -4px 0 0;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(254,214,91,0.35) rgba(255,255,255,0.04);
+        }
+        .wallet-ledger-wrap::-webkit-scrollbar {
+            width: 6px;
+        }
+        .wallet-ledger-wrap::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.04);
+            border-radius: 4px;
+        }
+        .wallet-ledger-wrap::-webkit-scrollbar-thumb {
+            background: rgba(254,214,91,0.35);
+            border-radius: 4px;
+        }
+        .wallet-ledger-hint {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.32);
+            margin: -4px 0 12px;
+            line-height: 1.5;
+        }
+        .wallet-ledger-loading, .wallet-ledger-error, .wallet-ledger-login {
+            text-align: center;
+            padding: 28px 16px;
+            color: rgba(255,255,255,0.45);
+            font-size: 0.85rem;
+        }
+        .wallet-ledger-error { color: rgba(248,113,113,0.85); }
+        .wallet-ledger-ref {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.28);
+            margin-top: 2px;
+        }
         .wallet-transaction-item {
             display: flex;
             align-items: center;
@@ -3610,16 +3648,48 @@
             loadWalletTransactions();
         }
         
-        function loadWalletTransactions() {
+        function escWalletTx(s) {
+            return String(s ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        async function loadWalletTransactions() {
             const transactionsContainer = document.getElementById('wallet-transactions');
             const paginationContainer = document.getElementById('wallet-pagination');
-            
-            // Mock transactions data - in real app this would come from backend
-            const mockTransactions = [
-                
-            ];
-            
-            if (mockTransactions.length === 0) {
+            if (!getSession()) {
+                transactionsContainer.innerHTML = `
+                    <div class="wallet-ledger-login">سجّل دخولك لعرض سجل المعاملات من الخادم.</div>
+                `;
+                paginationContainer.style.display = 'none';
+                return;
+            }
+            const itemsPerPage = 5;
+            const currentPage = window.walletCurrentPage || 1;
+            transactionsContainer.innerHTML = '<div class="wallet-ledger-loading">جاري تحميل السجل…</div>';
+            paginationContainer.style.display = 'none';
+            let data;
+            try {
+                const res = await fetch(
+                    `apis/wallet/transactions.php?page=${currentPage}&per_page=${itemsPerPage}`,
+                    { credentials: 'same-origin' }
+                );
+                data = await res.json().catch(() => ({}));
+                if (res.status === 401) {
+                    transactionsContainer.innerHTML = '<div class="wallet-ledger-login">انتهت الجلسة. سجّل الدخول مرة أخرى.</div>';
+                    return;
+                }
+                if (!res.ok || !data.ok) {
+                    throw new Error(data.error || 'تعذر تحميل السجل');
+                }
+            } catch (e) {
+                transactionsContainer.innerHTML =
+                    '<div class="wallet-ledger-error">' + escWalletTx(e && e.message ? e.message : 'تعذر الاتصال بالخادم') + '</div>';
+                return;
+            }
+            const list = data.transactions || [];
+            if (list.length === 0) {
                 transactionsContainer.innerHTML = `
                     <div class="wallet-empty-state">
                         <span class="material-symbols-outlined wallet-empty-icon">receipt_long</span>
@@ -3627,51 +3697,45 @@
                         <div class="wallet-empty-sub">ستظهر هنا جميع إيداعات وسحوبات المحفظة</div>
                     </div>
                 `;
-                paginationContainer.style.display = 'none';
                 return;
             }
-            
-            // Pagination setup
-            const itemsPerPage = 3;
-            const currentPage = window.walletCurrentPage || 1;
-            const totalPages = Math.ceil(mockTransactions.length / itemsPerPage);
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const paginatedTransactions = mockTransactions.slice(startIndex, endIndex);
-            
-            // Render transactions for current page
-            transactionsContainer.innerHTML = paginatedTransactions.map(transaction => {
-                const isPositive = transaction.type === 'deposit';
-                const date = new Date(transaction.date);
-                const dateString = date.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short' });
-                const timeString = date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-                
+            const totalPages = Math.max(1, parseInt(String(data.total_pages), 10) || 1);
+            transactionsContainer.innerHTML = list.map((tx) => {
+                const isCredit = tx.type === 'credit';
+                const when = new Date(tx.created_at);
+                const dateString = isNaN(when.getTime())
+                    ? '—'
+                    : when.toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' });
+                const timeString = isNaN(when.getTime())
+                    ? ''
+                    : when.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+                const iconClass = isCredit ? 'deposit' : 'withdraw';
+                const refLine = (tx.ref_id != null && String(tx.ref_id) !== '' && (tx.reason === 'order_payment' || tx.reason === 'referral_bonus'))
+                    ? `<div class="wallet-ledger-ref">مرجع: #${escWalletTx(String(tx.ref_id))}</div>`
+                    : '';
                 return `
-                    <div class="wallet-transaction-item">
+                    <div class="wallet-transaction-item" data-tx-id="${escWalletTx(String(tx.id))}">
                         <div class="wallet-transaction-left">
-                            <div class="wallet-transaction-icon ${transaction.type}">
+                            <div class="wallet-transaction-icon ${iconClass}">
                                 <span class="material-symbols-outlined">
-                                    ${isPositive ? 'add_circle' : 'remove_circle'}
+                                    ${isCredit ? 'add_circle' : 'remove_circle'}
                                 </span>
                             </div>
                             <div class="wallet-transaction-info">
-                                <div class="wallet-transaction-title">${transaction.title}</div>
-                                <div class="wallet-transaction-date">${dateString} - ${timeString}</div>
+                                <div class="wallet-transaction-title">${escWalletTx(tx.label || tx.reason)}</div>
+                                <div class="wallet-transaction-date">${escWalletTx(dateString)}${timeString ? ' — ' + escWalletTx(timeString) : ''}</div>
+                                ${refLine}
                             </div>
                         </div>
-                        <div class="wallet-transaction-amount ${isPositive ? 'positive' : 'negative'}">
-                            ${isPositive ? '+' : ''}${Number(transaction.amount).toLocaleString('ar-EG', { minimumFractionDigits: 2 })} ج.م
+                        <div class="wallet-transaction-amount ${isCredit ? 'positive' : 'negative'}">
+                            ${isCredit ? '+' : '−'}${Number(tx.amount).toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ج.م
                         </div>
                     </div>
                 `;
             }).join('');
-            
-            // Show/hide pagination based on total items
-            if (mockTransactions.length > itemsPerPage) {
+            if (totalPages > 1) {
                 paginationContainer.style.display = 'flex';
                 updatePaginationControls(currentPage, totalPages);
-            } else {
-                paginationContainer.style.display = 'none';
             }
         }
         
@@ -3709,6 +3773,7 @@
             window.walletCurrentPage = page;
             loadWalletTransactions();
         }
+        window.goToWalletPage = goToWalletPage;
         
         // Add click handler to wallet row
         document.querySelector('.pdd-wallet-row').addEventListener('click', (e) => {
@@ -5297,17 +5362,20 @@
         <div class="wallet-balance-date" id="wallet-last-update">آخر تحديث: اليوم</div>
       </div>
 
-      <div class="info-section">
+      <div class="info-section" style="margin-bottom:0;">
         <div class="info-section-title">
           <span class="material-symbols-outlined">history</span>
           سجل المعاملات
         </div>
+        <p class="wallet-ledger-hint">يُسجَّل كل تغيير في الرصيد (زيادة أو خصم) مباشرة في قاعدة البيانات.</p>
+        <div class="wallet-ledger-wrap" id="wallet-ledger-wrap">
         <div id="wallet-transactions">
           <div class="wallet-empty-state">
             <span class="material-symbols-outlined wallet-empty-icon">receipt_long</span>
             <div class="wallet-empty-text">لا توجد معاملات حالياً</div>
             <div class="wallet-empty-sub">ستظهر هنا جميع إيداعات وسحوبات المحفظة</div>
           </div>
+        </div>
         </div>
         <div id="wallet-pagination" class="wallet-pagination" style="display: none;">
           <button class="wallet-pagination-btn" id="wallet-prev-btn" disabled>
