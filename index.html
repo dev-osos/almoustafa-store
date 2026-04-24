@@ -3154,6 +3154,10 @@
 
         updateAccountIcon();
 
+        // Hide join button when logged in
+        const joinLink = document.getElementById('btn-join')?.closest('a');
+        if (joinLink && getSession()) joinLink.style.display = 'none';
+
         // --- Modal open/close ---
         const backdrop = document.getElementById('modal-backdrop');
 
