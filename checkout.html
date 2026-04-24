@@ -716,8 +716,10 @@
       shipping     = Math.round(shippingCost * 0.65);
       shippingText = fmtPrice(shipping);
     }
-    const useWallet    = balance > 0 && document.getElementById('wallet-use-cb').checked;
-    const walletDeduct = useWallet ? Math.min(balance, subtotal + shipping) : 0;
+    const useWallet = balance > 0 && document.getElementById('wallet-use-cb').checked;
+    const orderTotalBeforeWallet = subtotal + shipping;
+    const walletCapByOrder = orderTotalBeforeWallet * 0.20;
+    const walletDeduct = useWallet ? Math.min(balance, walletCapByOrder) : 0;
     document.getElementById('subtotal-val').textContent  = fmtPrice(subtotal);
     document.getElementById('shipping-val').textContent  = shippingText;
     const walletRow = document.getElementById('wallet-discount-row');
@@ -727,7 +729,7 @@
     } else {
       walletRow.style.display = 'none';
     }
-    document.getElementById('total-val').textContent = fmtPrice(subtotal + shipping - walletDeduct);
+    document.getElementById('total-val').textContent = fmtPrice(orderTotalBeforeWallet - walletDeduct);
   }
 
   function renderItem(item, idx) {
