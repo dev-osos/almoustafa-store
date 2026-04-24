@@ -657,7 +657,7 @@
           </button>
           <button class="filter-pill" data-filter="pending">
             <span style="width:7px;height:7px;border-radius:50%;background:#fabd00;display:inline-block;flex-shrink:0;"></span>
-            قيد الانتظار
+            بإنتظار التأكيد
           </button>
           <button class="filter-pill" data-filter="preparing">
             <span style="width:7px;height:7px;border-radius:50%;background:#1e88e5;display:inline-block;flex-shrink:0;"></span>
@@ -665,7 +665,7 @@
           </button>
           <button class="filter-pill" data-filter="shipping">
             <span style="width:7px;height:7px;border-radius:50%;background:#8e24aa;display:inline-block;flex-shrink:0;"></span>
-            في الطريق
+            قيد التوصيل
           </button>
           <button class="filter-pill" data-filter="delivered">
             <span style="width:7px;height:7px;border-radius:50%;background:#2e7d32;display:inline-block;flex-shrink:0;"></span>
@@ -1452,6 +1452,117 @@ function showToast(msg) {
 }());
 </script>
 <style>.dev-badge{display:inline-flex;align-items:center;gap:.75rem;padding:.55rem 1.25rem .55rem 1rem;background:rgba(60,0,4,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:9999px;border:1px solid rgba(254,214,91,.25);box-shadow:0 4px 24px rgba(60,0,4,.35),inset 0 1px 0 rgba(254,214,91,.15);white-space:nowrap;text-decoration:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease,border-color .3s ease}.dev-badge:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 8px 32px rgba(60,0,4,.5),inset 0 1px 0 rgba(254,214,91,.3);border-color:rgba(254,214,91,.5)}.dev-badge-wrap{display:flex;justify-content:center;padding:2.5rem 0 3rem;}.dev-badge:hover .badge-icon{animation:spark .5s ease forwards}@keyframes spark{0%{transform:rotate(0) scale(1)}30%{transform:rotate(-15deg) scale(1.2)}60%{transform:rotate(10deg) scale(.95)}100%{transform:rotate(0) scale(1)}}.badge-icon{width:1.75rem;height:1.75rem;background:linear-gradient(135deg,#fed65b,#b88a00);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}.badge-icon i{font-size:.8rem;color:#3c0004;line-height:1}.badge-text{display:flex;flex-direction:column;gap:.05rem;line-height:1}.badge-label{font-family:'Manrope',sans-serif;font-size:.6rem;font-weight:300;color:rgba(254,214,91,.55);letter-spacing:.08em;text-transform:uppercase}.badge-name{font-family:'Amiri',serif;font-size:.95rem;font-weight:700;color:#fed65b;letter-spacing:.02em}.dev-badge::before{content:'';position:absolute;inset:0;border-radius:9999px;padding:1px;background:linear-gradient(90deg,transparent,rgba(254,214,91,.4),transparent);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}</style>
+<style>
+  #contact-fab {
+    position: fixed;
+    bottom: 36px;
+    left: 36px;
+    z-index: 9999;
+    direction: ltr;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  #contact-fab::before {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--fab-color, #25d366);
+    opacity: 0;
+    animation: fabPulse 2.8s ease-out infinite;
+    pointer-events: none;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  @keyframes fabPulse {
+    0% { transform: translateY(-50%) scale(1); opacity: 0.6; }
+    70% { transform: translateY(-50%) scale(2); opacity: 0; }
+    100% { transform: translateY(-50%) scale(2); opacity: 0; }
+  }
+  #contact-fab a.fab-link {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--fab-color, #25d366);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 0 2px rgba(254,214,91,0.25);
+    transition: background 0.5s ease, box-shadow 0.4s ease, transform 0.2s ease;
+    text-decoration: none;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  #contact-fab a.fab-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(254,214,91,0.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  #contact-fab a.fab-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: rgba(255,255,255,0.2);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  #contact-fab a.fab-link:active::after { opacity: 1; }
+  #contact-fab a.fab-link:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 28px rgba(0,0,0,0.5), 0 0 0 2.5px rgba(254,214,91,0.5);
+  }
+  #contact-fab .fab-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease;
+  }
+  #contact-fab .fab-icon.flip { transform: rotateY(90deg); opacity: 0; }
+  #contact-fab .fab-icon svg { display: block; }
+  #contact-fab .fab-text {
+    overflow: hidden;
+    max-width: 0;
+    opacity: 0;
+    font-family: 'Amiri', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fed65b;
+    white-space: nowrap;
+    margin-left: 10px;
+    padding: 7px 18px;
+    border-radius: 22px;
+    border: 1.5px solid rgba(254,214,91,0.5);
+    background: rgba(60,0,4,0.85);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 16px rgba(60,0,4,0.5), inset 0 1px 0 rgba(254,214,91,0.15);
+    transition: max-width 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+    pointer-events: none;
+    letter-spacing: 0.02em;
+  }
+  #contact-fab .fab-text.open { max-width: 180px; opacity: 1; }
+  @media (max-width: 768px) {
+    #contact-fab {
+      bottom: 20px;
+      left: 20px;
+    }
+    #contact-fab a.fab-link {
+      width: 52px;
+      height: 52px;
+    }
+    #contact-fab .fab-text { font-size: 13px; }
+  }
+</style>
 
 <!-- Floating Contact Button -->
 <div id="contact-fab" style="--fab-color:#25d366">
@@ -1461,6 +1572,86 @@ function showToast(msg) {
     </a>
     <span class="fab-text" id="fab-text">تواصل معنا</span>
 </div>
+<script>
+  (function () {
+    var WA_HREF = 'https://wa.me/201037966515?text=' + encodeURIComponent('مرحباً، أود الاستفسار عن منتجاتكم');
+    var PH_HREF = 'tel:01037966515';
+    var WA_COLOR = '#25d366';
+    var PH_COLOR = '#6b0008';
+    var WA_ICON = '<svg viewBox="0 0 24 24" width="26" height="26" fill="white" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+    var PH_ICON = '<svg viewBox="0 0 24 24" width="26" height="26" fill="white" aria-hidden="true"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.3 21 3 13.7 3 4a1 1 0 011-1h3.49a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.24 1.01z"/></svg>';
+
+    function init() {
+      var fab = document.getElementById('contact-fab');
+      var link = document.getElementById('fab-anchor');
+      var iconBox = document.getElementById('fab-icon');
+      var text = document.getElementById('fab-text');
+      var badge = document.getElementById('fab-badge');
+      if (!fab || !link || !iconBox || !text || !badge) return;
+
+      var isWA = true;
+
+      function applyMode() {
+        if (isWA) {
+          fab.style.setProperty('--fab-color', WA_COLOR);
+          link.href = WA_HREF;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          iconBox.innerHTML = WA_ICON;
+          badge.textContent = '';
+        } else {
+          fab.style.setProperty('--fab-color', PH_COLOR);
+          link.href = PH_HREF;
+          link.target = '_self';
+          link.rel = '';
+          iconBox.innerHTML = PH_ICON;
+          badge.textContent = '';
+        }
+      }
+
+      function switchMode() {
+        iconBox.classList.add('flip');
+        setTimeout(function () {
+          isWA = !isWA;
+          applyMode();
+          iconBox.classList.remove('flip');
+        }, 200);
+      }
+
+      setInterval(switchMode, 4000);
+
+      var labelVisible = false;
+      function toggleLabel() {
+        if (labelVisible) {
+          text.classList.remove('open');
+          labelVisible = false;
+        } else {
+          text.classList.add('open');
+          labelVisible = true;
+        }
+      }
+
+      setTimeout(function () {
+        text.classList.add('open');
+        labelVisible = true;
+      }, 800);
+      setInterval(toggleLabel, 3500);
+
+      link.addEventListener('mouseenter', function () {
+        text.classList.add('open');
+        labelVisible = true;
+      });
+
+      applyMode();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  }());
+</script>
 <script>
   (function () {
     var btn = document.getElementById('btn-mobile-menu');
