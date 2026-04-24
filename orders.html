@@ -656,7 +656,7 @@
             الكل
           </button>
           <button class="filter-pill" data-filter="pending">
-            <span style="width:7px;height:7px;border-radius:50%;background:#fabd00;display:inline-block;flex-shrink:0;"></span>
+            <span style="width:7px;height:7px;border-radius:50%;background:#fabd00;display:inline-block;flex-shrink:0;">سيتم التواصل معك من قبل احد ممثلي خدمة العملاء لتأكيد الطلب.</span>
             بإنتظار التأكيد
           </button>
           <button class="filter-pill" data-filter="preparing">
@@ -1011,6 +1011,40 @@ function buildProductMediaHTML(product, size = 52, radius = 12) {
   return `<span class="material-symbols-outlined">${getCategoryIcon(product)}</span>`;
 }
 
+function formatTimelineDateTime(rawTime) {
+  const source = String(rawTime || '').trim();
+  if (!source || source === '—') return { date: '—', time: '—' };
+
+  let datePart = source;
+  let timePart = '';
+
+  if (source.includes('،')) {
+    const parts = source.split('،');
+    if (parts.length >= 2) {
+      datePart = parts.slice(0, -1).join('،').trim() || '—';
+      timePart = parts[parts.length - 1].trim();
+    }
+  }
+
+  if (!timePart) {
+    const match = source.match(/(\d{1,2}:\d{2})\s*(ص|م|AM|PM|am|pm)?/);
+    if (match) {
+      timePart = `${match[1]} ${match[2] || ''}`.trim();
+      datePart = source.replace(match[0], '').replace(/[،,\s]+$/g, '').trim() || '—';
+    }
+  }
+
+  if (!timePart) return { date: datePart || '—', time: '—' };
+
+  const timeMatch = timePart.match(/(\d{1,2}:\d{2})\s*(ص|م|AM|PM|am|pm)?/);
+  if (!timeMatch) return { date: datePart || '—', time: timePart };
+
+  const hm = timeMatch[1];
+  const marker = (timeMatch[2] || '').toLowerCase();
+  const meridiem = marker === 'م' || marker === 'pm' ? 'م' : 'ص';
+  return { date: datePart || '—', time: `${hm} ${meridiem}` };
+}
+
 async function hydrateProductMediaFromCatalog() {
   try {
     const res = await fetch('apis/products/list.php');
@@ -1298,6 +1332,7 @@ function openOrderModal(orderId) {
   // Timeline
   const tl = document.getElementById('modal-timeline');
   tl.innerHTML = order.timeline.map(step => {
+    const stepTime = formatTimelineDateTime(step.time);
     const cls = step.cancelled ? 'timeline-step' :
                 step.done && !step.active ? 'timeline-step done' :
                 step.active ? 'timeline-step active-step' :
@@ -1309,7 +1344,8 @@ function openOrderModal(orderId) {
         </div>
         <div class="tl-body">
           <div class="tl-title">${step.title}</div>
-          <div class="tl-time">${step.time}</div>
+          <div class="tl-time">${stepTime.date}</div>
+          <div class="tl-time">${stepTime.time}</div>
           ${step.note ? `<div class="tl-note">${step.note}</div>` : ''}
         </div>
       </div>
