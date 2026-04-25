@@ -405,16 +405,24 @@ try {
             $stmt->execute([':u' => $username, ':f' => $fullname, ':h' => $hash, ':r' => $newRole, ':cb' => $adminId]);
             echo json_encode(['ok' => true, 'id' => (int) $pdo->lastInsertId()]);
 
-        } elseif ($action === 'update_user_fullname') {
+        } elseif ($action === 'update_user_account') {
             $targetId = (int) ($body['id'] ?? 0);
             $fullname = trim((string) ($body['fullname'] ?? ''));
-            if ($targetId <= 0 || $fullname === '') {
+            $newRole = (string) ($body['role'] ?? '');
+            $password = (string) ($body['password'] ?? '');
+            if ($targetId <= 0 || $fullname === '' || !in_array($newRole, ['super_admin', 'admin', 'support'], true)) {
                 http_response_code(400);
                 echo json_encode(['error' => 'بيانات غير صحيحة']);
                 exit;
             }
-            $stmt = $pdo->prepare("UPDATE dashboard_users SET fullname = :fullname WHERE id = :id");
-            $stmt->execute([':fullname' => $fullname, ':id' => $targetId]);
+            if ($password !== '') {
+                $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
+                $stmt = $pdo->prepare("UPDATE dashboard_users SET fullname = :fullname, role = :role, password_hash = :hash WHERE id = :id");
+                $stmt->execute([':fullname' => $fullname, ':role' => $newRole, ':hash' => $hash, ':id' => $targetId]);
+            } else {
+                $stmt = $pdo->prepare("UPDATE dashboard_users SET fullname = :fullname, role = :role WHERE id = :id");
+                $stmt->execute([':fullname' => $fullname, ':role' => $newRole, ':id' => $targetId]);
+            }
             if ($stmt->rowCount() === 0) {
                 http_response_code(404);
                 echo json_encode(['error' => 'المستخدم غير موجود']);
@@ -422,6 +430,7 @@ try {
             }
             if ($targetId === $adminId) {
                 $_SESSION['admin_fullname'] = $fullname;
+                $_SESSION['admin_role'] = $newRole;
             }
             echo json_encode(['ok' => true]);
 

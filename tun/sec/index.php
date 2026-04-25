@@ -426,6 +426,18 @@ const ADMIN = {
         <label class="form-label">الاسم الكامل</label>
         <input class="form-input" type="text" name="fullname" id="edit-user-fullname" required autocomplete="off">
       </div>
+      <div class="form-field">
+        <label class="form-label">الدور</label>
+        <select class="form-select" name="role" id="edit-user-role">
+          <option value="support">دعم فني</option>
+          <option value="admin">مشرف</option>
+          <option value="super_admin">سوبر ادمن</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">كلمة المرور الجديدة (اختياري)</label>
+        <input class="form-input" type="password" name="password" id="edit-user-password" placeholder="اتركها فارغة بدون تغيير" autocomplete="new-password">
+      </div>
       <div class="modal-footer">
         <button type="button" class="cancel-btn" onclick="closeEditUserModal()">إلغاء</button>
         <button type="submit" class="submit-btn" id="editUserSubmitBtn">حفظ التعديل</button>
@@ -1633,8 +1645,8 @@ async function loadUsers() {
       <td><div class="date-text">${fmtDate(u.created_at)}</div></td>
       <td style="font-size:.78rem;color:var(--on-surface-dim)">${u.created_by_name ? escHtml(u.created_by_name) : '—'}</td>
       <td>
-        <button class="action-btn" onclick='editUserFullname(${u.id}, ${JSON.stringify(u.fullname || '')}, ${JSON.stringify(u.username)})'>
-          <span class="ms">edit</span> 
+        <button class="action-btn" onclick='editUserAccount(${u.id}, ${JSON.stringify(u.fullname || "")}, ${JSON.stringify(u.username)}, ${JSON.stringify(u.role)})'>
+          <span class="ms">edit</span>تعديل الحساب
         </button>
         ${!isSelf ? `
           <button class="action-btn ${toggleCls}" onclick="toggleUser(${u.id}, ${JSON.stringify(u.username)})" style="margin-right:.4rem;">
@@ -1672,17 +1684,21 @@ async function deleteUser(id, username) {
   if (d.ok) loadUsers();
   else alert(d.error || 'حدث خطأ');
 }
-async function editUserFullname(id, currentName, username) {
+async function editUserAccount(id, currentName, username, role) {
   const modal = $id('editUserModal');
   const err = $id('editUserErr');
   const idInput = $id('edit-user-id');
   const usernameInput = $id('edit-user-username');
   const fullnameInput = $id('edit-user-fullname');
-  if (!modal || !idInput || !usernameInput || !fullnameInput) return;
+  const roleInput = $id('edit-user-role');
+  const passInput = $id('edit-user-password');
+  if (!modal || !idInput || !usernameInput || !fullnameInput || !roleInput || !passInput) return;
   if (err) err.classList.remove('show');
   idInput.value = String(id);
   usernameInput.value = username || '';
   fullnameInput.value = currentName || '';
+  roleInput.value = role || 'support';
+  passInput.value = '';
   modal.classList.add('open');
   setTimeout(() => fullnameInput.focus(), 0);
 }
@@ -1704,10 +1720,19 @@ async function submitEditUserFullname(e) {
   const btn = $id('editUserSubmitBtn');
   const id = Number($id('edit-user-id')?.value || 0);
   const fullname = String($id('edit-user-fullname')?.value || '').trim();
+  const role = String($id('edit-user-role')?.value || '').trim();
+  const password = String($id('edit-user-password')?.value || '');
   if (err) err.classList.remove('show');
-  if (!id || !fullname) {
+  if (!id || !fullname || !['super_admin','admin','support'].includes(role)) {
     if (err) {
-      err.textContent = 'الاسم الكامل مطلوب';
+      err.textContent = 'يرجى إدخال بيانات صحيحة';
+      err.classList.add('show');
+    }
+    return;
+  }
+  if (password && password.length < 1) {
+    if (err) {
+      err.textContent = 'كلمة المرور غير صالحة';
       err.classList.add('show');
     }
     return;
@@ -1719,7 +1744,7 @@ async function submitEditUserFullname(e) {
   const res = await fetch('data.php', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({action:'update_user_fullname', id, fullname})
+    body: JSON.stringify({action:'update_user_account', id, fullname, role, password})
   });
   const d = await res.json();
   if (btn) {
@@ -1728,6 +1753,7 @@ async function submitEditUserFullname(e) {
   }
   if (d.ok) {
     if (id === ADMIN.id) ADMIN.fullname = fullname;
+    if (id === ADMIN.id) ADMIN.role = role;
     const sidebarName = document.querySelector('.sidebar-username');
     if (id === ADMIN.id && sidebarName) sidebarName.textContent = fullname;
     form.reset();
