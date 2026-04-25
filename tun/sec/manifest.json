@@ -1,7 +1,7 @@
 {
-    "name": "متجر المصطفى",
-    "short_name": "المصطفى",
-    "description": "خبراء العسل الصافي — عسل طبيعي خام من أنقى المناطق",
+    "name": "لوحة التحكم — المصطفى",
+    "short_name": "لوحة التحكم",
+    "description": "ادارة المتجر",
     "start_url": "/tun/sec/index.php",
     "scope": "/tun/sec/index.php",
     "display": "standalone",
@@ -10,7 +10,7 @@
     "theme_color": "#3c0004",
     "lang": "ar",
     "dir": "rtl",
-    "categories": ["shopping", "food"],
+    "categories": ["admin", "management"],
     "icons": [
     { "src": "cp-logo.jpg", "sizes": "786x526", "type": "image/png", "purpose": "any" }
     ],
