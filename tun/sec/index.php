@@ -60,7 +60,11 @@ function can(string $role, string $perm): bool
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#3c0004">
 <title>لوحة التحكم — المصطفى</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="cp-logo.jpg" type="image/jpeg">
+<link rel="apple-touch-icon" href="cp-logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -955,16 +959,11 @@ const ADMIN = {
               <span class="ms">key</span>
               <input class="search-input" id="invSearchCode" placeholder="بحث بالكود" type="search">
             </div>
-            <div class="search-wrap" style="max-width:100%;">
-              <span class="ms">person</span>
-              <input class="search-input" id="invSearchOwner" placeholder="بحث بصاحب الكود" type="search">
-            </div>
+            
             <div class="search-wrap" style="max-width:100%;">
               <span class="ms">call</span>
               <input class="search-input" id="invSearchPhone" placeholder="بحث برقم الهاتف" type="search" style="direction:ltr;text-align:left">
             </div>
-            <input class="form-input" id="invUsageMin" type="number" min="0" placeholder="أقل استخدام">
-            <input class="form-input" id="invUsageMax" type="number" min="0" placeholder="أعلى استخدام">
             <input class="form-input" id="invDateFrom" type="date" placeholder="من تاريخ">
             <input class="form-input" id="invDateTo" type="date" placeholder="إلى تاريخ">
           </div>

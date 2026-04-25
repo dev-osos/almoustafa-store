@@ -68,7 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $dbReady && $pdo) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#3c0004">
 <title>تسجيل الدخول — لوحة تحكم المصطفى</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="cp-logo.jpg" type="image/jpeg">
+<link rel="apple-touch-icon" href="cp-logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
