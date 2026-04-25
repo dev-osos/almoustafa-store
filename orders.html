@@ -691,28 +691,6 @@
         <input type="text" placeholder="ابحث برقم الطلب أو اسم المنتج…" id="search-input" oninput="filterOrders()"/>
       </div>
 
-      <!-- Track by order number (guest) -->
-      <div id="track-form-wrap" class="track-form">
-        <div class="flex items-center gap-2 mb-4">
-          <span class="material-symbols-outlined ms-fill" style="font-size:22px;color:#3c0004;">local_shipping</span>
-          <div>
-            <p class="font-headline font-bold text-on-surface text-sm">تتبع طلبك</p>
-            <p class="text-xs text-outline font-body mt-0.5">أدخل رقم الطلب الذي استلمته عبر الواتساب</p>
-          </div>
-        </div>
-        <div class="track-input-row">
-          <input type="text" id="track-number-input" placeholder="مثال: 20240001" maxlength="20"/>
-          <button class="btn-track-search" onclick="trackByNumber()">
-            <span class="material-symbols-outlined" style="font-size:17px;">search</span>
-            تتبع
-          </button>
-        </div>
-        <p class="text-xs text-outline mt-3 font-body text-center">
-          لا تعرف رقم طلبك؟
-          <a href="login.html" class="text-primary font-bold underline bg-transparent border-none cursor-pointer font-body text-xs">سجّل دخولك</a>
-          لعرض جميع طلباتك
-        </p>
-      </div>
     </div>
 
     <!-- Loading skeleton -->
@@ -1374,11 +1352,6 @@ function renderPagination(totalPages, totalItems) {
   const end   = Math.min(currentPage * ORDERS_PER_PAGE, totalItems);
   info.textContent = `${start}–${end} من ${totalItems}`;
 
-  if (totalPages <= 1) {
-    pg.appendChild(info);
-    return;
-  }
-
   // Prev button
   const prev = document.createElement('button');
   prev.className = 'pg-btn';
@@ -1387,13 +1360,19 @@ function renderPagination(totalPages, totalItems) {
   prev.addEventListener('click', () => { currentPage--; renderOrders(); scrollToList(); });
 
   // Page buttons
-  const pages = buildPageRange(currentPage, totalPages);
+  const pages = buildPageRange(currentPage, Math.max(1, totalPages));
 
   const next = document.createElement('button');
   next.className = 'pg-btn';
   next.innerHTML = '<span class="material-symbols-outlined">chevron_left</span>';
-  next.disabled = currentPage === totalPages;
-  next.addEventListener('click', () => { currentPage++; renderOrders(); scrollToList(); });
+  const effectiveTotalPages = Math.max(1, totalPages);
+  next.disabled = currentPage === effectiveTotalPages;
+  next.addEventListener('click', () => {
+    if (currentPage >= effectiveTotalPages) return;
+    currentPage++;
+    renderOrders();
+    scrollToList();
+  });
 
   pg.appendChild(info);
   pg.appendChild(prev);
