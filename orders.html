@@ -1590,30 +1590,6 @@ function showToast(msg) {
   }, 2800);
 }
 
-/* ─── Mobile menu ─── */
-(function () {
-  const btn = document.getElementById('btn-mobile-menu');
-  const panel = document.getElementById('mobile-menu-panel');
-  const backdrop = document.getElementById('mobile-menu-backdrop');
-  const closeBtn = document.getElementById('btn-mobile-menu-close');
-
-  function open() {
-    panel.classList.add('open');
-    backdrop.classList.add('open');
-    panel.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-  }
-  function close() {
-    panel.classList.remove('open');
-    backdrop.classList.remove('open');
-    panel.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-  }
-
-  btn.addEventListener('click', open);
-  closeBtn.addEventListener('click', close);
-  backdrop.addEventListener('click', close);
-})();
 </script>
 
 <script>
