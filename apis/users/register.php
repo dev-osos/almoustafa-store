@@ -53,6 +53,8 @@ try {
             lat              DECIMAL(10,7) DEFAULT NULL,
             lng              DECIMAL(10,7) DEFAULT NULL,
             profile_complete TINYINT(1)    NOT NULL DEFAULT 0,
+            is_blocked       TINYINT(1)    NOT NULL DEFAULT 0,
+            force_logout_at  DATETIME      DEFAULT NULL,
             v_id             CHAR(34)      DEFAULT NULL,
             referral_code    CHAR(6)       DEFAULT NULL,
             referred_by      CHAR(6)       DEFAULT NULL,
@@ -72,6 +74,14 @@ try {
     $hasRefBy = $pdo->query("SHOW COLUMNS FROM customers LIKE 'referred_by'")->fetch();
     if (!$hasRefBy) {
         $pdo->exec("ALTER TABLE customers ADD COLUMN referred_by CHAR(6) DEFAULT NULL");
+    }
+    $hasBlocked = $pdo->query("SHOW COLUMNS FROM customers LIKE 'is_blocked'")->fetch();
+    if (!$hasBlocked) {
+        $pdo->exec("ALTER TABLE customers ADD COLUMN is_blocked TINYINT(1) NOT NULL DEFAULT 0");
+    }
+    $hasForceLogout = $pdo->query("SHOW COLUMNS FROM customers LIKE 'force_logout_at'")->fetch();
+    if (!$hasForceLogout) {
+        $pdo->exec("ALTER TABLE customers ADD COLUMN force_logout_at DATETIME DEFAULT NULL");
     }
 } catch (Throwable $e) {
     api_error('خطأ في قاعدة البيانات', 500);
@@ -202,6 +212,7 @@ session_regenerate_id(true);
 $_SESSION['customer_id']    = $customerId;
 $_SESSION['customer_phone'] = $phone;
 $_SESSION['customer_name']  = $name;
+$_SESSION['customer_login_at'] = time();
 
 // Clean up OTP session
 unset($_SESSION[$sKey], $_SESSION['otp_rate_' . md5($phone)]);

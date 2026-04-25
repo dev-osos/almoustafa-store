@@ -33,6 +33,16 @@ const LOGIN_WINDOW_SEC   = 900; // 15 minutes
 
 try {
     $pdo = api_pdo();
+    try {
+        $hasBlocked = $pdo->query("SHOW COLUMNS FROM customers LIKE 'is_blocked'")->fetch();
+        if (!$hasBlocked) {
+            $pdo->exec("ALTER TABLE customers ADD COLUMN is_blocked TINYINT(1) NOT NULL DEFAULT 0");
+        }
+        $hasForceLogout = $pdo->query("SHOW COLUMNS FROM customers LIKE 'force_logout_at'")->fetch();
+        if (!$hasForceLogout) {
+            $pdo->exec("ALTER TABLE customers ADD COLUMN force_logout_at DATETIME NULL DEFAULT NULL");
+        }
+    } catch (Throwable) { /* non-fatal */ }
 
     // Ensure login_attempts table exists
     $pdo->exec("
@@ -69,7 +79,8 @@ try {
 // ── Fetch customer ────────────────────────────────────────────────────────────
 try {
     $stmt = $pdo->prepare("
-        SELECT id, name, phone, password_hash, profile_complete, referral_code
+        SELECT id, name, phone, password_hash, profile_complete, referral_code,
+               COALESCE(is_blocked, 0) AS is_blocked
         FROM customers
         WHERE phone = :phone
         LIMIT 1
@@ -93,6 +104,9 @@ if (!$validCredentials) {
     // Generic message — do NOT reveal whether phone exists
     api_error('رقم الهاتف أو كلمة المرور غير صحيحة', 401);
 }
+if ((int) ($customer['is_blocked'] ?? 0) === 1) {
+    api_error('تم حظر هذا الحساب. تواصل مع الدعم.', 403);
+}
 
 // ── Clear old attempts on successful login ────────────────────────────────────
 try {
@@ -106,6 +120,7 @@ session_regenerate_id(true);
 $_SESSION['customer_id']    = (int) $customer['id'];
 $_SESSION['customer_phone'] = $customer['phone'];
 $_SESSION['customer_name']  = $customer['name'] ?? '';
+$_SESSION['customer_login_at'] = time();
 
 api_ok([
     'customer_id'      => (int) $customer['id'],

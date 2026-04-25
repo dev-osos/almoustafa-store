@@ -231,7 +231,7 @@ tr:hover td { background:var(--surface-dim); }
 }
 .cust-actions-btn:hover { border-color:var(--primary); color:var(--primary); }
 .cust-actions-menu {
-  position:absolute; top:calc(100% + 6px); right:0; z-index:45; min-width:230px;
+  position:fixed; z-index:120; min-width:230px;
   background:var(--surface); border:1.5px solid var(--border); border-radius:10px;
   box-shadow:0 10px 28px rgba(0,0,0,.12); padding:.4rem; display:none;
 }
@@ -648,6 +648,151 @@ const ADMIN = {
     <div class="modal-footer">
       <button type="button" class="cancel-btn" onclick="closeInvitationModal()">إغلاق</button>
     </div>
+  </div>
+</div>
+
+<!-- Modal: customer orders -->
+<div class="modal-backdrop" id="customerOrdersModal">
+  <div class="modal" style="max-width:780px;">
+    <div class="modal-header">
+      <div class="modal-title"><span class="ms">receipt_long</span> سجل طلبات العميل: <span id="custOrdersModalName">—</span></div>
+      <button class="modal-close" onclick="closeCustomerOrdersModal()"><span class="ms">close</span></button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.8rem;">
+      <span style="background:var(--surface-dim);color:var(--on-surface);padding:.35rem .65rem;border-radius:999px;font-size:.75rem;">عدد الطلبات: <strong id="coStatOrders">0</strong></span>
+      <span style="background:var(--green-bg);color:var(--green);padding:.35rem .65rem;border-radius:999px;font-size:.75rem;">إجمالي المشتريات: <strong id="coStatSpent">0</strong> ج.م</span>
+      <span style="background:#e8f0fe;color:#1a56d6;padding:.35rem .65rem;border-radius:999px;font-size:.75rem;">إجمالي القطع: <strong id="coStatItems">0</strong></span>
+      <span style="background:#fdf6e0;color:#735c00;padding:.35rem .65rem;border-radius:999px;font-size:.75rem;">آخر طلب: <strong id="coStatLast">—</strong></span>
+    </div>
+    <div class="table-wrap" style="max-height:420px;overflow-y:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>رقم الطلب</th>
+            <th>الحالة</th>
+            <th>عدد القطع</th>
+            <th>الإجمالي</th>
+            <th>تاريخ الطلب</th>
+            <th>ملاحظة</th>
+          </tr>
+        </thead>
+        <tbody id="custOrdersBody">
+          <tr><td colspan="7" style="text-align:center;padding:2rem">جارٍ التحميل...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="cancel-btn" onclick="closeCustomerOrdersModal()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: wallet control -->
+<div class="modal-backdrop" id="walletControlModal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <div class="modal-title"><span class="ms">account_balance_wallet</span> التحكم برصيد المحفظة</div>
+      <button class="modal-close" onclick="closeWalletControlModal()"><span class="ms">close</span></button>
+    </div>
+    <div class="form-error" id="walletModalErr"></div>
+    <form onsubmit="submitWalletControl(event)">
+      <input type="hidden" id="wm-customer-id">
+      <div class="form-field">
+        <label class="form-label">العميل</label>
+        <input class="form-input" id="wm-customer-name" type="text" readonly>
+      </div>
+      <div class="form-field">
+        <label class="form-label">الرصيد الحالي</label>
+        <input class="form-input" id="wm-current-balance" type="text" readonly>
+      </div>
+      <div class="form-field">
+        <label class="form-label">نوع العملية</label>
+        <select class="form-select" id="wm-mode" required>
+          <option value="add">إضافة رصيد</option>
+          <option value="subtract">خصم رصيد</option>
+          <option value="set">تعيين رصيد جديد</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">المبلغ (ج.م)</label>
+        <input class="form-input" id="wm-amount" type="number" min="0" step="0.01" required>
+      </div>
+      <div class="form-field">
+        <label class="form-label">سبب العملية</label>
+        <input class="form-input" id="wm-reason" type="text" maxlength="80" placeholder="مثال: تسوية حساب / تعديل إداري" required>
+      </div>
+      <div style="margin-top:.6rem;border-top:1px solid var(--border);padding-top:.7rem;">
+        <div style="font-size:.82rem;font-weight:700;color:var(--primary);margin-bottom:.45rem;display:flex;align-items:center;gap:.35rem;">
+          <span class="ms" style="font-size:1rem;">history</span> آخر حركات المحفظة
+        </div>
+        <div class="table-wrap" style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;">
+          <table style="min-width:100%;">
+            <thead>
+              <tr>
+                <th>النوع</th>
+                <th>القيمة</th>
+                <th>السبب</th>
+                <th>التاريخ</th>
+              </tr>
+            </thead>
+            <tbody id="wmTxBody">
+              <tr><td colspan="4" style="text-align:center;padding:1rem">جارٍ التحميل...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="cancel-btn" onclick="closeWalletControlModal()">إلغاء</button>
+        <button type="submit" class="submit-btn" id="walletSubmitBtn">حفظ التعديل</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: edit customer profile -->
+<div class="modal-backdrop" id="customerEditModal">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <div class="modal-title"><span class="ms">edit</span> تعديل بيانات المستخدم</div>
+      <button class="modal-close" onclick="closeCustomerEditModal()"><span class="ms">close</span></button>
+    </div>
+    <div class="form-error" id="custEditModalErr"></div>
+    <form onsubmit="submitCustomerEdit(event)">
+      <input type="hidden" id="ce-customer-id">
+      <div class="form-field">
+        <label class="form-label">الاسم</label>
+        <input class="form-input" id="ce-name" type="text" maxlength="120">
+      </div>
+      <div class="form-field">
+        <label class="form-label">رقم الهاتف</label>
+        <input class="form-input" id="ce-phone" type="text" required>
+      </div>
+      <div class="form-field">
+        <label class="form-label">الشريحة</label>
+        <select class="form-select" id="ce-segment">
+          <option value="consumer">مستهلك</option>
+          <option value="wholesale">جملة</option>
+          <option value="corporate">جملة الجملة</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">المحافظة</label>
+        <input class="form-input" id="ce-governorate" type="text">
+      </div>
+      <div class="form-field">
+        <label class="form-label">المدينة</label>
+        <input class="form-input" id="ce-city" type="text">
+      </div>
+      <div class="form-field">
+        <label class="form-label">تفاصيل العنوان</label>
+        <textarea class="form-input" id="ce-address-detail" rows="3" style="resize:vertical;min-height:78px"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="cancel-btn" onclick="closeCustomerEditModal()">إلغاء</button>
+        <button type="submit" class="submit-btn" id="custEditSubmitBtn">حفظ التعديلات</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -1549,18 +1694,40 @@ function normalizePhone(phone='') {
 function closeCustomerActionMenus() {
   document.querySelectorAll('.cust-actions.open').forEach(el => el.classList.remove('open'));
 }
+function positionCustomerActionsMenu(wrap) {
+  const btn = wrap?.querySelector('.cust-actions-btn');
+  const menu = wrap?.querySelector('.cust-actions-menu');
+  if (!btn || !menu) return;
+  const rect = btn.getBoundingClientRect();
+  const gap = 6;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const menuRect = menu.getBoundingClientRect();
+  const menuWidth = menuRect.width || 230;
+  const menuHeight = menuRect.height || 280;
+  let left = rect.right - menuWidth;
+  left = Math.max(8, Math.min(left, vw - menuWidth - 8));
+  let top = rect.bottom + gap;
+  if (top + menuHeight > vh - 8) top = Math.max(8, rect.top - menuHeight - gap);
+  menu.style.left = `${left}px`;
+  menu.style.top = `${top}px`;
+}
 function toggleCustomerActionsMenu(btn) {
   const wrap = btn.closest('.cust-actions');
   if (!wrap) return;
   const isOpen = wrap.classList.contains('open');
   closeCustomerActionMenus();
-  if (!isOpen) wrap.classList.add('open');
+  if (!isOpen) {
+    wrap.classList.add('open');
+    positionCustomerActionsMenu(wrap);
+  }
 }
 function openCustomerWhatsApp(btn) {
   const normalized = normalizePhone(btn?.dataset?.phone || '');
   const name = btn?.dataset?.name || '';
   if (!normalized) return notify('رقم الهاتف غير متوفر.', 'err');
-  const msg = encodeURIComponent(`مرحباً ${name || 'عميلنا العزيز'}، معك فريق الدعم.`);
+  const customerNamePart = name ? ` ${name}` : '';
+  const msg = encodeURIComponent(`السلام عليكم استاذ/ة${customerNamePart} معاك ${ADMIN.username || 'فريق الدعم'} من فريق الدعم ازاي اقدر اساعد حضرتك؟`);
   window.open(`https://wa.me/${normalized.replace('+','')}?text=${msg}`, '_blank');
 }
 function callCustomer(btn) {
@@ -1568,10 +1735,212 @@ function callCustomer(btn) {
   if (!normalized) return notify('رقم الهاتف غير متوفر.', 'err');
   window.location.href = `tel:${normalized}`;
 }
-function viewCustomerOrders(btn) {
+function orderStatusBadge(status='pending') {
+  const map = {
+    pending:    { label:'قيد الانتظار', style:'background:#fff3cd;color:#856404;border:1px solid #f0dc9e;' },
+    processing: { label:'قيد التجهيز',  style:'background:#e8f0fe;color:#1a56d6;border:1px solid #b6ccf7;' },
+    shipped:    { label:'تم الشحن',      style:'background:#ede7f6;color:#5e35b1;border:1px solid #d1c4e9;' },
+    delivered:  { label:'تم التسليم',    style:'background:var(--green-bg);color:var(--green);border:1px solid #b6d9be;' },
+    cancelled:  { label:'ملغي',          style:'background:var(--red-bg);color:var(--red-text);border:1px solid #f5b8b8;' },
+  };
+  const s = map[status] ?? { label: status || '—', style:'background:var(--surface-dim);color:var(--on-surface-dim);border:1px solid var(--border);' };
+  return `<span style="font-size:.72rem;font-weight:700;padding:.2rem .55rem;border-radius:999px;${s.style}">${s.label}</span>`;
+}
+function closeCustomerOrdersModal() {
+  $id('customerOrdersModal')?.classList.remove('open');
+}
+function openWalletControlModal(btn) {
   const customerId = btn?.dataset?.customerId || '';
+  if (!customerId) return notify('لا يمكن فتح نافذة المحفظة: معرّف العميل مفقود.', 'err');
+  const err = $id('walletModalErr');
+  if (err) err.classList.remove('show');
+  $id('wm-customer-id').value = customerId;
+  $id('wm-customer-name').value = btn?.dataset?.customerName || '—';
+  const bal = Number(btn?.dataset?.walletBalance || 0);
+  $id('wm-current-balance').value = `${bal.toLocaleString('ar-EG', { minimumFractionDigits:2, maximumFractionDigits:2 })} ج.م`;
+  $id('wm-mode').value = 'add';
+  $id('wm-amount').value = '';
+  $id('wm-reason').value = '';
+  $id('walletControlModal')?.classList.add('open');
+}
+function closeWalletControlModal() {
+  $id('walletControlModal')?.classList.remove('open');
+}
+async function submitWalletControl(e) {
+  e.preventDefault();
+  const btn = $id('walletSubmitBtn');
+  const err = $id('walletModalErr');
+  const customerId = Number($id('wm-customer-id').value || 0);
+  const mode = $id('wm-mode').value;
+  const amount = Number($id('wm-amount').value || 0);
+  const reason = $id('wm-reason').value.trim();
+  if (err) err.classList.remove('show');
+  if (!customerId) return;
+
+  btn.disabled = true;
+  btn.textContent = 'جارٍ الحفظ...';
+  try {
+    const res = await fetch('data.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'adjust_customer_wallet',
+        customer_id: customerId,
+        mode,
+        amount,
+        reason
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'تعذر تحديث المحفظة');
+    closeWalletControlModal();
+    notify(`تم تحديث الرصيد بنجاح. الرصيد الجديد: ${Number(data.new_balance || 0).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})} ج.م`, 'ok');
+    await loadCustomers(custCurrentPage || 1);
+  } catch (e2) {
+    if (err) {
+      err.textContent = e2?.message || 'تعذر تحديث المحفظة';
+      err.classList.add('show');
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'حفظ التعديل';
+  }
+}
+function openCustomerEditModal(btn) {
+  const customerId = btn?.dataset?.customerId || '';
+  if (!customerId) return notify('لا يمكن فتح نموذج التعديل: معرّف العميل مفقود.', 'err');
+  const err = $id('custEditModalErr');
+  if (err) err.classList.remove('show');
+  $id('ce-customer-id').value = customerId;
+  $id('ce-name').value = btn?.dataset?.customerName || '';
+  $id('ce-phone').value = btn?.dataset?.phone || '';
+  $id('ce-segment').value = btn?.dataset?.segment || 'consumer';
+  $id('ce-governorate').value = btn?.dataset?.governorate || '';
+  $id('ce-city').value = btn?.dataset?.city || '';
+  $id('ce-address-detail').value = btn?.dataset?.addressDetail || '';
+  $id('customerEditModal')?.classList.add('open');
+}
+function closeCustomerEditModal() {
+  $id('customerEditModal')?.classList.remove('open');
+}
+async function submitCustomerEdit(e) {
+  e.preventDefault();
+  const btn = $id('custEditSubmitBtn');
+  const err = $id('custEditModalErr');
+  const payload = {
+    action: 'update_customer_profile',
+    customer_id: Number($id('ce-customer-id').value || 0),
+    name: $id('ce-name').value.trim(),
+    phone: $id('ce-phone').value.trim(),
+    segment: $id('ce-segment').value,
+    governorate: $id('ce-governorate').value.trim(),
+    city: $id('ce-city').value.trim(),
+    address_detail: $id('ce-address-detail').value.trim(),
+  };
+  if (err) err.classList.remove('show');
+  btn.disabled = true;
+  btn.textContent = 'جارٍ الحفظ...';
+  try {
+    const res = await fetch('data.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'تعذر حفظ بيانات العميل');
+    closeCustomerEditModal();
+    notify('تم حفظ بيانات العميل بنجاح.', 'ok');
+    await loadCustomers(custCurrentPage || 1);
+  } catch (e2) {
+    if (err) {
+      err.textContent = e2?.message || 'تعذر حفظ بيانات العميل';
+      err.classList.add('show');
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'حفظ التعديلات';
+  }
+}
+async function viewCustomerOrders(btn) {
+  const customerId = btn?.dataset?.customerId || '';
+  const customerName = btn?.dataset?.customerName || '—';
   if (!customerId) return notify('لا يمكن فتح سجل الطلبات لهذا العميل.', 'err');
-  window.open(`orders.php?customer_id=${encodeURIComponent(customerId)}`, '_blank');
+  const modal = $id('customerOrdersModal');
+  const body = $id('custOrdersBody');
+  const setText = (id, val) => { const el = $id(id); if (el) el.textContent = val; };
+
+  setText('custOrdersModalName', customerName);
+  body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem">جارٍ التحميل...</td></tr>';
+  setText('coStatOrders', '0');
+  setText('coStatSpent', '0.00');
+  setText('coStatItems', '0');
+  setText('coStatLast', '—');
+  modal?.classList.add('open');
+
+  try {
+    const res = await fetch(`data.php?type=customer_orders&customer_id=${encodeURIComponent(customerId)}`);
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'فشل جلب البيانات');
+
+    const stats = data.stats || {};
+    setText('coStatOrders', fmt(stats.orders_count || 0));
+    setText('coStatSpent', Number(stats.total_spent || 0).toLocaleString('ar-EG', { minimumFractionDigits:2, maximumFractionDigits:2 }));
+    setText('coStatItems', fmt(stats.items_count || 0));
+    setText('coStatLast', stats.last_order_at ? fmtDate(stats.last_order_at) : '—');
+
+    const orders = Array.isArray(data.orders) ? data.orders : [];
+    if (!orders.length) {
+      body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--on-surface-dim)">لا توجد طلبات لهذا العميل</td></tr>';
+      return;
+    }
+
+    body.innerHTML = '';
+    orders.forEach((o, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${fmt(idx + 1)}</td>
+        <td><code style="background:var(--surface-dim);padding:.2rem .45rem;border-radius:4px;font-size:.78rem">${escHtml(o.order_number || '#'+o.id)}</code></td>
+        <td>${orderStatusBadge(o.status)}</td>
+        <td>${fmt(o.item_count || 0)}</td>
+        <td style="font-weight:700">${Number(o.total || 0).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})} ج.م</td>
+        <td>${fmtDate(o.created_at)}</td>
+        <td style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(o.note || '')}">${escHtml(o.note || '—')}</td>
+      `;
+      body.appendChild(tr);
+    });
+  } catch (e) {
+    body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--red-text)">تعذر تحميل سجل الطلبات</td></tr>`;
+    notify(e?.message || 'تعذر تحميل سجل الطلبات', 'err');
+  }
+}
+async function toggleCustomerBlock(btn) {
+  const customerId = btn?.dataset?.customerId || '';
+  const customerName = btn?.dataset?.customerName || 'هذا العميل';
+  const isBlocked = btn?.dataset?.isBlocked === '1';
+  if (!customerId) return notify('لا يمكن تنفيذ العملية: معرّف العميل مفقود.', 'err');
+
+  const ok = confirm(isBlocked
+    ? `تأكيد رفع الحظر عن ${customerName}؟`
+    : `تأكيد حظر ${customerName}؟ سيتم تسجيل خروجه من الجلسة الحالية.`);
+  if (!ok) return;
+
+  try {
+    btn.disabled = true;
+    const res = await fetch('data.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'toggle_customer_block', customer_id: Number(customerId) })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'تعذر تنفيذ العملية');
+    notify(data.is_blocked ? 'تم حظر العميل وإنهاء جلسته.' : 'تم رفع الحظر عن العميل.', 'ok');
+    closeCustomerActionMenus();
+    await loadCustomers(custCurrentPage || 1);
+  } catch (e) {
+    notify(e?.message || 'فشل تغيير حالة الحظر', 'err');
+  } finally {
+    btn.disabled = false;
+  }
 }
 function customerActionNotReady(label) {
   notify(`ميزة "${label}" جاهزة للربط البرمجي.`, 'ok');
@@ -1579,6 +1948,11 @@ function customerActionNotReady(label) {
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.cust-actions')) closeCustomerActionMenus();
 });
+window.addEventListener('resize', closeCustomerActionMenus);
+document.addEventListener('scroll', closeCustomerActionMenus, true);
+$id('customerOrdersModal')?.addEventListener('click', e => { if (e.target === $id('customerOrdersModal')) closeCustomerOrdersModal(); });
+$id('walletControlModal')?.addEventListener('click', e => { if (e.target === $id('walletControlModal')) closeWalletControlModal(); });
+$id('customerEditModal')?.addEventListener('click', e => { if (e.target === $id('customerEditModal')) closeCustomerEditModal(); });
 
 // ── Search debounce ───────────────────────────────────────────────────────────
 let searchTimer;
@@ -1698,16 +2072,28 @@ async function loadCustomers(page = 1) {
               <button class="cust-action-item" type="button" data-phone="${escHtml(c.phone || '')}" onclick="callCustomer(this)">
                 <span class="ms">call</span> الاتصال بالعميل
               </button>
-              <button class="cust-action-item" type="button" onclick="customerActionNotReady('التحكم برصيد المحفظة')">
+              <button class="cust-action-item" type="button"
+                data-customer-id="${escHtml(c.id || c.customer_id || '')}"
+                data-customer-name="${escHtml(c.name || '')}"
+                data-wallet-balance="${Number(c.wallet_balance || 0)}"
+                onclick="openWalletControlModal(this)">
                 <span class="ms">account_balance_wallet</span> التحكم برصيد المحفظه
               </button>
-              <button class="cust-action-item" type="button" onclick="customerActionNotReady('تعديل بيانات المستخدم')">
+              <button class="cust-action-item" type="button"
+                data-customer-id="${escHtml(c.id || c.customer_id || '')}"
+                data-customer-name="${escHtml(c.name || '')}"
+                data-phone="${escHtml(c.phone || '')}"
+                data-segment="${escHtml(c.segment || 'consumer')}"
+                data-governorate="${escHtml(c.governorate || '')}"
+                data-city="${escHtml(c.city || '')}"
+                data-address-detail="${escHtml(c.address_detail || '')}"
+                onclick="openCustomerEditModal(this)">
                 <span class="ms">edit</span> تعديل بيانات المستخدم
               </button>
-              <button class="cust-action-item warn" type="button" onclick="customerActionNotReady('حظر المستخدم')">
-                <span class="ms">block</span> حظر المستخدم
+              <button class="cust-action-item warn" type="button" data-customer-id="${escHtml(c.id || c.customer_id || '')}" data-customer-name="${escHtml(c.name || '')}" data-is-blocked="${Number(c.is_blocked || 0)}" onclick="toggleCustomerBlock(this)">
+                <span class="ms">${Number(c.is_blocked || 0) === 1 ? 'lock_open' : 'block'}</span> ${Number(c.is_blocked || 0) === 1 ? 'رفع الحظر' : 'حظر المستخدم'}
               </button>
-              <button class="cust-action-item" type="button" data-customer-id="${escHtml(c.id || c.customer_id || '')}" onclick="viewCustomerOrders(this)">
+              <button class="cust-action-item" type="button" data-customer-id="${escHtml(c.id || c.customer_id || '')}" data-customer-name="${escHtml(c.name || '')}" onclick="viewCustomerOrders(this)">
                 <span class="ms">receipt_long</span> عرض سجل اوردرات المستخدم واحصائيات مشترياته
               </button>
             </div>

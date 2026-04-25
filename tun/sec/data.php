@@ -16,9 +16,9 @@ header('Content-Type: application/json; charset=utf-8');
 
 // ── Role-based permissions ────────────────────────────────────────────────────
 const ROLE_PERMS = [
-    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users', 'geo', 'customer_stats', 'customers'],
-    'admin'       => ['stats', 'chart', 'devices', 'visitors', 'geo', 'customer_stats', 'customers'],
-    'support'     => ['visitors', 'geo', 'customer_stats', 'customers'],
+    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users', 'geo', 'customer_stats', 'customers', 'customer_orders', 'customer_wallet_tx'],
+    'admin'       => ['stats', 'chart', 'devices', 'visitors', 'geo', 'customer_stats', 'customers', 'customer_orders', 'customer_wallet_tx'],
+    'support'     => ['visitors', 'geo', 'customer_stats', 'customers', 'customer_orders', 'customer_wallet_tx'],
 ];
 
 function hasPermission(string $role, string $perm): bool
@@ -108,6 +108,265 @@ try {
                 }
                 echo json_encode(['ok' => true]);
             }
+            exit;
+        }
+
+        // ── Customer moderation (support/admin/super_admin) ───────────────────
+        if ($action === 'toggle_customer_block') {
+            if (!hasPermission($role, 'customers')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'ممنوع: صلاحيات غير كافية']);
+                exit;
+            }
+
+            $customerId = (int) ($body['customer_id'] ?? 0);
+            if ($customerId <= 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'معرّف عميل غير صحيح']);
+                exit;
+            }
+
+            try {
+                $hasBlocked = $pdo->query("SHOW COLUMNS FROM customers LIKE 'is_blocked'")->fetch();
+                if (!$hasBlocked) {
+                    $pdo->exec("ALTER TABLE customers ADD COLUMN is_blocked TINYINT(1) NOT NULL DEFAULT 0");
+                }
+                $hasForceLogout = $pdo->query("SHOW COLUMNS FROM customers LIKE 'force_logout_at'")->fetch();
+                if (!$hasForceLogout) {
+                    $pdo->exec("ALTER TABLE customers ADD COLUMN force_logout_at DATETIME NULL DEFAULT NULL");
+                }
+            } catch (Throwable) {
+                http_response_code(500);
+                echo json_encode(['error' => 'تعذر تجهيز أعمدة الحظر']);
+                exit;
+            }
+
+            $stmt = $pdo->prepare("
+                UPDATE customers
+                SET
+                    is_blocked = IF(is_blocked = 1, 0, 1),
+                    force_logout_at = IF(is_blocked = 1, NULL, NOW())
+                WHERE id = :id
+            ");
+            $stmt->execute([':id' => $customerId]);
+            if ($stmt->rowCount() === 0) {
+                http_response_code(404);
+                echo json_encode(['error' => 'العميل غير موجود']);
+                exit;
+            }
+
+            $stateStmt = $pdo->prepare("SELECT is_blocked FROM customers WHERE id = :id LIMIT 1");
+            $stateStmt->execute([':id' => $customerId]);
+            $isBlocked = (int) $stateStmt->fetchColumn() === 1;
+            echo json_encode(['ok' => true, 'is_blocked' => $isBlocked]);
+            exit;
+        }
+
+        if ($action === 'update_customer_profile') {
+            if (!hasPermission($role, 'customers')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'ممنوع: صلاحيات غير كافية']);
+                exit;
+            }
+
+            $customerId = (int) ($body['customer_id'] ?? 0);
+            $name = trim((string) ($body['name'] ?? ''));
+            $phone = trim((string) ($body['phone'] ?? ''));
+            $segment = trim((string) ($body['segment'] ?? 'consumer'));
+            $governorate = trim((string) ($body['governorate'] ?? ''));
+            $city = trim((string) ($body['city'] ?? ''));
+            $addressDetail = trim((string) ($body['address_detail'] ?? ''));
+
+            if ($customerId <= 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'معرّف عميل غير صحيح']);
+                exit;
+            }
+            if ($phone === '') {
+                http_response_code(400);
+                echo json_encode(['error' => 'رقم الهاتف مطلوب']);
+                exit;
+            }
+            if (!in_array($segment, ['consumer', 'wholesale', 'corporate'], true)) {
+                $segment = 'consumer';
+            }
+
+            $phone = preg_replace('/[\s\-().]+/', '', $phone);
+            if (!str_starts_with($phone, '+')) $phone = '+' . ltrim($phone, '0');
+            if (!preg_match('/^\+\d{7,15}$/', $phone)) {
+                http_response_code(422);
+                echo json_encode(['error' => 'صيغة رقم الهاتف غير صحيحة']);
+                exit;
+            }
+
+            $dup = $pdo->prepare("SELECT id FROM customers WHERE phone = :phone AND id <> :id LIMIT 1");
+            $dup->execute([':phone' => $phone, ':id' => $customerId]);
+            if ($dup->fetch()) {
+                http_response_code(409);
+                echo json_encode(['error' => 'رقم الهاتف مستخدم لعميل آخر']);
+                exit;
+            }
+
+            $profileComplete = ($name !== '' && $governorate !== '' && $city !== '' && $addressDetail !== '') ? 1 : 0;
+
+            $stmt = $pdo->prepare("
+                UPDATE customers
+                SET
+                    name = :name,
+                    phone = :phone,
+                    segment = :segment,
+                    governorate = :governorate,
+                    city = :city,
+                    address_detail = :address_detail,
+                    profile_complete = :profile_complete
+                WHERE id = :id
+            ");
+            $stmt->execute([
+                ':name' => $name !== '' ? $name : null,
+                ':phone' => $phone,
+                ':segment' => $segment,
+                ':governorate' => $governorate !== '' ? $governorate : null,
+                ':city' => $city !== '' ? $city : null,
+                ':address_detail' => $addressDetail !== '' ? $addressDetail : null,
+                ':profile_complete' => $profileComplete,
+                ':id' => $customerId,
+            ]);
+            if ($stmt->rowCount() === 0) {
+                $exists = $pdo->prepare("SELECT id FROM customers WHERE id = :id LIMIT 1");
+                $exists->execute([':id' => $customerId]);
+                if (!$exists->fetch()) {
+                    http_response_code(404);
+                    echo json_encode(['error' => 'العميل غير موجود']);
+                    exit;
+                }
+            }
+
+            echo json_encode(['ok' => true, 'profile_complete' => (bool) $profileComplete]);
+            exit;
+        }
+
+        if ($action === 'adjust_customer_wallet') {
+            if (!hasPermission($role, 'customers')) {
+                http_response_code(403);
+                echo json_encode(['error' => 'ممنوع: صلاحيات غير كافية']);
+                exit;
+            }
+
+            $customerId = (int) ($body['customer_id'] ?? 0);
+            $mode = (string) ($body['mode'] ?? 'add'); // add | subtract | set
+            $amount = (float) ($body['amount'] ?? 0);
+            $reason = trim((string) ($body['reason'] ?? 'manual_adjustment'));
+
+            if ($customerId <= 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'معرّف عميل غير صحيح']);
+                exit;
+            }
+            if (!in_array($mode, ['add', 'subtract', 'set'], true)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'نوع العملية غير صحيح']);
+                exit;
+            }
+            if ($amount < 0 || ($mode !== 'set' && $amount <= 0)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'قيمة المبلغ غير صحيحة']);
+                exit;
+            }
+
+            try {
+                $pdo->exec("
+                    CREATE TABLE IF NOT EXISTS wallets (
+                        id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                        customer_id BIGINT UNSIGNED NOT NULL,
+                        balance     DECIMAL(12,2)  NOT NULL DEFAULT 0.00,
+                        created_at  TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        updated_at  TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                        UNIQUE KEY uk_wallets_customer (customer_id)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ");
+                $pdo->exec("
+                    CREATE TABLE IF NOT EXISTS wallet_transactions (
+                        id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                        customer_id BIGINT UNSIGNED NOT NULL,
+                        amount      DECIMAL(12,2)   NOT NULL,
+                        type        ENUM('credit','debit') NOT NULL,
+                        reason      VARCHAR(100)    NOT NULL,
+                        ref_id      BIGINT UNSIGNED DEFAULT NULL,
+                        created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        KEY idx_wt_customer (customer_id),
+                        KEY idx_wt_created (created_at)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ");
+            } catch (Throwable) { /* non-fatal */ }
+
+            $existsStmt = $pdo->prepare("SELECT id FROM customers WHERE id = :id LIMIT 1");
+            $existsStmt->execute([':id' => $customerId]);
+            if (!$existsStmt->fetch()) {
+                http_response_code(404);
+                echo json_encode(['error' => 'العميل غير موجود']);
+                exit;
+            }
+
+            try {
+                $pdo->beginTransaction();
+                $pdo->prepare("INSERT IGNORE INTO wallets (customer_id, balance) VALUES (:cid, 0.00)")
+                    ->execute([':cid' => $customerId]);
+
+                $balStmt = $pdo->prepare("SELECT balance FROM wallets WHERE customer_id = :cid LIMIT 1 FOR UPDATE");
+                $balStmt->execute([':cid' => $customerId]);
+                $oldBal = (float) ($balStmt->fetchColumn() ?: 0);
+                $newBal = $oldBal;
+                $txType = 'credit';
+                $txAmount = $amount;
+
+                if ($mode === 'add') {
+                    $newBal = $oldBal + $amount;
+                    $txType = 'credit';
+                } elseif ($mode === 'subtract') {
+                    if ($amount > $oldBal) {
+                        $pdo->rollBack();
+                        http_response_code(400);
+                        echo json_encode(['error' => 'لا يمكن خصم مبلغ أكبر من الرصيد الحالي']);
+                        exit;
+                    }
+                    $newBal = $oldBal - $amount;
+                    $txType = 'debit';
+                } else { // set
+                    $newBal = $amount;
+                    $diff = $newBal - $oldBal;
+                    $txType = $diff >= 0 ? 'credit' : 'debit';
+                    $txAmount = abs($diff);
+                }
+
+                $up = $pdo->prepare("UPDATE wallets SET balance = :bal WHERE customer_id = :cid");
+                $up->execute([':bal' => $newBal, ':cid' => $customerId]);
+
+                if ($txAmount > 0) {
+                    $insTx = $pdo->prepare("
+                        INSERT INTO wallet_transactions (customer_id, amount, type, reason)
+                        VALUES (:cid, :amt, :type, :reason)
+                    ");
+                    $insTx->execute([
+                        ':cid' => $customerId,
+                        ':amt' => round($txAmount, 2),
+                        ':type' => $txType,
+                        ':reason' => 'admin_adjustment:' . substr($reason !== '' ? $reason : 'manual_adjustment', 0, 80),
+                    ]);
+                }
+
+                $pdo->commit();
+            } catch (Throwable $e) {
+                if ($pdo->inTransaction()) $pdo->rollBack();
+                http_response_code(500);
+                echo json_encode(['error' => 'تعذر تحديث رصيد المحفظة']);
+                exit;
+            }
+
+            echo json_encode([
+                'ok' => true,
+                'old_balance' => round($oldBal, 2),
+                'new_balance' => round($newBal, 2),
+            ]);
             exit;
         }
 
@@ -424,6 +683,14 @@ try {
                 INSERT IGNORE INTO wallets (customer_id)
                 SELECT id FROM customers
             ");
+            $hasBlocked = $pdo->query("SHOW COLUMNS FROM customers LIKE 'is_blocked'")->fetch();
+            if (!$hasBlocked) {
+                $pdo->exec("ALTER TABLE customers ADD COLUMN is_blocked TINYINT(1) NOT NULL DEFAULT 0");
+            }
+            $hasForceLogout = $pdo->query("SHOW COLUMNS FROM customers LIKE 'force_logout_at'")->fetch();
+            if (!$hasForceLogout) {
+                $pdo->exec("ALTER TABLE customers ADD COLUMN force_logout_at DATETIME NULL DEFAULT NULL");
+            }
         } catch (Throwable) { /* non-fatal */ }
 
         try {
@@ -432,8 +699,8 @@ try {
             $totalCount = (int) $countStmt->fetchColumn();
 
             $dataStmt = $pdo->prepare("
-                SELECT c.id, c.name, c.phone, c.segment, c.governorate, c.city,
-                       c.profile_complete, c.created_at,
+                SELECT c.id, c.name, c.phone, c.segment, c.governorate, c.city, c.address_detail,
+                       c.profile_complete, c.created_at, COALESCE(c.is_blocked, 0) AS is_blocked,
                        COALESCE(w.balance, 0.00) AS wallet_balance
                 FROM   customers c
                 LEFT JOIN wallets w ON w.customer_id = c.id
@@ -457,6 +724,133 @@ try {
             'limit'     => $limit,
             'pages'     => (int) ceil($totalCount / max(1, $limit)),
         ]);
+
+    // ── CUSTOMER ORDERS — details + purchase stats ────────────────────────────
+    } elseif ($type === 'customer_orders') {
+
+        $customerId = (int) ($_GET['customer_id'] ?? 0);
+        if ($customerId <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'معرّف عميل غير صحيح']);
+            exit;
+        }
+
+        try {
+            $stmt = $pdo->prepare("
+                SELECT id, order_number, status, items_json,
+                       subtotal, shipping, wallet_discount, total,
+                       note, created_at
+                FROM customer_orders
+                WHERE customer_id = :cid
+                ORDER BY created_at DESC, id DESC
+                LIMIT 200
+            ");
+            $stmt->execute([':cid' => $customerId]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Throwable) {
+            $rows = [];
+        }
+
+        $orders = [];
+        $totalSpent = 0.0;
+        $totalItems = 0;
+        $statusCounts = [
+            'pending' => 0,
+            'processing' => 0,
+            'shipped' => 0,
+            'delivered' => 0,
+            'cancelled' => 0,
+        ];
+
+        foreach ($rows as $row) {
+            $items = json_decode((string) ($row['items_json'] ?? '[]'), true);
+            if (!is_array($items)) $items = [];
+
+            $itemCount = 0;
+            foreach ($items as $it) {
+                if (!is_array($it)) continue;
+                $qty = (int) ($it['qty'] ?? 0);
+                if ($qty > 0) $itemCount += $qty;
+            }
+
+            $status = (string) ($row['status'] ?? 'pending');
+            if (!isset($statusCounts[$status])) $statusCounts[$status] = 0;
+            $statusCounts[$status]++;
+
+            $total = (float) ($row['total'] ?? 0);
+            if ($status !== 'cancelled') $totalSpent += $total;
+            $totalItems += $itemCount;
+
+            $orders[] = [
+                'id' => (int) ($row['id'] ?? 0),
+                'order_number' => (string) ($row['order_number'] ?? ''),
+                'status' => $status,
+                'item_count' => $itemCount,
+                'subtotal' => (float) ($row['subtotal'] ?? 0),
+                'shipping' => (float) ($row['shipping'] ?? 0),
+                'wallet_discount' => (float) ($row['wallet_discount'] ?? 0),
+                'total' => $total,
+                'note' => (string) ($row['note'] ?? ''),
+                'created_at' => (string) ($row['created_at'] ?? ''),
+            ];
+        }
+
+        echo json_encode([
+            'ok' => true,
+            'orders' => $orders,
+            'stats' => [
+                'orders_count' => count($orders),
+                'total_spent' => round($totalSpent, 2),
+                'items_count' => $totalItems,
+                'last_order_at' => $orders[0]['created_at'] ?? null,
+                'status_counts' => $statusCounts,
+            ],
+        ]);
+
+    // ── CUSTOMER WALLET TRANSACTIONS — latest movements ───────────────────────
+    } elseif ($type === 'customer_wallet_tx') {
+
+        $customerId = (int) ($_GET['customer_id'] ?? 0);
+        $limit = min(30, max(5, (int) ($_GET['limit'] ?? 10)));
+        if ($customerId <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'معرّف عميل غير صحيح']);
+            exit;
+        }
+
+        try {
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS wallet_transactions (
+                    id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                    customer_id BIGINT UNSIGNED NOT NULL,
+                    amount      DECIMAL(12,2)   NOT NULL,
+                    type        ENUM('credit','debit') NOT NULL,
+                    reason      VARCHAR(100)    NOT NULL,
+                    ref_id      BIGINT UNSIGNED DEFAULT NULL,
+                    created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    KEY idx_wt_customer (customer_id),
+                    KEY idx_wt_created (created_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ");
+        } catch (Throwable) { /* non-fatal */ }
+
+        try {
+            $stmt = $pdo->prepare("
+                SELECT id, amount, type, reason, created_at
+                FROM wallet_transactions
+                WHERE customer_id = :cid
+                ORDER BY created_at DESC, id DESC
+                LIMIT :lim
+            ");
+            $stmt->bindValue(':cid', $customerId, PDO::PARAM_INT);
+            $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Throwable) {
+            $rows = [];
+        }
+
+        echo json_encode(['ok' => true, 'transactions' => $rows]);
 
     // ── GEO — server-side IP lookup proxy (avoids browser CORS block) ────────
     } elseif ($type === 'geo') {

@@ -17,10 +17,22 @@ if ($customerId === 0) {
 
 try {
     $pdo  = api_pdo();
+    try {
+        $hasBlocked = $pdo->query("SHOW COLUMNS FROM customers LIKE 'is_blocked'")->fetch();
+        if (!$hasBlocked) {
+            $pdo->exec("ALTER TABLE customers ADD COLUMN is_blocked TINYINT(1) NOT NULL DEFAULT 0");
+        }
+        $hasForceLogout = $pdo->query("SHOW COLUMNS FROM customers LIKE 'force_logout_at'")->fetch();
+        if (!$hasForceLogout) {
+            $pdo->exec("ALTER TABLE customers ADD COLUMN force_logout_at DATETIME NULL DEFAULT NULL");
+        }
+    } catch (Throwable) { /* non-fatal */ }
+
     $stmt = $pdo->prepare(
         "SELECT c.id, c.name, c.phone, c.segment,
                 c.governorate, c.governorate_id, c.city, c.city_id,
                 c.address_detail, c.profile_complete, c.referral_code,
+                COALESCE(c.is_blocked, 0) AS is_blocked, c.force_logout_at,
                 COALESCE(w.balance, 0) AS wallet_balance
          FROM customers c
          LEFT JOIN wallets w ON w.customer_id = c.id
@@ -34,6 +46,19 @@ try {
         session_unset();
         session_destroy();
         api_error('تم حذف هذا الحساب', 401);
+    }
+    if ((int) ($row['is_blocked'] ?? 0) === 1) {
+        session_unset();
+        session_destroy();
+        api_error('هذا الحساب محظور', 401);
+    }
+    $sessionLoginAt = (int) ($_SESSION['customer_login_at'] ?? 0);
+    $forcedAtRaw = $row['force_logout_at'] ?? null;
+    $forcedAtTs = $forcedAtRaw ? strtotime((string) $forcedAtRaw) : false;
+    if ($sessionLoginAt > 0 && $forcedAtTs && $sessionLoginAt <= $forcedAtTs) {
+        session_unset();
+        session_destroy();
+        api_error('تم إنهاء جلستك. يرجى تسجيل الدخول مجددًا.', 401);
     }
 } catch (Throwable) {
     api_error('خطأ في التحقق', 500);

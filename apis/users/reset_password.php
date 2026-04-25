@@ -49,11 +49,15 @@ try {
     }
 
     // Fetch customer for auto-login
-    $cStmt = $pdo->prepare("SELECT id, name, phone, referral_code, profile_complete FROM customers WHERE phone = :phone LIMIT 1");
+    $cStmt = $pdo->prepare("SELECT id, name, phone, referral_code, profile_complete, COALESCE(is_blocked, 0) AS is_blocked FROM customers WHERE phone = :phone LIMIT 1");
     $cStmt->execute([':phone' => $phone]);
     $customer = $cStmt->fetch(PDO::FETCH_ASSOC);
 } catch (Throwable) {
     api_error('خطأ في قاعدة البيانات', 500);
+}
+
+if ((int) ($customer['is_blocked'] ?? 0) === 1) {
+    api_error('هذا الحساب محظور. تواصل مع الدعم.', 403);
 }
 
 // Invalidate OTP after use
@@ -64,6 +68,7 @@ session_regenerate_id(true);
 $_SESSION['customer_id']    = (int) $customer['id'];
 $_SESSION['customer_phone'] = $customer['phone'];
 $_SESSION['customer_name']  = $customer['name'] ?? '';
+$_SESSION['customer_login_at'] = time();
 
 api_ok([
     'message'          => 'تم تغيير كلمة المرور بنجاح',
