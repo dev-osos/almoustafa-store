@@ -181,7 +181,9 @@ try {
             $phone = trim((string) ($body['phone'] ?? ''));
             $segment = trim((string) ($body['segment'] ?? 'consumer'));
             $governorate = trim((string) ($body['governorate'] ?? ''));
+            $governorateId = isset($body['governorate_id']) ? (int) $body['governorate_id'] : 0;
             $city = trim((string) ($body['city'] ?? ''));
+            $cityId = isset($body['city_id']) ? (int) $body['city_id'] : 0;
             $addressDetail = trim((string) ($body['address_detail'] ?? ''));
 
             if ($customerId <= 0) {
@@ -197,6 +199,16 @@ try {
             if (!in_array($segment, ['consumer', 'wholesale', 'corporate'], true)) {
                 $segment = 'consumer';
             }
+            try {
+                $hasGovId = $pdo->query("SHOW COLUMNS FROM customers LIKE 'governorate_id'")->fetch();
+                if (!$hasGovId) {
+                    $pdo->exec("ALTER TABLE customers ADD COLUMN governorate_id INT UNSIGNED NULL DEFAULT NULL");
+                }
+                $hasCityId = $pdo->query("SHOW COLUMNS FROM customers LIKE 'city_id'")->fetch();
+                if (!$hasCityId) {
+                    $pdo->exec("ALTER TABLE customers ADD COLUMN city_id INT UNSIGNED NULL DEFAULT NULL");
+                }
+            } catch (Throwable) { /* non-fatal */ }
 
             $phone = preg_replace('/[\s\-().]+/', '', $phone);
             if (!str_starts_with($phone, '+')) $phone = '+' . ltrim($phone, '0');
@@ -223,7 +235,9 @@ try {
                     phone = :phone,
                     segment = :segment,
                     governorate = :governorate,
+                    governorate_id = :governorate_id,
                     city = :city,
+                    city_id = :city_id,
                     address_detail = :address_detail,
                     profile_complete = :profile_complete
                 WHERE id = :id
@@ -233,7 +247,9 @@ try {
                 ':phone' => $phone,
                 ':segment' => $segment,
                 ':governorate' => $governorate !== '' ? $governorate : null,
+                ':governorate_id' => $governorateId > 0 ? $governorateId : null,
                 ':city' => $city !== '' ? $city : null,
+                ':city_id' => $cityId > 0 ? $cityId : null,
                 ':address_detail' => $addressDetail !== '' ? $addressDetail : null,
                 ':profile_complete' => $profileComplete,
                 ':id' => $customerId,
@@ -686,6 +702,10 @@ try {
         $search  = trim($_GET['search']  ?? '');
         $segment = trim($_GET['segment'] ?? '');
         $profile = $_GET['profile'] ?? '';
+        $governorate = trim($_GET['governorate'] ?? '');
+        $city = trim($_GET['city'] ?? '');
+        $dateFrom = trim($_GET['date_from'] ?? '');
+        $dateTo = trim($_GET['date_to'] ?? '');
 
         $conds  = [];
         $params = [];
@@ -701,6 +721,22 @@ try {
         if ($profile === '1' || $profile === '0') {
             $conds[]           = 'profile_complete = :pc';
             $params[':pc']     = (int) $profile;
+        }
+        if ($governorate !== '') {
+            $conds[] = 'governorate LIKE :gov';
+            $params[':gov'] = '%' . $governorate . '%';
+        }
+        if ($city !== '') {
+            $conds[] = 'city LIKE :city';
+            $params[':city'] = '%' . $city . '%';
+        }
+        if ($dateFrom !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFrom)) {
+            $conds[] = 'DATE(created_at) >= :date_from';
+            $params[':date_from'] = $dateFrom;
+        }
+        if ($dateTo !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateTo)) {
+            $conds[] = 'DATE(created_at) <= :date_to';
+            $params[':date_to'] = $dateTo;
         }
 
         $where = $conds ? 'WHERE ' . implode(' AND ', $conds) : '';
@@ -730,6 +766,14 @@ try {
             if (!$hasForceLogout) {
                 $pdo->exec("ALTER TABLE customers ADD COLUMN force_logout_at DATETIME NULL DEFAULT NULL");
             }
+            $hasGovId = $pdo->query("SHOW COLUMNS FROM customers LIKE 'governorate_id'")->fetch();
+            if (!$hasGovId) {
+                $pdo->exec("ALTER TABLE customers ADD COLUMN governorate_id INT UNSIGNED NULL DEFAULT NULL");
+            }
+            $hasCityId = $pdo->query("SHOW COLUMNS FROM customers LIKE 'city_id'")->fetch();
+            if (!$hasCityId) {
+                $pdo->exec("ALTER TABLE customers ADD COLUMN city_id INT UNSIGNED NULL DEFAULT NULL");
+            }
         } catch (Throwable) { /* non-fatal */ }
 
         try {
@@ -738,7 +782,7 @@ try {
             $totalCount = (int) $countStmt->fetchColumn();
 
             $dataStmt = $pdo->prepare("
-                SELECT c.id, c.name, c.phone, c.segment, c.governorate, c.city, c.address_detail,
+                SELECT c.id, c.name, c.phone, c.segment, c.governorate, c.governorate_id, c.city, c.city_id, c.address_detail,
                        c.profile_complete, c.created_at, COALESCE(c.is_blocked, 0) AS is_blocked,
                        COALESCE(w.balance, 0.00) AS wallet_balance
                 FROM   customers c

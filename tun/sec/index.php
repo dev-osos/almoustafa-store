@@ -888,6 +888,8 @@ const ADMIN = {
     <div class="form-error" id="custEditModalErr"></div>
     <form onsubmit="submitCustomerEdit(event)">
       <input type="hidden" id="ce-customer-id">
+      <input type="hidden" id="ce-governorate-id">
+      <input type="hidden" id="ce-city-id">
       <div class="form-field">
         <label class="form-label">الاسم</label>
         <input class="form-input" id="ce-name" type="text" maxlength="120">
@@ -1178,10 +1180,17 @@ const ADMIN = {
                 <option value="1">مكتمل</option>
                 <option value="0">غير مكتمل</option>
               </select>
+              <input class="form-input" id="custGovernorateFilter" type="text" placeholder="المحافظة" style="width:150px">
+              <input class="form-input" id="custCityFilter" type="text" placeholder="المدينة" style="width:150px">
+              <input class="form-input" id="custDateFrom" type="date" title="من تاريخ" style="width:160px">
+              <input class="form-input" id="custDateTo" type="date" title="إلى تاريخ" style="width:160px">
               <div class="search-wrap" style="max-width:240px">
                 <span class="ms">search</span>
                 <input class="search-input" id="custSearch" placeholder="بحث باسم أو هاتف..." type="search">
               </div>
+              <button class="primary-btn" onclick="resetCustomersFilters()">
+                <span class="ms">filter_alt_off</span> مسح الفلاتر
+              </button>
               <button class="primary-btn" onclick="loadCustomers(1)">
                 <span class="ms">refresh</span> تحديث
               </button>
@@ -2128,8 +2137,15 @@ function openCustomerEditModal(btn) {
   $id('ce-segment').value = btn?.dataset?.segment || 'consumer';
   $id('ce-governorate').value = btn?.dataset?.governorate || '';
   $id('ce-city').value = btn?.dataset?.city || '';
+  $id('ce-governorate-id').value = btn?.dataset?.governorateId || '';
+  $id('ce-city-id').value = btn?.dataset?.cityId || '';
   $id('ce-address-detail').value = btn?.dataset?.addressDetail || '';
-  prepareCustomerEditAddressFields(btn?.dataset?.governorate || '', btn?.dataset?.city || '');
+  prepareCustomerEditAddressFields(
+    btn?.dataset?.governorate || '',
+    btn?.dataset?.city || '',
+    btn?.dataset?.governorateId || '',
+    btn?.dataset?.cityId || ''
+  );
   $id('customerEditModal')?.classList.add('open');
 }
 function closeCustomerEditModal() {
@@ -2158,17 +2174,18 @@ function ceRenderList(listEl, rows, query, onPick) {
     const li = document.createElement('li');
     li.className = 'ac-item';
     const name = String(row.name || '');
+    const idLabel = row?.id != null ? ` (${row.id})` : '';
     const q = ceNorm(query);
     const normName = ceNorm(name);
     const idx = q ? normName.indexOf(q) : -1;
     if (idx === -1 || !q) {
-      li.textContent = name;
+      li.textContent = name + idLabel;
     } else {
       if (idx > 0) li.appendChild(document.createTextNode(name.slice(0, idx)));
       const mark = document.createElement('mark');
       mark.textContent = name.slice(idx, idx + String(query).length);
       li.appendChild(mark);
-      li.appendChild(document.createTextNode(name.slice(idx + String(query).length)));
+      li.appendChild(document.createTextNode(name.slice(idx + String(query).length) + idLabel));
     }
     li.addEventListener('mousedown', (e) => { e.preventDefault(); onPick(row); });
     listEl?.appendChild(li);
@@ -2210,20 +2227,31 @@ async function ceLoadCities(govId) {
     if (cityInput) cityInput.placeholder = 'تعذّر تحميل المدن';
   }
 }
-async function prepareCustomerEditAddressFields(currentGov='', currentCity='') {
+async function prepareCustomerEditAddressFields(currentGov='', currentCity='', currentGovId='', currentCityId='') {
   const govInput = $id('ce-governorate');
   const cityInput = $id('ce-city');
+  const govIdInput = $id('ce-governorate-id');
+  const cityIdInput = $id('ce-city-id');
   if (!govInput || !cityInput) return;
   await ceLoadGovs();
-  ceGovSelected = CE_GOVS.find(g => String(g.name || '').trim() === String(currentGov).trim()) || null;
+  const govIdNum = Number(currentGovId || 0);
+  ceGovSelected = CE_GOVS.find(g => Number(g.id || 0) === govIdNum)
+    || CE_GOVS.find(g => String(g.name || '').trim() === String(currentGov).trim())
+    || null;
+  if (govIdInput) govIdInput.value = ceGovSelected?.id ? String(ceGovSelected.id) : '';
   if (ceGovSelected?.id) {
     await ceLoadCities(ceGovSelected.id);
     cityInput.value = currentCity || '';
-    ceCitySelected = CE_CITIES.find(c => String(c.name || '').trim() === String(currentCity).trim()) || null;
+    const cityIdNum = Number(currentCityId || 0);
+    ceCitySelected = CE_CITIES.find(c => Number(c.id || 0) === cityIdNum)
+      || CE_CITIES.find(c => String(c.name || '').trim() === String(currentCity).trim())
+      || null;
+    if (cityIdInput) cityIdInput.value = ceCitySelected?.id ? String(ceCitySelected.id) : '';
   } else {
     cityInput.value = currentCity || '';
     cityInput.disabled = !currentCity;
     cityInput.placeholder = currentCity ? 'اكتب لاختيار المدينة...' : 'اختر المحافظة أولاً...';
+    if (cityIdInput) cityIdInput.value = '';
   }
 }
 function initCustomerEditAddressFields() {
@@ -2235,6 +2263,8 @@ function initCustomerEditAddressFields() {
   const cityList = $id('ce-city-list');
   const govErr = $id('ce-gov-error');
   const cityErr = $id('ce-city-error');
+  const govIdInput = $id('ce-governorate-id');
+  const cityIdInput = $id('ce-city-id');
   if (!govInput || !cityInput || !govWrap || !cityWrap || !govList || !cityList) return;
 
   const openGov = () => {
@@ -2243,10 +2273,12 @@ function initCustomerEditAddressFields() {
     ceRenderList(govList, rows, govInput.value, async (gov) => {
       ceGovSelected = gov;
       govInput.value = gov.name;
+      if (govIdInput) govIdInput.value = String(gov.id || '');
       govInput.classList.remove('invalid');
       govErr?.classList.remove('show');
       govWrap.classList.remove('open');
       await ceLoadCities(gov.id);
+      if (cityIdInput) cityIdInput.value = '';
       cityInput.focus();
     });
     govWrap.classList.add('open');
@@ -2261,6 +2293,7 @@ function initCustomerEditAddressFields() {
     ceRenderList(cityList, rows, cityInput.value, (city) => {
       ceCitySelected = city;
       cityInput.value = city.name;
+      if (cityIdInput) cityIdInput.value = String(city.id || '');
       cityInput.classList.remove('invalid');
       cityErr?.classList.remove('show');
       cityWrap.classList.remove('open');
@@ -2271,9 +2304,17 @@ function initCustomerEditAddressFields() {
   const closeCity = () => { cityWrap.classList.remove('open'); cityInput.setAttribute('aria-expanded', 'false'); };
 
   govInput.addEventListener('focus', openGov);
-  govInput.addEventListener('input', () => { ceGovSelected = null; openGov(); });
+  govInput.addEventListener('input', () => {
+    ceGovSelected = null;
+    if (govIdInput) govIdInput.value = '';
+    openGov();
+  });
   cityInput.addEventListener('focus', openCity);
-  cityInput.addEventListener('input', () => { ceCitySelected = null; openCity(); });
+  cityInput.addEventListener('input', () => {
+    ceCitySelected = null;
+    if (cityIdInput) cityIdInput.value = '';
+    openCity();
+  });
   document.addEventListener('click', (e) => {
     if (!govWrap.contains(e.target)) closeGov();
     if (!cityWrap.contains(e.target)) closeCity();
@@ -2338,7 +2379,9 @@ async function submitCustomerEdit(e) {
     phone: $id('ce-phone').value.trim(),
     segment: $id('ce-segment').value,
     governorate: $id('ce-governorate').value.trim(),
+    governorate_id: Number($id('ce-governorate-id')?.value || 0) || null,
     city: $id('ce-city').value.trim(),
+    city_id: Number($id('ce-city-id')?.value || 0) || null,
     address_detail: $id('ce-address-detail').value.trim(),
   };
   if (err) err.classList.remove('show');
@@ -2503,14 +2546,22 @@ let custCurrentPage = 1;
 
 async function loadCustomers(page = 1) {
   custCurrentPage = page;
-  const search  = $id('custSearch').value.trim();
-  const segment = $id('custSegmentFilter').value;
-  const profile = $id('custProfileFilter').value;
+  const search     = $id('custSearch').value.trim();
+  const segment    = $id('custSegmentFilter').value;
+  const profile    = $id('custProfileFilter').value;
+  const governorate = ($id('custGovernorateFilter')?.value || '').trim();
+  const city       = ($id('custCityFilter')?.value || '').trim();
+  const dateFrom   = $id('custDateFrom')?.value || '';
+  const dateTo     = $id('custDateTo')?.value || '';
 
   const params = new URLSearchParams({ type:'customers', page, limit:25 });
-  if (search)  params.set('search', search);
+  if (search) params.set('search', search);
   if (segment) params.set('segment', segment);
   if (profile !== '') params.set('profile', profile);
+  if (governorate) params.set('governorate', governorate);
+  if (city) params.set('city', city);
+  if (dateFrom) params.set('date_from', dateFrom);
+  if (dateTo) params.set('date_to', dateTo);
 
   const res  = await fetch('data.php?' + params);
   if (!res.ok) return;
@@ -2576,7 +2627,9 @@ async function loadCustomers(page = 1) {
                 data-phone="${escHtml(c.phone || '')}"
                 data-segment="${escHtml(c.segment || 'consumer')}"
                 data-governorate="${escHtml(c.governorate || '')}"
+                data-governorate-id="${escHtml(c.governorate_id || '')}"
                 data-city="${escHtml(c.city || '')}"
+                data-city-id="${escHtml(c.city_id || '')}"
                 data-address-detail="${escHtml(c.address_detail || '')}"
                 onclick="openCustomerEditModal(this)">
                 <span class="ms">edit</span> تعديل بيانات المستخدم
@@ -2632,6 +2685,27 @@ $id('custSearch').addEventListener('input', () => {
   clearTimeout(custSearchTimer);
   custSearchTimer = setTimeout(() => loadCustomers(1), 400);
 });
+$id('custGovernorateFilter')?.addEventListener('input', () => {
+  clearTimeout(custSearchTimer);
+  custSearchTimer = setTimeout(() => loadCustomers(1), 400);
+});
+$id('custCityFilter')?.addEventListener('input', () => {
+  clearTimeout(custSearchTimer);
+  custSearchTimer = setTimeout(() => loadCustomers(1), 400);
+});
+['custSegmentFilter', 'custProfileFilter', 'custDateFrom', 'custDateTo']
+  .forEach((id) => $id(id)?.addEventListener('change', () => loadCustomers(1)));
+
+function resetCustomersFilters() {
+  if ($id('custSearch')) $id('custSearch').value = '';
+  if ($id('custSegmentFilter')) $id('custSegmentFilter').value = '';
+  if ($id('custProfileFilter')) $id('custProfileFilter').value = '';
+  if ($id('custGovernorateFilter')) $id('custGovernorateFilter').value = '';
+  if ($id('custCityFilter')) $id('custCityFilter').value = '';
+  if ($id('custDateFrom')) $id('custDateFrom').value = '';
+  if ($id('custDateTo')) $id('custDateTo').value = '';
+  loadCustomers(1);
+}
 
 // ── Reviews ───────────────────────────────────────────────────────────────────
 let reviewsData = [];
