@@ -13,7 +13,8 @@
     "dir": "rtl",
     "categories": ["admin", "management"],
     "icons": [
-      { "src": "cp-logo.jpg", "sizes": "786x526", "type": "image/jpeg", "purpose": "any" }
+      { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+      { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
     ],
     "screenshots": [],
     "shortcuts": [
@@ -22,7 +23,7 @@
         "short_name": "لوحة التحكم",
         "description": "ادارة المتجر",
         "url": "/tun/sec/index.php",
-        "icons": [{ "src": "cp-logo.jpg", "sizes": "786x526", "type": "image/jpeg" }]
+        "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
       }
     ]
   }
