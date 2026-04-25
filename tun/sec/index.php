@@ -708,6 +708,15 @@ const ADMIN = {
       <span style="background:#e8f0fe;color:#1a56d6;padding:.35rem .65rem;border-radius:999px;font-size:.75rem;">إجمالي القطع: <strong id="coStatItems">0</strong></span>
       <span style="background:#fdf6e0;color:#735c00;padding:.35rem .65rem;border-radius:999px;font-size:.75rem;">آخر طلب: <strong id="coStatLast">—</strong></span>
     </div>
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:.5rem;margin-bottom:.8rem;">
+      <label for="coRangeFilter" style="font-size:.8rem;color:var(--on-surface-dim);font-weight:700;">المدة الزمنية</label>
+      <select class="chart-select" id="coRangeFilter">
+        <option value="all">كل الوقت</option>
+        <option value="7">آخر 7 أيام</option>
+        <option value="30" selected>آخر 30 يوم</option>
+        <option value="90">آخر 90 يوم</option>
+      </select>
+    </div>
     <div class="table-wrap" style="max-height:420px;overflow-y:auto;">
       <table>
         <thead>
@@ -719,15 +728,58 @@ const ADMIN = {
             <th>الإجمالي</th>
             <th>تاريخ الطلب</th>
             <th>ملاحظة</th>
+            <th>تفاصيل</th>
           </tr>
         </thead>
         <tbody id="custOrdersBody">
-          <tr><td colspan="7" style="text-align:center;padding:2rem">جارٍ التحميل...</td></tr>
+          <tr><td colspan="8" style="text-align:center;padding:2rem">جارٍ التحميل...</td></tr>
         </tbody>
       </table>
     </div>
     <div class="modal-footer">
       <button type="button" class="cancel-btn" onclick="closeCustomerOrdersModal()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: customer order details -->
+<div class="modal-backdrop" id="customerOrderDetailsModal">
+  <div class="modal" style="max-width:820px;">
+    <div class="modal-header">
+      <div class="modal-title"><span class="ms">description</span> تفاصيل الطلب <span id="codOrderNo">—</span></div>
+      <button class="modal-close" onclick="closeCustomerOrderDetailsModal()"><span class="ms">close</span></button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.8rem;">
+      <span style="background:var(--surface-dim);color:var(--on-surface);padding:.35rem .65rem;border-radius:999px;font-size:.75rem;">الحالة: <strong id="codStatus">—</strong></span>
+      <span style="background:#e8f0fe;color:#1a56d6;padding:.35rem .65rem;border-radius:999px;font-size:.75rem;">التاريخ: <strong id="codDate">—</strong></span>
+    </div>
+    <div class="table-wrap" style="max-height:260px;overflow-y:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>المنتج</th>
+            <th>الوزن</th>
+            <th>الكمية</th>
+            <th>السعر</th>
+            <th>الإجمالي</th>
+          </tr>
+        </thead>
+        <tbody id="codItemsBody">
+          <tr><td colspan="5" style="text-align:center;padding:1.25rem">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:.9rem;padding:.75rem;border:1px solid var(--border);border-radius:10px;background:var(--surface-dim);">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.45rem;font-size:.82rem;">
+        <div>المجموع الجزئي: <strong id="codSubtotal">0.00 ج.م</strong></div>
+        <div>الشحن: <strong id="codShipping">0.00 ج.م</strong></div>
+        <div>خصم المحفظة: <strong id="codWallet">0.00 ج.م</strong></div>
+        <div>الإجمالي النهائي: <strong id="codTotal">0.00 ج.م</strong></div>
+      </div>
+      <div style="margin-top:.55rem;font-size:.8rem;color:var(--on-surface-dim);">ملاحظة: <span id="codNote">—</span></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="cancel-btn" onclick="closeCustomerOrderDetailsModal()">إغلاق</button>
     </div>
   </div>
 </div>
@@ -1646,7 +1698,7 @@ async function loadUsers() {
       <td style="font-size:.78rem;color:var(--on-surface-dim)">${u.created_by_name ? escHtml(u.created_by_name) : '—'}</td>
       <td>
         <button class="action-btn" onclick='editUserAccount(${u.id}, ${JSON.stringify(u.fullname || "")}, ${JSON.stringify(u.username)}, ${JSON.stringify(u.role)})'>
-          <span class="ms">edit</span>تعديل الحساب
+          <span class="ms">edit</span>
         </button>
         ${!isSelf ? `
           <button class="action-btn ${toggleCls}" onclick="toggleUser(${u.id}, ${JSON.stringify(u.username)})" style="margin-right:.4rem;">
@@ -1881,6 +1933,48 @@ function orderStatusBadge(status='pending') {
 function closeCustomerOrdersModal() {
   $id('customerOrdersModal')?.classList.remove('open');
 }
+function closeCustomerOrderDetailsModal() {
+  $id('customerOrderDetailsModal')?.classList.remove('open');
+}
+function openCustomerOrderDetails(orderId) {
+  const order = customerOrdersCache.find((o) => Number(o.id) === Number(orderId));
+  if (!order) return notify('تعذر جلب تفاصيل الطلب.', 'err');
+  const fmtMoney = (v) => `${Number(v || 0).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})} ج.م`;
+  const setText = (id, value) => { const el = $id(id); if (el) el.textContent = value; };
+  setText('codOrderNo', order.order_number || `#${order.id}`);
+  const statusWrap = $id('codStatus');
+  if (statusWrap) statusWrap.innerHTML = orderStatusBadge(order.status || 'pending');
+  setText('codDate', order.created_at ? fmtDate(order.created_at) : '—');
+  setText('codSubtotal', fmtMoney(order.subtotal));
+  setText('codShipping', fmtMoney(order.shipping));
+  setText('codWallet', fmtMoney(order.wallet_discount));
+  setText('codTotal', fmtMoney(order.total));
+  setText('codNote', order.note || '—');
+
+  const itemsBody = $id('codItemsBody');
+  const items = Array.isArray(order.items) ? order.items : [];
+  if (itemsBody) {
+    if (!items.length) {
+      itemsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1.25rem;color:var(--on-surface-dim)">لا توجد منتجات مسجلة لهذا الطلب</td></tr>';
+    } else {
+      itemsBody.innerHTML = '';
+      items.forEach((it) => {
+        const qty = Number(it.qty || 0);
+        const price = Number(it.price || 0);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-weight:600">${escHtml(it.name || 'منتج')}</td>
+          <td>${escHtml(it.weight || '—')}</td>
+          <td>${fmt(qty)}</td>
+          <td>${fmtMoney(price)}</td>
+          <td style="font-weight:700">${fmtMoney(qty * price)}</td>
+        `;
+        itemsBody.appendChild(tr);
+      });
+    }
+  }
+  $id('customerOrderDetailsModal')?.classList.add('open');
+}
 function openWalletControlModal(btn) {
   const customerId = btn?.dataset?.customerId || '';
   if (!customerId) return notify('لا يمكن فتح نافذة المحفظة: معرّف العميل مفقود.', 'err');
@@ -1996,6 +2090,54 @@ function openCustomerEditModal(btn) {
 function closeCustomerEditModal() {
   $id('customerEditModal')?.classList.remove('open');
 }
+let customerOrdersCache = [];
+function applyCustomerOrdersRangeFilter() {
+  const body = $id('custOrdersBody');
+  const rangeEl = $id('coRangeFilter');
+  const setText = (id, val) => { const el = $id(id); if (el) el.textContent = val; };
+  if (!body || !rangeEl) return;
+
+  const rangeValue = rangeEl.value || 'all';
+  const now = Date.now();
+  const days = rangeValue === 'all' ? null : Number(rangeValue);
+  const minTs = Number.isFinite(days) && days !== null ? now - (days * 24 * 60 * 60 * 1000) : null;
+  const orders = customerOrdersCache.filter((o) => {
+    if (minTs === null) return true;
+    const ts = Date.parse(String(o.created_at || ''));
+    if (Number.isNaN(ts)) return false;
+    return ts >= minTs;
+  });
+
+  const ordersCount = orders.length;
+  const totalSpent = orders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+  const itemsCount = orders.reduce((sum, o) => sum + Number(o.item_count || 0), 0);
+  const lastOrderAt = orders.length ? orders[0].created_at : null;
+  setText('coStatOrders', fmt(ordersCount));
+  setText('coStatSpent', Number(totalSpent).toLocaleString('ar-EG', { minimumFractionDigits:2, maximumFractionDigits:2 }));
+  setText('coStatItems', fmt(itemsCount));
+  setText('coStatLast', lastOrderAt ? fmtDate(lastOrderAt) : '—');
+
+  if (!orders.length) {
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--on-surface-dim)">لا توجد طلبات في المدة المحددة</td></tr>';
+    return;
+  }
+
+  body.innerHTML = '';
+  orders.forEach((o, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${fmt(idx + 1)}</td>
+      <td><code style="background:var(--surface-dim);padding:.2rem .45rem;border-radius:4px;font-size:.78rem">${escHtml(o.order_number || '#'+o.id)}</code></td>
+      <td>${orderStatusBadge(o.status)}</td>
+      <td>${fmt(o.item_count || 0)}</td>
+      <td style="font-weight:700">${Number(o.total || 0).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})} ج.م</td>
+      <td>${fmtDate(o.created_at)}</td>
+      <td style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(o.note || '')}">${escHtml(o.note || '—')}</td>
+      <td><button class="action-btn" onclick="openCustomerOrderDetails(${Number(o.id || 0)})"><span class="ms">visibility</span>عرض</button></td>
+    `;
+    body.appendChild(tr);
+  });
+}
 async function submitCustomerEdit(e) {
   e.preventDefault();
   const btn = $id('custEditSubmitBtn');
@@ -2040,14 +2182,16 @@ async function viewCustomerOrders(btn) {
   if (!customerId) return notify('لا يمكن فتح سجل الطلبات لهذا العميل.', 'err');
   const modal = $id('customerOrdersModal');
   const body = $id('custOrdersBody');
+  const rangeEl = $id('coRangeFilter');
   const setText = (id, val) => { const el = $id(id); if (el) el.textContent = val; };
 
   setText('custOrdersModalName', customerName);
-  body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem">جارٍ التحميل...</td></tr>';
+  body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem">جارٍ التحميل...</td></tr>';
   setText('coStatOrders', '0');
   setText('coStatSpent', '0.00');
   setText('coStatItems', '0');
   setText('coStatLast', '—');
+  if (rangeEl) rangeEl.value = '30';
   modal?.classList.add('open');
 
   try {
@@ -2055,34 +2199,16 @@ async function viewCustomerOrders(btn) {
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.error || 'فشل جلب البيانات');
 
-    const stats = data.stats || {};
-    setText('coStatOrders', fmt(stats.orders_count || 0));
-    setText('coStatSpent', Number(stats.total_spent || 0).toLocaleString('ar-EG', { minimumFractionDigits:2, maximumFractionDigits:2 }));
-    setText('coStatItems', fmt(stats.items_count || 0));
-    setText('coStatLast', stats.last_order_at ? fmtDate(stats.last_order_at) : '—');
-
     const orders = Array.isArray(data.orders) ? data.orders : [];
-    if (!orders.length) {
-      body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--on-surface-dim)">لا توجد طلبات لهذا العميل</td></tr>';
+    customerOrdersCache = orders.slice();
+    if (!customerOrdersCache.length) {
+      body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--on-surface-dim)">لا توجد طلبات لهذا العميل</td></tr>';
       return;
     }
-
-    body.innerHTML = '';
-    orders.forEach((o, idx) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${fmt(idx + 1)}</td>
-        <td><code style="background:var(--surface-dim);padding:.2rem .45rem;border-radius:4px;font-size:.78rem">${escHtml(o.order_number || '#'+o.id)}</code></td>
-        <td>${orderStatusBadge(o.status)}</td>
-        <td>${fmt(o.item_count || 0)}</td>
-        <td style="font-weight:700">${Number(o.total || 0).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})} ج.م</td>
-        <td>${fmtDate(o.created_at)}</td>
-        <td style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escHtml(o.note || '')}">${escHtml(o.note || '—')}</td>
-      `;
-      body.appendChild(tr);
-    });
+    applyCustomerOrdersRangeFilter();
   } catch (e) {
-    body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--red-text)">تعذر تحميل سجل الطلبات</td></tr>`;
+    customerOrdersCache = [];
+    body.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--red-text)">تعذر تحميل سجل الطلبات</td></tr>`;
     notify(e?.message || 'تعذر تحميل سجل الطلبات', 'err');
   }
 }
@@ -2124,6 +2250,8 @@ document.addEventListener('click', (e) => {
 window.addEventListener('resize', closeCustomerActionMenus);
 document.addEventListener('scroll', closeCustomerActionMenus, true);
 $id('customerOrdersModal')?.addEventListener('click', e => { if (e.target === $id('customerOrdersModal')) closeCustomerOrdersModal(); });
+$id('customerOrderDetailsModal')?.addEventListener('click', e => { if (e.target === $id('customerOrderDetailsModal')) closeCustomerOrderDetailsModal(); });
+$id('coRangeFilter')?.addEventListener('change', applyCustomerOrdersRangeFilter);
 $id('walletControlModal')?.addEventListener('click', e => { if (e.target === $id('walletControlModal')) closeWalletControlModal(); });
 $id('customerEditModal')?.addEventListener('click', e => { if (e.target === $id('customerEditModal')) closeCustomerEditModal(); });
 

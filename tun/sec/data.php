@@ -806,10 +806,18 @@ try {
             if (!is_array($items)) $items = [];
 
             $itemCount = 0;
+            $normalizedItems = [];
             foreach ($items as $it) {
                 if (!is_array($it)) continue;
                 $qty = (int) ($it['qty'] ?? 0);
                 if ($qty > 0) $itemCount += $qty;
+                $normalizedItems[] = [
+                    'name' => (string) ($it['name'] ?? $it['store_name'] ?? $it['api_name'] ?? 'منتج'),
+                    'qty' => max(0, $qty),
+                    'price' => (float) ($it['price'] ?? 0),
+                    'weight' => (string) ($it['weight'] ?? $it['wight'] ?? ''),
+                    'image' => (string) ($it['image'] ?? $it['image_url'] ?? ''),
+                ];
             }
 
             $status = (string) ($row['status'] ?? 'pending');
@@ -831,6 +839,7 @@ try {
                 'total' => $total,
                 'note' => (string) ($row['note'] ?? ''),
                 'created_at' => (string) ($row['created_at'] ?? ''),
+                'items' => $normalizedItems,
             ];
         }
 
