@@ -21,6 +21,7 @@ require_once __DIR__ . '/../../apis/bootstrap.php';
 // ── Session variables ─────────────────────────────────────────────────────────
 $adminRole     = $_SESSION['admin_role']     ?? '';
 $adminUsername = $_SESSION['admin_username'] ?? '';
+$adminFullname = $_SESSION['admin_fullname'] ?? $adminUsername;
 $adminId       = (int) ($_SESSION['admin_id'] ?? 0);
 $adminKey      = api_env('ADMIN_KEY', '');
 
@@ -361,6 +362,7 @@ tr:hover td { background:var(--surface-dim); }
 const ADMIN = {
   id:          <?= json_encode($adminId) ?>,
   username:    <?= json_encode($adminUsername) ?>,
+  fullname:    <?= json_encode($adminFullname) ?>,
   role:        <?= json_encode($adminRole) ?>,
   canUsers:    <?= json_encode(can($adminRole, 'users')) ?>,
   canStats:    <?= json_encode(can($adminRole, 'stats')) ?>,
@@ -378,6 +380,10 @@ const ADMIN = {
     </div>
     <div class="form-error" id="modalErr"></div>
     <form id="createUserForm" onsubmit="submitCreateUser(event)">
+      <div class="form-field">
+        <label class="form-label">الاسم الكامل</label>
+        <input class="form-input" type="text" name="fullname" placeholder="اسم مستخدم الحساب" required autocomplete="off">
+      </div>
       <div class="form-field">
         <label class="form-label">اسم المستخدم</label>
         <input class="form-input" type="text" name="username" placeholder="username" required autocomplete="off">
@@ -842,7 +848,7 @@ const ADMIN = {
   </nav>
   <div class="sidebar-footer">
     <div class="sidebar-user">
-      <div class="sidebar-username"><?= htmlspecialchars($adminUsername) ?></div>
+      <div class="sidebar-username"><?= htmlspecialchars($adminFullname) ?></div>
       <span class="sidebar-role" style="<?= roleBadgeCss($adminRole) ?>"><?= roleLabelAr($adminRole) ?></span>
     </div>
     <form method="post">
@@ -980,6 +986,7 @@ const ADMIN = {
               <thead>
                 <tr>
                   <th>#</th>
+                  <th>الاسم الكامل</th>
                   <th>اسم المستخدم</th>
                   <th>الدور</th>
                   <th>الحالة</th>
@@ -989,7 +996,7 @@ const ADMIN = {
                 </tr>
               </thead>
               <tbody id="usersBody">
-                <tr><td colspan="7" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
+                <tr><td colspan="8" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -1578,7 +1585,7 @@ async function loadUsers() {
   tbody.innerHTML = '';
 
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><span class="ms">person_off</span>لا يوجد مستخدمون</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><span class="ms">person_off</span>لا يوجد مستخدمون</div></td></tr>';
     return;
   }
 
@@ -1593,14 +1600,18 @@ async function loadUsers() {
     tr.id = `urow-${u.id}`;
     tr.innerHTML = `
       <td style="color:var(--on-surface-dim);font-size:.78rem">${i+1}</td>
+      <td style="font-weight:600">${escHtml(u.fullname || '—')}</td>
       <td style="font-weight:600">${escHtml(u.username)}${isSelf ? ' <span style="font-size:.72rem;color:var(--on-surface-dim)">(أنت)</span>' : ''}</td>
       <td>${roleBadgeHtml(u.role, u.role_label)}</td>
       <td><span class="${isActive ? 'status-active' : 'status-inactive'}">${isActive ? 'نشط' : 'معطّل'}</span></td>
       <td><div class="date-text">${fmtDate(u.created_at)}</div></td>
       <td style="font-size:.78rem;color:var(--on-surface-dim)">${u.created_by_name ? escHtml(u.created_by_name) : '—'}</td>
       <td>
+        <button class="action-btn" onclick="editUserFullname(${u.id}, ${JSON.stringify(u.fullname || '')}, ${JSON.stringify(u.username)})">
+          <span class="ms">edit</span>تعديل الاسم
+        </button>
         ${!isSelf ? `
-          <button class="action-btn ${toggleCls}" onclick="toggleUser(${u.id}, ${JSON.stringify(u.username)})">
+          <button class="action-btn ${toggleCls}" onclick="toggleUser(${u.id}, ${JSON.stringify(u.username)})" style="margin-right:.4rem;">
             <span class="ms">${toggleIco}</span>${toggleLbl}
           </button>
           <button class="action-btn del" onclick="deleteUser(${u.id}, ${JSON.stringify(u.username)})">
@@ -1634,6 +1645,24 @@ async function deleteUser(id, username) {
   const d = await res.json();
   if (d.ok) loadUsers();
   else alert(d.error || 'حدث خطأ');
+}
+async function editUserFullname(id, currentName, username) {
+  const next = prompt(`الاسم الكامل للمستخدم "${username}"`, currentName || '');
+  if (next === null) return;
+  const fullname = String(next).trim();
+  if (!fullname) return alert('الاسم الكامل مطلوب');
+  const res = await fetch('data.php', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'update_user_fullname', id, fullname})
+  });
+  const d = await res.json();
+  if (d.ok) {
+    if (id === ADMIN.id) ADMIN.fullname = fullname;
+    loadUsers();
+  } else {
+    alert(d.error || 'حدث خطأ');
+  }
 }
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
@@ -1727,7 +1756,7 @@ function openCustomerWhatsApp(btn) {
   const name = btn?.dataset?.name || '';
   if (!normalized) return notify('رقم الهاتف غير متوفر.', 'err');
   const customerNamePart = name ? ` ${name}` : '';
-  const msg = encodeURIComponent(`السلام عليكم استاذ/ة${customerNamePart} معاك ${ADMIN.username || 'فريق الدعم'} من فريق الدعم ازاي اقدر اساعد حضرتك؟`);
+  const msg = encodeURIComponent(`السلام عليكم استاذ/ة${customerNamePart} معاك ${ADMIN.fullname || ADMIN.username || 'فريق الدعم'} من فريق الدعم ازاي اقدر اساعد حضرتك؟`);
   window.open(`https://wa.me/${normalized.replace('+','')}?text=${msg}`, '_blank');
 }
 function callCustomer(btn) {
@@ -1762,6 +1791,7 @@ function openWalletControlModal(btn) {
   $id('wm-amount').value = '';
   $id('wm-reason').value = '';
   $id('walletControlModal')?.classList.add('open');
+  loadWalletTransactions(customerId);
 }
 function closeWalletControlModal() {
   $id('walletControlModal')?.classList.remove('open');
@@ -1793,8 +1823,12 @@ async function submitWalletControl(e) {
     });
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.error || 'تعذر تحديث المحفظة');
-    closeWalletControlModal();
-    notify(`تم تحديث الرصيد بنجاح. الرصيد الجديد: ${Number(data.new_balance || 0).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})} ج.م`, 'ok');
+    const newBal = Number(data.new_balance || 0);
+    $id('wm-current-balance').value = `${newBal.toLocaleString('ar-EG', { minimumFractionDigits:2, maximumFractionDigits:2 })} ج.م`;
+    $id('wm-amount').value = '';
+    $id('wm-reason').value = '';
+    await loadWalletTransactions(customerId);
+    notify(`تم تحديث الرصيد بنجاح. الرصيد الجديد: ${newBal.toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})} ج.م`, 'ok');
     await loadCustomers(custCurrentPage || 1);
   } catch (e2) {
     if (err) {
@@ -1804,6 +1838,42 @@ async function submitWalletControl(e) {
   } finally {
     btn.disabled = false;
     btn.textContent = 'حفظ التعديل';
+  }
+}
+function walletReasonAr(reason='') {
+  const value = String(reason || '');
+  if (value.startsWith('admin_adjustment:')) return value.replace('admin_adjustment:', '');
+  if (value === 'welcome_bonus') return 'هدية التسجيل';
+  if (value === 'referral_bonus') return 'مكافأة إحالة';
+  return value || '—';
+}
+async function loadWalletTransactions(customerId) {
+  const tbody = $id('wmTxBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1rem">جارٍ التحميل...</td></tr>';
+  try {
+    const res = await fetch(`data.php?type=customer_wallet_tx&customer_id=${encodeURIComponent(customerId)}&limit=10`);
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'تعذر جلب الحركات');
+    const rows = Array.isArray(data.transactions) ? data.transactions : [];
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--on-surface-dim)">لا توجد حركات حتى الآن</td></tr>';
+      return;
+    }
+    tbody.innerHTML = '';
+    rows.forEach((tx) => {
+      const tr = document.createElement('tr');
+      const isCredit = String(tx.type || '') === 'credit';
+      tr.innerHTML = `
+        <td><span class="role-badge" style="${isCredit ? 'background:var(--green-bg);color:var(--green);border:1px solid #b6d9be' : 'background:var(--red-bg);color:var(--red-text);border:1px solid #f5b8b8'}">${isCredit ? 'إضافة' : 'خصم'}</span></td>
+        <td style="font-weight:700;direction:ltr;text-align:right">${Number(tx.amount || 0).toLocaleString('ar-EG',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        <td style="font-size:.78rem;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(walletReasonAr(tx.reason))}">${escHtml(walletReasonAr(tx.reason))}</td>
+        <td style="font-size:.76rem">${fmtDate(tx.created_at)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--red-text)">تعذر تحميل حركات المحفظة</td></tr>';
   }
 }
 function openCustomerEditModal(btn) {

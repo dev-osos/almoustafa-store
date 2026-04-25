@@ -21,6 +21,7 @@ try {
         CREATE TABLE IF NOT EXISTS dashboard_users (
             id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             username      VARCHAR(50)  NOT NULL,
+            fullname      VARCHAR(120) NOT NULL DEFAULT '',
             password_hash VARCHAR(255) NOT NULL,
             role          ENUM('super_admin','admin','support') NOT NULL DEFAULT 'support',
             is_active     TINYINT(1)   NOT NULL DEFAULT 1,
@@ -29,9 +30,14 @@ try {
             UNIQUE KEY uk_du_username (username)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
+    $hasFullname = $pdo->query("SHOW COLUMNS FROM dashboard_users LIKE 'fullname'")->fetch();
+    if (!$hasFullname) {
+        $pdo->exec("ALTER TABLE dashboard_users ADD COLUMN fullname VARCHAR(120) NOT NULL DEFAULT '' AFTER username");
+        $pdo->exec("UPDATE dashboard_users SET fullname = username WHERE fullname = '' OR fullname IS NULL");
+    }
     if ((int) $pdo->query("SELECT COUNT(*) FROM dashboard_users")->fetchColumn() === 0) {
-        $pdo->prepare("INSERT INTO dashboard_users (username, password_hash, role) VALUES (?, ?, 'super_admin')")
-            ->execute(['1', password_hash('1', PASSWORD_BCRYPT, ['cost' => 12])]);
+        $pdo->prepare("INSERT INTO dashboard_users (username, fullname, password_hash, role) VALUES (?, ?, ?, 'super_admin')")
+            ->execute(['1', '1', password_hash('1', PASSWORD_BCRYPT, ['cost' => 12])]);
     }
     $dbReady = true;
 } catch (Throwable) {}
@@ -43,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $dbReady && $pdo) {
     $password = $_POST['password']       ?? '';
     try {
         $stmt = $pdo->prepare("
-            SELECT id, password_hash, role
+            SELECT id, username, fullname, password_hash, role
             FROM   dashboard_users
             WHERE  username = :u AND is_active = 1
             LIMIT  1
@@ -55,7 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $dbReady && $pdo) {
             $_SESSION['admin_auth']     = true;
             $_SESSION['admin_role']     = $user['role'];
             $_SESSION['admin_id']       = (int) $user['id'];
-            $_SESSION['admin_username'] = $username;
+            $_SESSION['admin_username'] = (string) $user['username'];
+            $_SESSION['admin_fullname'] = trim((string) ($user['fullname'] ?? '')) !== '' ? (string) $user['fullname'] : (string) $user['username'];
             header('Location: index.php');
             exit;
         }

@@ -71,6 +71,13 @@ $adminId = (int) ($_SESSION['admin_id'] ?? 0);
 try {
     $pdo    = api_pdo();
     $method = $_SERVER['REQUEST_METHOD'];
+    try {
+        $hasFullname = $pdo->query("SHOW COLUMNS FROM dashboard_users LIKE 'fullname'")->fetch();
+        if (!$hasFullname) {
+            $pdo->exec("ALTER TABLE dashboard_users ADD COLUMN fullname VARCHAR(120) NOT NULL DEFAULT '' AFTER username");
+            $pdo->exec("UPDATE dashboard_users SET fullname = username WHERE fullname = '' OR fullname IS NULL");
+        }
+    } catch (Throwable) {}
 
     // ── POST — actions ────────────────────────────────────────────────────────
     if ($method === 'POST') {
@@ -379,10 +386,12 @@ try {
 
         if ($action === 'create_user') {
             $username = trim($body['username'] ?? '');
+            $fullname = trim((string) ($body['fullname'] ?? ''));
             $password = $body['password'] ?? '';
             $newRole  = $body['role'] ?? '';
+            if ($fullname === '') $fullname = $username;
 
-            if ($username === '' || strlen($password) < 1 || !in_array($newRole, ['super_admin', 'admin', 'support'], true)) {
+            if ($username === '' || $fullname === '' || strlen($password) < 1 || !in_array($newRole, ['super_admin', 'admin', 'support'], true)) {
                 http_response_code(400);
                 echo json_encode(['error' => 'بيانات غير صحيحة']);
                 exit;
@@ -390,11 +399,31 @@ try {
 
             $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
             $stmt = $pdo->prepare("
-                INSERT INTO dashboard_users (username, password_hash, role, created_by)
-                VALUES (:u, :h, :r, :cb)
+                INSERT INTO dashboard_users (username, fullname, password_hash, role, created_by)
+                VALUES (:u, :f, :h, :r, :cb)
             ");
-            $stmt->execute([':u' => $username, ':h' => $hash, ':r' => $newRole, ':cb' => $adminId]);
+            $stmt->execute([':u' => $username, ':f' => $fullname, ':h' => $hash, ':r' => $newRole, ':cb' => $adminId]);
             echo json_encode(['ok' => true, 'id' => (int) $pdo->lastInsertId()]);
+
+        } elseif ($action === 'update_user_fullname') {
+            $targetId = (int) ($body['id'] ?? 0);
+            $fullname = trim((string) ($body['fullname'] ?? ''));
+            if ($targetId <= 0 || $fullname === '') {
+                http_response_code(400);
+                echo json_encode(['error' => 'بيانات غير صحيحة']);
+                exit;
+            }
+            $stmt = $pdo->prepare("UPDATE dashboard_users SET fullname = :fullname WHERE id = :id");
+            $stmt->execute([':fullname' => $fullname, ':id' => $targetId]);
+            if ($stmt->rowCount() === 0) {
+                http_response_code(404);
+                echo json_encode(['error' => 'المستخدم غير موجود']);
+                exit;
+            }
+            if ($targetId === $adminId) {
+                $_SESSION['admin_fullname'] = $fullname;
+            }
+            echo json_encode(['ok' => true]);
 
         } elseif ($action === 'toggle_user') {
             $targetId = (int) ($body['id'] ?? 0);
@@ -582,6 +611,7 @@ try {
         $rows = $pdo->query("
             SELECT  u.id,
                     u.username,
+                    u.fullname,
                     u.role,
                     u.is_active,
                     u.created_at,
