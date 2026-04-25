@@ -942,7 +942,7 @@ function loadStoredOrders() {
   }
 }
 
-const ORDERS_DATA = [...loadStoredOrders(), ...DEMO_ORDERS];
+let ORDERS_DATA = [];
 
 /* ─── State ─── */
 let currentFilter = 'all';
@@ -1045,6 +1045,131 @@ function formatTimelineDateTime(rawTime) {
   return { date: datePart || '—', time: `${hm} ${meridiem}` };
 }
 
+function normalizeStatus(status) {
+  const key = String(status || '').trim().toLowerCase();
+  return STATUS_CFG[key] ? key : 'pending';
+}
+
+function buildTimelineForStatus(status, createdAt, updatedAt) {
+  const created = formatDate(createdAt || new Date().toISOString());
+  const updated = formatDate(updatedAt || createdAt || new Date().toISOString());
+  const done = (title, icon, time) => ({ icon, title, time, done: true });
+  const todo = (title, icon) => ({ icon, title, time: '—', done: false });
+
+  if (status === 'cancelled') {
+    return [
+      done('تم استلام الطلب', 'shopping_cart', created),
+      { icon: 'cancel', title: 'تم الإلغاء', time: updated, done: true, cancelled: true },
+    ];
+  }
+  if (status === 'delivered') {
+    return [
+      done('تم استلام الطلب', 'shopping_cart', created),
+      done('تم تأكيد الطلب', 'check_circle', created),
+      done('جاري التجهيز', 'inventory_2', created),
+      done('خرج للتوصيل', 'local_shipping', updated),
+      done('تم التوصيل', 'where_to_vote', updated),
+    ];
+  }
+  if (status === 'shipping') {
+    return [
+      done('تم استلام الطلب', 'shopping_cart', created),
+      done('تم تأكيد الطلب', 'check_circle', created),
+      done('جاري التجهيز', 'inventory_2', created),
+      { icon: 'local_shipping', title: 'خرج للتوصيل', time: updated, done: false, active: true },
+      todo('تم التوصيل', 'where_to_vote'),
+    ];
+  }
+  if (status === 'preparing') {
+    return [
+      done('تم استلام الطلب', 'shopping_cart', created),
+      done('تم تأكيد الطلب', 'check_circle', created),
+      { icon: 'inventory_2', title: 'جاري التجهيز', time: updated, done: false, active: true },
+      todo('خرج للتوصيل', 'local_shipping'),
+      todo('تم التوصيل', 'where_to_vote'),
+    ];
+  }
+  if (status === 'confirmed') {
+    return [
+      done('تم استلام الطلب', 'shopping_cart', created),
+      { icon: 'check_circle', title: 'تم تأكيد الطلب', time: updated, done: false, active: true },
+      todo('جاري التجهيز', 'inventory_2'),
+      todo('خرج للتوصيل', 'local_shipping'),
+      todo('تم التوصيل', 'where_to_vote'),
+    ];
+  }
+  return [
+    { icon: 'shopping_cart', title: 'تم استلام الطلب', time: created, done: true, active: true },
+    todo('تم التأكيد', 'check_circle'),
+    todo('جاري التجهيز', 'inventory_2'),
+    todo('خرج للتوصيل', 'local_shipping'),
+    todo('تم التوصيل', 'where_to_vote'),
+  ];
+}
+
+function mapServerOrderToUi(order) {
+  const status = normalizeStatus(order?.status);
+  const products = Array.isArray(order?.products) ? order.products : [];
+  const mappedProducts = products
+    .filter((p) => p && p.name)
+    .map((p) => ({
+      name: p.name,
+      qty: Number(p.qty) || 1,
+      price: Number(p.price) || 0,
+      weight: p.weight || '',
+      img: p.img || p.image || p.image_url || '',
+      image: p.image || p.img || p.image_url || '',
+      image_url: p.image_url || p.img || p.image || '',
+      category: p.category || '',
+    }));
+
+  const createdAt = order?.created_at || order?.date || '';
+  const updatedAt = order?.updated_at || createdAt;
+  const address = String(order?.address || '').trim() || '—';
+  const id = String(order?.id || '').trim();
+  if (!id || mappedProducts.length === 0) return null;
+
+  return {
+    id,
+    date: String(order?.date || '').trim() || String(createdAt).slice(0, 10),
+    status,
+    statusLabel: STATUS_CFG[status]?.label || STATUS_CFG.pending.label,
+    address,
+    products: mappedProducts,
+    subtotal: Number(order?.subtotal) || 0,
+    shipping: Number(order?.shipping) || 0,
+    discount: Number(order?.discount) || 0,
+    total: Number(order?.total) || 0,
+    timeline: buildTimelineForStatus(status, createdAt, updatedAt),
+    customer_phone: order?.customer_phone || '',
+  };
+}
+
+async function loadOrdersData() {
+  const localOrders = loadStoredOrders();
+
+  if (!isLoggedIn) {
+    ORDERS_DATA = [...localOrders, ...DEMO_ORDERS];
+    return;
+  }
+
+  try {
+    const res = await fetch('apis/orders/list.php', { credentials: 'same-origin' });
+    if (res.status === 401) {
+      isLoggedIn = false;
+      ORDERS_DATA = [...localOrders, ...DEMO_ORDERS];
+      return;
+    }
+    if (!res.ok) throw new Error('orders_fetch_failed');
+    const payload = await res.json();
+    const serverOrders = Array.isArray(payload?.orders) ? payload.orders : [];
+    const mapped = serverOrders.map(mapServerOrderToUi).filter(Boolean);
+    ORDERS_DATA = mapped.length ? mapped : [...localOrders, ...DEMO_ORDERS];
+  } catch (e) {
+    ORDERS_DATA = [...localOrders, ...DEMO_ORDERS];
+  }
+}
+
 async function hydrateProductMediaFromCatalog() {
   try {
     const res = await fetch('apis/products/list.php');
@@ -1085,7 +1210,7 @@ async function hydrateProductMediaFromCatalog() {
 window.addEventListener('DOMContentLoaded', () => {
   // Keep auth state synced with the latest stored session.
   isLoggedIn = hasActiveSession();
-  hydrateProductMediaFromCatalog().then(() => renderOrders());
+  loadOrdersData().then(() => hydrateProductMediaFromCatalog()).then(() => renderOrders());
   // Simulate async load
   setTimeout(() => {
     const skeleton = document.getElementById('orders-skeleton');
@@ -1438,6 +1563,7 @@ document.querySelector('#order-modal button[onclick="closeOrderModal()"]') && nu
 /* ─── Helpers ─── */
 function formatDate(iso) {
   const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
   return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
