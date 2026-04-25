@@ -408,6 +408,32 @@ const ADMIN = {
   </div>
 </div>
 
+<!-- Modal: edit user fullname -->
+<div class="modal-backdrop" id="editUserModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title"><span class="ms">edit</span> تعديل بيانات المستخدم</div>
+      <button class="modal-close" onclick="closeEditUserModal()"><span class="ms">close</span></button>
+    </div>
+    <div class="form-error" id="editUserErr"></div>
+    <form id="editUserForm" onsubmit="submitEditUserFullname(event)">
+      <input type="hidden" name="id" id="edit-user-id">
+      <div class="form-field">
+        <label class="form-label">اسم المستخدم</label>
+        <input class="form-input" type="text" id="edit-user-username" readonly>
+      </div>
+      <div class="form-field">
+        <label class="form-label">الاسم الكامل</label>
+        <input class="form-input" type="text" name="fullname" id="edit-user-fullname" required autocomplete="off">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="cancel-btn" onclick="closeEditUserModal()">إلغاء</button>
+        <button type="submit" class="submit-btn" id="editUserSubmitBtn">حفظ التعديل</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Modal: product add/edit -->
 <div class="modal-backdrop" id="productModal">
   <div class="modal" style="max-width:560px">
@@ -1647,21 +1673,71 @@ async function deleteUser(id, username) {
   else alert(d.error || 'حدث خطأ');
 }
 async function editUserFullname(id, currentName, username) {
-  const next = prompt(`الاسم الكامل للمستخدم "${username}"`, currentName || '');
-  if (next === null) return;
-  const fullname = String(next).trim();
-  if (!fullname) return alert('الاسم الكامل مطلوب');
+  const modal = $id('editUserModal');
+  const err = $id('editUserErr');
+  const idInput = $id('edit-user-id');
+  const usernameInput = $id('edit-user-username');
+  const fullnameInput = $id('edit-user-fullname');
+  if (!modal || !idInput || !usernameInput || !fullnameInput) return;
+  if (err) err.classList.remove('show');
+  idInput.value = String(id);
+  usernameInput.value = username || '';
+  fullnameInput.value = currentName || '';
+  modal.classList.add('open');
+  setTimeout(() => fullnameInput.focus(), 0);
+}
+function closeEditUserModal() {
+  const modal = $id('editUserModal');
+  const err = $id('editUserErr');
+  const btn = $id('editUserSubmitBtn');
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'حفظ التعديل';
+  }
+  if (err) err.classList.remove('show');
+  if (modal) modal.classList.remove('open');
+}
+async function submitEditUserFullname(e) {
+  e.preventDefault();
+  const form = e.target;
+  const err = $id('editUserErr');
+  const btn = $id('editUserSubmitBtn');
+  const id = Number($id('edit-user-id')?.value || 0);
+  const fullname = String($id('edit-user-fullname')?.value || '').trim();
+  if (err) err.classList.remove('show');
+  if (!id || !fullname) {
+    if (err) {
+      err.textContent = 'الاسم الكامل مطلوب';
+      err.classList.add('show');
+    }
+    return;
+  }
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'جارٍ الحفظ...';
+  }
   const res = await fetch('data.php', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({action:'update_user_fullname', id, fullname})
   });
   const d = await res.json();
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'حفظ التعديل';
+  }
   if (d.ok) {
     if (id === ADMIN.id) ADMIN.fullname = fullname;
+    const sidebarName = document.querySelector('.sidebar-username');
+    if (id === ADMIN.id && sidebarName) sidebarName.textContent = fullname;
+    form.reset();
+    closeEditUserModal();
     loadUsers();
   } else {
-    alert(d.error || 'حدث خطأ');
+    if (err) {
+      err.textContent = d.error || 'حدث خطأ';
+      err.classList.add('show');
+    }
   }
 }
 
@@ -1679,6 +1755,7 @@ function closeModal() {
   if (modal) modal.classList.remove('open'); 
 }
 $id('userModal').addEventListener('click', e => { if (e.target === $id('userModal')) closeModal(); });
+$id('editUserModal')?.addEventListener('click', e => { if (e.target === $id('editUserModal')) closeEditUserModal(); });
 
 async function submitCreateUser(e) {
   e.preventDefault();
