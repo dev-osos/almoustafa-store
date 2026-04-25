@@ -231,6 +231,72 @@
     background: #735c00;
     display: inline-block;
   }
+
+  /* Mobile menu */
+  #mobile-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(28,28,23,0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 80;
+  }
+  #mobile-menu-backdrop.open { opacity: 1; pointer-events: auto; }
+
+  #mobile-menu-panel {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 260px;
+    max-width: 85vw;
+    height: 100vh;
+    background: #fdf9f0;
+    border-right: 1px solid rgba(60,0,4,0.08);
+    box-shadow: 10px 0 40px rgba(0,0,0,0.2);
+    z-index: 90;
+    padding: 80px 18px 24px;
+    transition: left 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  #mobile-menu-panel.open { left: 0; }
+
+  .mobile-menu-close-btn {
+    position: absolute;
+    top: 18px;
+    left: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(60,0,4,0.15);
+    background: rgba(60,0,4,0.06);
+    color: #3c0004;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .mobile-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    color: #3c0004;
+    text-decoration: none;
+    font-family: 'Amiri', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .mobile-menu-link:hover { background: rgba(60,0,4,0.05); }
+  .mobile-menu-link.active {
+    background: rgba(60,0,4,0.08);
+    border-color: rgba(60,0,4,0.16);
+  }
 </style>
 </head>
 <body class="bg-background text-on-background font-body selection:bg-secondary-container selection:text-on-secondary-container overflow-x-hidden">
@@ -291,6 +357,23 @@
       <button id="btn-mobile-menu" class="md:hidden text-primary"><span class="material-symbols-outlined">menu</span></button>
     </div>
   </nav>
+  <div id="mobile-menu-backdrop" class="md:hidden"></div>
+  <aside id="mobile-menu-panel" class="md:hidden" aria-hidden="true">
+    <button id="btn-mobile-menu-close" class="mobile-menu-close-btn" type="button" aria-label="إغلاق القائمة">
+      <span class="material-symbols-outlined" style="font-size:20px;">close</span>
+    </button>
+    <a href="index.html" class="mobile-menu-link"><i class="bi bi-house-door text-sm"></i><span>تراثنا</span></a>
+    <a href="collections.html" class="mobile-menu-link active"><i class="bi bi-shop text-sm"></i><span>منتجاتنا</span></a>
+    <a href="reviews.html" class="mobile-menu-link"><i class="bi bi-star text-sm"></i><span>آراء العملاء</span></a>
+    <a href="about.html" class="mobile-menu-link"><i class="bi bi-people text-sm"></i><span>من نحن</span></a>
+    <a href="orders.html" class="mobile-menu-link"><i class="bi bi-bag-check text-sm"></i><span>طلباتي</span></a>
+    <div class="mt-auto pt-4 border-t border-primary/10">
+      <a href="products.html" class="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-primary text-white font-headline font-bold text-base">
+        <span class="material-symbols-outlined" style="font-size:18px;">shopping_bag</span>
+        تسوق الآن
+      </a>
+    </div>
+  </aside>
 
   <!-- Page header -->
   <div class="pt-28 md:pt-32 pb-6 md:pb-10 px-5 md:px-12 container mx-auto animate-fade-in">
@@ -916,6 +999,42 @@
 <script src="js/nav-shared.js"></script>
 <script src="js/auth-modal.js"></script>
 <script src="js/profile-dropdown.js"></script>
+<script>
+  (function () {
+    var btn = document.getElementById('btn-mobile-menu');
+    var panel = document.getElementById('mobile-menu-panel');
+    var backdrop = document.getElementById('mobile-menu-backdrop');
+    var closeBtn = document.getElementById('btn-mobile-menu-close');
+    if (!btn || !panel || !backdrop) return;
+
+    function setMenu(open) {
+      panel.classList.toggle('open', open);
+      backdrop.classList.toggle('open', open);
+      panel.setAttribute('aria-hidden', String(!open));
+      var icon = btn.querySelector('.material-symbols-outlined');
+      if (icon) icon.textContent = open ? 'close' : 'menu';
+      document.body.style.overflow = open ? 'hidden' : '';
+    }
+
+    btn.addEventListener('click', function () {
+      setMenu(!panel.classList.contains('open'));
+    });
+    backdrop.addEventListener('click', function () {
+      setMenu(false);
+    });
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function () {
+        setMenu(false);
+      });
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') setMenu(false);
+    });
+    panel.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () { setMenu(false); });
+    });
+  }());
+</script>
 <script>
   (function () {
     function revealPage() {
