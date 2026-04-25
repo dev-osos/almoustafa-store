@@ -1633,8 +1633,8 @@ async function loadUsers() {
       <td><div class="date-text">${fmtDate(u.created_at)}</div></td>
       <td style="font-size:.78rem;color:var(--on-surface-dim)">${u.created_by_name ? escHtml(u.created_by_name) : '—'}</td>
       <td>
-        <button class="action-btn" onclick="editUserFullname(${u.id}, ${JSON.stringify(u.fullname || '')}, ${JSON.stringify(u.username)})">
-          <span class="ms">edit</span>تعديل الاسم
+        <button class="action-btn" onclick='editUserFullname(${u.id}, ${JSON.stringify(u.fullname || '')}, ${JSON.stringify(u.username)})'>
+          <span class="ms">edit</span> 
         </button>
         ${!isSelf ? `
           <button class="action-btn ${toggleCls}" onclick="toggleUser(${u.id}, ${JSON.stringify(u.username)})" style="margin-right:.4rem;">
