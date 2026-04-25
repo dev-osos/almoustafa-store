@@ -941,9 +941,32 @@ const ADMIN = {
         <div class="table-card">
           <div class="table-header">
             <div class="table-title"><span class="ms">card_giftcard</span> سجل الأكواد</div>
-            <button class="primary-btn" onclick="loadInvitations()">
-              <span class="ms">refresh</span> تحديث
-            </button>
+            <div style="display:flex;gap:.55rem;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+              <button class="primary-btn" onclick="resetInvitationsFilters()">
+                <span class="ms">filter_alt_off</span> مسح الفلاتر
+              </button>
+              <button class="primary-btn" onclick="loadInvitations()">
+                <span class="ms">refresh</span> تحديث
+              </button>
+            </div>
+          </div>
+          <div style="padding:.8rem 1rem;border-bottom:1px solid var(--border);display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.6rem;">
+            <div class="search-wrap" style="max-width:100%;">
+              <span class="ms">key</span>
+              <input class="search-input" id="invSearchCode" placeholder="بحث بالكود" type="search">
+            </div>
+            <div class="search-wrap" style="max-width:100%;">
+              <span class="ms">person</span>
+              <input class="search-input" id="invSearchOwner" placeholder="بحث بصاحب الكود" type="search">
+            </div>
+            <div class="search-wrap" style="max-width:100%;">
+              <span class="ms">call</span>
+              <input class="search-input" id="invSearchPhone" placeholder="بحث برقم الهاتف" type="search" style="direction:ltr;text-align:left">
+            </div>
+            <input class="form-input" id="invUsageMin" type="number" min="0" placeholder="أقل استخدام">
+            <input class="form-input" id="invUsageMax" type="number" min="0" placeholder="أعلى استخدام">
+            <input class="form-input" id="invDateFrom" type="date" placeholder="من تاريخ">
+            <input class="form-input" id="invDateTo" type="date" placeholder="إلى تاريخ">
           </div>
           <div class="table-wrap">
             <table>
@@ -1844,6 +1867,42 @@ async function loadInvitations() {
   }
 }
 
+function getFilteredInvitations() {
+  const codeQ  = ($id('invSearchCode')?.value || '').trim().toLowerCase();
+  const ownerQ = ($id('invSearchOwner')?.value || '').trim().toLowerCase();
+  const phoneQ = ($id('invSearchPhone')?.value || '').trim().toLowerCase();
+  const usageMinRaw = ($id('invUsageMin')?.value || '').trim();
+  const usageMaxRaw = ($id('invUsageMax')?.value || '').trim();
+  const dateFromRaw = ($id('invDateFrom')?.value || '').trim();
+  const dateToRaw = ($id('invDateTo')?.value || '').trim();
+
+  const usageMin = usageMinRaw !== '' ? Number(usageMinRaw) : null;
+  const usageMax = usageMaxRaw !== '' ? Number(usageMaxRaw) : null;
+  const dateFrom = dateFromRaw ? new Date(`${dateFromRaw}T00:00:00`) : null;
+  const dateTo = dateToRaw ? new Date(`${dateToRaw}T23:59:59`) : null;
+
+  return invitationsData.filter((inv) => {
+    const code = String(inv.code || '').toLowerCase();
+    const ownerName = String(inv.owner_name || '').toLowerCase();
+    const ownerPhone = String(inv.owner_phone || '').toLowerCase();
+    const usageCount = Number(inv.usage_count || 0);
+    const createdAt = inv.created_at ? new Date(String(inv.created_at).replace(' ', 'T')) : null;
+
+    if (codeQ && !code.includes(codeQ)) return false;
+    if (ownerQ && !ownerName.includes(ownerQ)) return false;
+    if (phoneQ && !ownerPhone.includes(phoneQ)) return false;
+    if (usageMin !== null && Number.isFinite(usageMin) && usageCount < usageMin) return false;
+    if (usageMax !== null && Number.isFinite(usageMax) && usageCount > usageMax) return false;
+    if (dateFrom && !Number.isNaN(dateFrom.getTime())) {
+      if (!createdAt || Number.isNaN(createdAt.getTime()) || createdAt < dateFrom) return false;
+    }
+    if (dateTo && !Number.isNaN(dateTo.getTime())) {
+      if (!createdAt || Number.isNaN(createdAt.getTime()) || createdAt > dateTo) return false;
+    }
+    return true;
+  });
+}
+
 function renderInvitationsTable() {
   const tbody = $id('invBody');
   if (!tbody) return;
@@ -1852,9 +1911,14 @@ function renderInvitationsTable() {
     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--on-surface-dim);">لا توجد أكواد دعوة بعد</td></tr>';
     return;
   }
+  const rows = getFilteredInvitations();
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--on-surface-dim);">لا توجد نتائج مطابقة للفلاتر الحالية</td></tr>';
+    return;
+  }
   
   tbody.innerHTML = '';
-  invitationsData.forEach((inv, idx) => {
+  rows.forEach((inv, idx) => {
     const tr = document.createElement('tr');
     const statusBadge = inv.is_active 
       ? '<span style="color:var(--green);font-weight:700;">نشط</span>'
@@ -1877,6 +1941,15 @@ function renderInvitationsTable() {
     `;
     tbody.appendChild(tr);
   });
+}
+
+function resetInvitationsFilters() {
+  ['invSearchCode','invSearchOwner','invSearchPhone','invUsageMin','invUsageMax','invDateFrom','invDateTo']
+    .forEach((id) => {
+      const el = $id(id);
+      if (el) el.value = '';
+    });
+  renderInvitationsTable();
 }
 
 function showInvitationUsers(code) {
@@ -1932,6 +2005,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const monthFilter = $id('modalInvMonthFilter');
   const quickCurrentBtn = $id('modalInvQuickCurrent');
   const quickPrevBtn = $id('modalInvQuickPrev');
+  ['invSearchCode','invSearchOwner','invSearchPhone','invUsageMin','invUsageMax','invDateFrom','invDateTo']
+    .forEach((id) => {
+      const el = $id(id);
+      if (!el) return;
+      const evt = (el.type === 'date' || el.type === 'number') ? 'change' : 'input';
+      el.addEventListener(evt, () => renderInvitationsTable());
+    });
   if (!monthFilter) return;
   monthFilter.addEventListener('change', function () {
     applyInvitationUsersMonthFilter(monthFilter.value || 'all');
