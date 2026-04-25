@@ -223,6 +223,27 @@ tr:hover td { background:var(--surface-dim); }
 .action-btn.toggle-off:hover { background:var(--green-bg); }
 .action-btn.del { border-color:#f5b8b8; color:var(--red-text); margin-right:.4rem; }
 .action-btn.del:hover { background:var(--red-bg); }
+.cust-actions { position:relative; display:inline-block; }
+.cust-actions-btn {
+  display:inline-flex; align-items:center; gap:.25rem; padding:.35rem .7rem;
+  border:1.5px solid var(--border); border-radius:8px; background:var(--surface);
+  color:var(--on-surface); cursor:pointer; font-family:inherit; font-size:.78rem; font-weight:700;
+}
+.cust-actions-btn:hover { border-color:var(--primary); color:var(--primary); }
+.cust-actions-menu {
+  position:absolute; top:calc(100% + 6px); right:0; z-index:45; min-width:230px;
+  background:var(--surface); border:1.5px solid var(--border); border-radius:10px;
+  box-shadow:0 10px 28px rgba(0,0,0,.12); padding:.4rem; display:none;
+}
+.cust-actions.open .cust-actions-menu { display:block; }
+.cust-action-item {
+  width:100%; border:none; background:none; cursor:pointer; text-align:right; direction:rtl;
+  display:flex; align-items:center; gap:.45rem; border-radius:8px; padding:.5rem .55rem;
+  font-family:inherit; font-size:.79rem; color:var(--on-surface);
+}
+.cust-action-item:hover { background:var(--surface-dim); }
+.cust-action-item.warn { color:var(--red-text); }
+.cust-action-item .ms { font-size:1rem; }
 
 /* ── Modal ───────────────────────────────────────────── */
 .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:200; display:flex; align-items:center; justify-content:center; padding:1rem; opacity:0; pointer-events:none; transition:opacity .2s; }
@@ -892,10 +913,11 @@ const ADMIN = {
                   <th>الملف</th>
                   <th>رصيد المحفظة</th>
                   <th>تاريخ التسجيل</th>
+                  <th>إجراءات</th>
                 </tr>
               </thead>
               <tbody id="custBody">
-                <tr><td colspan="8" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
+                <tr><td colspan="9" style="text-align:center;padding:2rem"><div class="skeleton" style="height:14px;width:60%;margin:auto"></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -1483,6 +1505,46 @@ async function submitCreateUser(e) {
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+function normalizePhone(phone='') {
+  const cleaned = String(phone).replace(/[^\d+]/g, '');
+  if (cleaned.startsWith('+')) return cleaned;
+  if (cleaned.startsWith('00')) return `+${cleaned.slice(2)}`;
+  if (cleaned.startsWith('0')) return `+2${cleaned.slice(1)}`;
+  return cleaned;
+}
+function closeCustomerActionMenus() {
+  document.querySelectorAll('.cust-actions.open').forEach(el => el.classList.remove('open'));
+}
+function toggleCustomerActionsMenu(btn) {
+  const wrap = btn.closest('.cust-actions');
+  if (!wrap) return;
+  const isOpen = wrap.classList.contains('open');
+  closeCustomerActionMenus();
+  if (!isOpen) wrap.classList.add('open');
+}
+function openCustomerWhatsApp(btn) {
+  const normalized = normalizePhone(btn?.dataset?.phone || '');
+  const name = btn?.dataset?.name || '';
+  if (!normalized) return notify('رقم الهاتف غير متوفر.', 'err');
+  const msg = encodeURIComponent(`مرحباً ${name || 'عميلنا العزيز'}، معك فريق الدعم.`);
+  window.open(`https://wa.me/${normalized.replace('+','')}?text=${msg}`, '_blank');
+}
+function callCustomer(btn) {
+  const normalized = normalizePhone(btn?.dataset?.phone || '');
+  if (!normalized) return notify('رقم الهاتف غير متوفر.', 'err');
+  window.location.href = `tel:${normalized}`;
+}
+function viewCustomerOrders(btn) {
+  const customerId = btn?.dataset?.customerId || '';
+  if (!customerId) return notify('لا يمكن فتح سجل الطلبات لهذا العميل.', 'err');
+  window.open(`orders.php?customer_id=${encodeURIComponent(customerId)}`, '_blank');
+}
+function customerActionNotReady(label) {
+  notify(`ميزة "${label}" جاهزة للربط البرمجي.`, 'ok');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.cust-actions')) closeCustomerActionMenus();
+});
 
 // ── Search debounce ───────────────────────────────────────────────────────────
 let searchTimer;
@@ -1560,7 +1622,7 @@ async function loadCustomers(page = 1) {
   const offset = (page - 1) * 25;
 
   if (!data.customers.length) {
-    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><span class="ms">person_search</span>لا توجد نتائج</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><span class="ms">person_search</span>لا توجد نتائج</div></td></tr>';
   } else {
     data.customers.forEach((c, i) => {
       const seg     = SEGMENT_MAP[c.segment] ?? { label: c.segment, style: '' };
@@ -1589,7 +1651,34 @@ async function loadCustomers(page = 1) {
             ${balFmt} ج.م
           </span>
         </td>
-        <td><div class="date-text">${fmtDate(c.created_at)}</div></td>`;
+        <td><div class="date-text">${fmtDate(c.created_at)}</div></td>
+        <td>
+          <div class="cust-actions">
+            <button class="cust-actions-btn" type="button" onclick="toggleCustomerActionsMenu(this)">
+              <span class="ms">more_vert</span> إجراءات
+            </button>
+            <div class="cust-actions-menu">
+              <button class="cust-action-item" type="button" data-phone="${escHtml(c.phone || '')}" data-name="${escHtml(c.name || '')}" onclick="openCustomerWhatsApp(this)">
+                <span class="ms">chat</span> التواصل عبر واتساب
+              </button>
+              <button class="cust-action-item" type="button" data-phone="${escHtml(c.phone || '')}" onclick="callCustomer(this)">
+                <span class="ms">call</span> الاتصال بالعميل
+              </button>
+              <button class="cust-action-item" type="button" onclick="customerActionNotReady('التحكم برصيد المحفظة')">
+                <span class="ms">account_balance_wallet</span> التحكم برصيد المحفظه
+              </button>
+              <button class="cust-action-item" type="button" onclick="customerActionNotReady('تعديل بيانات المستخدم')">
+                <span class="ms">edit</span> تعديل بيانات المستخدم
+              </button>
+              <button class="cust-action-item warn" type="button" onclick="customerActionNotReady('حظر المستخدم')">
+                <span class="ms">block</span> حظر المستخدم
+              </button>
+              <button class="cust-action-item" type="button" data-customer-id="${escHtml(c.id || c.customer_id || '')}" onclick="viewCustomerOrders(this)">
+                <span class="ms">receipt_long</span> عرض سجل اوردرات المستخدم واحصائيات مشترياته
+              </button>
+            </div>
+          </div>
+        </td>`;
       tbody.appendChild(tr);
     });
   }
