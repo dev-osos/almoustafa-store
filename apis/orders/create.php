@@ -51,16 +51,24 @@ foreach ($items as $item) {
     $name = trim((string) ($item['name'] ?? ''));
     $qty = (int) ($item['qty'] ?? 0);
     $price = (float) ($item['price'] ?? 0);
+    $productIdRaw = $item['id'] ?? $item['product_id'] ?? $item['productId'] ?? null;
+    $erpIdRaw = $item['erp_id'] ?? $item['erpId'] ?? null;
+    $apiName = trim((string) ($item['api_name'] ?? $item['apiName'] ?? ''));
     $weight = trim((string) ($item['weight'] ?? ''));
     $img = trim((string) ($item['img'] ?? $item['image_url'] ?? ''));
     $category = trim((string) ($item['category'] ?? ''));
     if ($name === '' || $qty <= 0 || $price < 0) {
         continue;
     }
+    $productId = is_numeric($productIdRaw) ? (int) $productIdRaw : 0;
+    $erpId = is_numeric($erpIdRaw) ? (int) $erpIdRaw : 0;
     $normalizedItems[] = [
         'name' => $name,
         'qty' => $qty,
         'price' => $price,
+        'id' => $productId > 0 ? $productId : null,
+        'erp_id' => $erpId > 0 ? $erpId : null,
+        'api_name' => $apiName !== '' ? $apiName : $name,
         'weight' => $weight,
         'img' => $img,
         'category' => $category,

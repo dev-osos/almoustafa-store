@@ -587,6 +587,24 @@ const ADMIN = {
       <div class="modal-title"><span class="ms">group</span> مستخدمو الكود: <span id="modalInvCode"></span></div>
       <button class="modal-close" onclick="closeInvitationModal()"><span class="ms">close</span></button>
     </div>
+    <div style="padding:0 1rem .75rem;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:space-between;">
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <span style="background:var(--surface-dim);color:var(--on-surface);padding:.35rem .65rem;border-radius:999px;font-size:.75rem;">
+          إجمالي المستخدمين: <strong id="modalInvTotalUsers">0</strong>
+        </span>
+        <span style="background:var(--green-bg);color:var(--green);padding:.35rem .65rem;border-radius:999px;font-size:.75rem;">
+          مستخدمو الشهر: <strong id="modalInvMonthUsers">0</strong>
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;justify-content:flex-end;">
+        <span style="font-size:.78rem;color:var(--on-surface-dim);">فلترة بالشهر</span>
+        <button type="button" id="modalInvQuickCurrent" class="cancel-btn" style="padding:.25rem .55rem;font-size:.72rem;">هذا الشهر</button>
+        <button type="button" id="modalInvQuickPrev" class="cancel-btn" style="padding:.25rem .55rem;font-size:.72rem;">الشهر السابق</button>
+        <select id="modalInvMonthFilter" class="chart-select" style="min-width:160px;">
+          <option value="all">كل الشهور</option>
+        </select>
+      </div>
+    </div>
     <div class="table-wrap" style="max-height:400px;overflow-y:auto;">
       <table>
         <thead>
@@ -1721,6 +1739,77 @@ async function reviewDelete(id, btn) {
 
 // ── Invitations ───────────────────────────────────────────────────────────────────
 let invitationsData = [];
+let currentInvitationModalData = null;
+
+function invitationMonthKey(dateStr) {
+  const d = new Date(String(dateStr || '').replace(' ', 'T'));
+  if (Number.isNaN(d.getTime())) return '';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
+
+function invitationMonthLabel(key) {
+  if (!/^\d{4}-\d{2}$/.test(String(key || ''))) return 'كل الشهور';
+  const d = new Date(`${key}-01T00:00:00`);
+  return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long' });
+}
+
+function monthKeyFromDate(dateObj) {
+  if (!(dateObj instanceof Date) || Number.isNaN(dateObj.getTime())) return '';
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
+
+function setInvitationMonthFilterValue(monthKey) {
+  const monthFilter = $id('modalInvMonthFilter');
+  if (!monthFilter) return;
+  const exists = [...monthFilter.options].some(opt => opt.value === monthKey);
+  monthFilter.value = exists ? monthKey : 'all';
+  applyInvitationUsersMonthFilter(monthFilter.value || 'all');
+}
+
+function applyInvitationUsersMonthFilter(monthKey) {
+  const tbody = $id('modalInvUsersBody');
+  const totalEl = $id('modalInvTotalUsers');
+  const monthEl = $id('modalInvMonthUsers');
+  if (!tbody || !totalEl || !monthEl) return;
+
+  const invitation = currentInvitationModalData;
+  if (!invitation || !Array.isArray(invitation.customers)) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--on-surface-dim);">لا يوجد مستخدمون لهذا الكود</td></tr>';
+    totalEl.textContent = '0';
+    monthEl.textContent = '0';
+    return;
+  }
+
+  const allCustomers = invitation.customers;
+  const filtered = monthKey === 'all'
+    ? allCustomers
+    : allCustomers.filter(c => invitationMonthKey(c.created_at) === monthKey);
+
+  totalEl.textContent = fmt(allCustomers.length);
+  monthEl.textContent = fmt(filtered.length);
+
+  if (filtered.length === 0) {
+    const monthLabel = monthKey === 'all' ? 'كل الشهور' : invitationMonthLabel(monthKey);
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--on-surface-dim);">لا يوجد مستخدمون في ${monthLabel}</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = '';
+  filtered.forEach((customer, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${idx + 1}</td>
+      <td>${customer.name}</td>
+      <td><code style="background:var(--surface-dim);padding:.2rem .4rem;border-radius:3px;font-family:monospace;font-size:.8rem;">${customer.phone}</code></td>
+      <td>${fmtDate(customer.created_at)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
 
 async function loadInvitations() {
   // Check if invitations section exists in DOM
@@ -1794,36 +1883,73 @@ function showInvitationUsers(code) {
   const modal = $id('invitationUsersModal');
   const codeSpan = $id('modalInvCode');
   const tbody = $id('modalInvUsersBody');
+  const monthFilter = $id('modalInvMonthFilter');
   
-  if (!modal || !codeSpan || !tbody) return;
+  if (!modal || !codeSpan || !tbody || !monthFilter) return;
   
   codeSpan.textContent = code;
   modal.classList.add('open');
   
   // Find invitation data
-  const invitation = invitationsData.find(inv => inv.code === code);
+  const invitation = invitationsData.find(inv => inv.code === code) || null;
+  currentInvitationModalData = invitation;
+
+  monthFilter.innerHTML = '<option value="all">كل الشهور</option>';
   if (!invitation || !invitation.customers || invitation.customers.length === 0) {
     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--on-surface-dim);">لا يوجد مستخدمون لهذا الكود</td></tr>';
+    const totalEl = $id('modalInvTotalUsers');
+    const monthEl = $id('modalInvMonthUsers');
+    if (totalEl) totalEl.textContent = '0';
+    if (monthEl) monthEl.textContent = '0';
     return;
   }
-  
-  tbody.innerHTML = '';
-  invitation.customers.forEach((customer, idx) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${idx + 1}</td>
-      <td>${customer.name}</td>
-      <td><code style="background:var(--surface-dim);padding:.2rem .4rem;border-radius:3px;font-family:monospace;font-size:.8rem;">${customer.phone}</code></td>
-      <td>${fmtDate(customer.created_at)}</td>
-    `;
-    tbody.appendChild(tr);
+
+  const monthKeys = [...new Set(
+    invitation.customers
+      .map(c => invitationMonthKey(c.created_at))
+      .filter(Boolean)
+  )].sort((a, b) => b.localeCompare(a));
+
+  monthKeys.forEach((key) => {
+    const option = document.createElement('option');
+    option.value = key;
+    option.textContent = invitationMonthLabel(key);
+    monthFilter.appendChild(option);
   });
+
+  const currentMonthKey = invitationMonthKey(new Date().toISOString());
+  const initialMonth = monthKeys.includes(currentMonthKey) ? currentMonthKey : 'all';
+  monthFilter.value = initialMonth;
+  applyInvitationUsersMonthFilter(initialMonth);
 }
 
 function closeInvitationModal() {
   const modal = $id('invitationUsersModal');
   if (modal) modal.classList.remove('open');
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const monthFilter = $id('modalInvMonthFilter');
+  const quickCurrentBtn = $id('modalInvQuickCurrent');
+  const quickPrevBtn = $id('modalInvQuickPrev');
+  if (!monthFilter) return;
+  monthFilter.addEventListener('change', function () {
+    applyInvitationUsersMonthFilter(monthFilter.value || 'all');
+  });
+  if (quickCurrentBtn) {
+    quickCurrentBtn.addEventListener('click', function () {
+      setInvitationMonthFilterValue(monthKeyFromDate(new Date()));
+    });
+  }
+  if (quickPrevBtn) {
+    quickPrevBtn.addEventListener('click', function () {
+      const d = new Date();
+      d.setDate(1);
+      d.setMonth(d.getMonth() - 1);
+      setInvitationMonthFilterValue(monthKeyFromDate(d));
+    });
+  }
+});
 
 // ── Products ──────────────────────────────────────────────────────────────────
 const PROD_API    = '../../apis/admin/products.php';

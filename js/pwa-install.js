@@ -366,7 +366,7 @@
           </div>
           <div class="pwa-text">
             <div class="pwa-title">ثبّت تطبيق المصطفى</div>
-            <div class="pwa-sub">وصول فوري · يعمل بدون إنترنت · بدون متجر تطبيقات</div>
+            <div class="pwa-sub">وصول فوري · يضاف الي الواجهة · بدون متجر تطبيقات</div>
           </div>
           <div class="pwa-actions">
             <button class="pwa-btn-install" id="pwa-btn-install">
