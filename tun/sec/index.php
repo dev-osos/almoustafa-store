@@ -262,6 +262,38 @@ tr:hover td { background:var(--surface-dim); }
 .form-input:focus, .form-select:focus { border-color:var(--primary); }
 .form-error { background:var(--red-bg); color:var(--red-text); border-radius:8px; padding:.6rem .9rem; font-size:.825rem; margin-bottom:1rem; display:none; }
 .form-error.show { display:block; }
+.field-wrap { position:relative; }
+.field-icon {
+  position:absolute; left:14px; top:50%; transform:translateY(-50%);
+  color:var(--on-surface-dim); font-size:19px; pointer-events:none;
+}
+.ac-wrap { position:relative; }
+.ac-chevron {
+  position:absolute; right:14px; top:50%; transform:translateY(-50%);
+  color:var(--on-surface-dim); font-size:18px; pointer-events:none;
+  transition:transform .2s;
+}
+.ac-wrap.open .ac-chevron { transform:translateY(-50%) rotate(180deg); }
+.ac-input { cursor:default; padding-left:44px; padding-right:44px; }
+.ac-input.invalid {
+  border-color:#c62828 !important;
+  background:#fff5f5 !important;
+  box-shadow:0 0 0 3px rgba(198,40,40,.08) !important;
+}
+.ac-error { font-size:.72rem; color:#c62828; margin-top:5px; display:none; align-items:center; gap:4px; }
+.ac-error.show { display:flex; }
+.ac-error .ms { font-size:14px; }
+.ac-dropdown {
+  position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:999;
+  background:#fff; border:1.5px solid var(--border); border-radius:14px;
+  box-shadow:0 8px 32px rgba(60,0,4,.12); max-height:220px; overflow-y:auto; display:none;
+}
+.ac-wrap.open .ac-dropdown { display:block; }
+.ac-item { padding:.62rem .85rem; cursor:pointer; font-size:.86rem; border-bottom:1px solid #f3eee8; }
+.ac-item:last-child { border-bottom:none; }
+.ac-item:hover, .ac-item.focused { background:#f8f4ee; }
+.ac-empty { padding:.62rem .85rem; color:var(--on-surface-dim); font-size:.82rem; }
+.ac-item mark { background:#fff3cd; color:#7b5b00; padding:0 .1rem; border-radius:4px; }
 .modal-footer { display:flex; gap:.75rem; justify-content:flex-end; margin-top:1.5rem; flex-shrink:0; }
 .cancel-btn { padding:.7rem 1.25rem; border:1.5px solid var(--border); border-radius:10px; background:none; font-family:inherit; font-size:.875rem; font-weight:600; cursor:pointer; color:var(--on-surface); transition:all .15s; }
 .cancel-btn:hover { border-color:var(--primary); color:var(--primary); }
@@ -874,11 +906,23 @@ const ADMIN = {
       </div>
       <div class="form-field">
         <label class="form-label">المحافظة</label>
-        <input class="form-input" id="ce-governorate" type="text">
+        <div class="ac-wrap" id="ce-gov-wrap">
+          <span class="field-icon ms">location_city</span>
+          <input id="ce-governorate" class="form-input ac-input" type="text" placeholder="اكتب لاختيار المحافظة..." autocomplete="off" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list" aria-controls="ce-gov-list">
+          <span class="ac-chevron ms">expand_more</span>
+          <ul class="ac-dropdown" id="ce-gov-list" role="listbox" aria-label="المحافظات"></ul>
+        </div>
+        <div class="ac-error" id="ce-gov-error"><span class="ms">error</span>يرجى اختيار محافظة من القائمة</div>
       </div>
       <div class="form-field">
         <label class="form-label">المدينة</label>
-        <input class="form-input" id="ce-city" type="text">
+        <div class="ac-wrap" id="ce-city-wrap">
+          <span class="field-icon ms">holiday_village</span>
+          <input id="ce-city" class="form-input ac-input" type="text" placeholder="اختر المحافظة أولاً..." autocomplete="off" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list" aria-controls="ce-city-list" disabled>
+          <span class="ac-chevron ms">expand_more</span>
+          <ul class="ac-dropdown" id="ce-city-list" role="listbox" aria-label="المدن"></ul>
+        </div>
+        <div class="ac-error" id="ce-city-error"><span class="ms">error</span>يرجى اختيار مدينة من القائمة</div>
       </div>
       <div class="form-field">
         <label class="form-label">تفاصيل العنوان</label>
@@ -2085,10 +2129,155 @@ function openCustomerEditModal(btn) {
   $id('ce-governorate').value = btn?.dataset?.governorate || '';
   $id('ce-city').value = btn?.dataset?.city || '';
   $id('ce-address-detail').value = btn?.dataset?.addressDetail || '';
+  prepareCustomerEditAddressFields(btn?.dataset?.governorate || '', btn?.dataset?.city || '');
   $id('customerEditModal')?.classList.add('open');
 }
 function closeCustomerEditModal() {
   $id('customerEditModal')?.classList.remove('open');
+}
+let CE_GOVS = [];
+let CE_CITIES = [];
+let ceGovSelected = null;
+let ceCitySelected = null;
+function ceNorm(s='') {
+  return String(s).replace(/[أإآا]/g, 'ا').replace(/ى/g, 'ي').trim().toLowerCase();
+}
+function ceClearList(el) {
+  while (el?.firstChild) el.removeChild(el.firstChild);
+}
+function ceRenderList(listEl, rows, query, onPick) {
+  ceClearList(listEl);
+  if (!rows.length) {
+    const empty = document.createElement('li');
+    empty.className = 'ac-empty';
+    empty.textContent = 'لا توجد نتائج مطابقة';
+    listEl?.appendChild(empty);
+    return;
+  }
+  rows.forEach((row) => {
+    const li = document.createElement('li');
+    li.className = 'ac-item';
+    const name = String(row.name || '');
+    const q = ceNorm(query);
+    const normName = ceNorm(name);
+    const idx = q ? normName.indexOf(q) : -1;
+    if (idx === -1 || !q) {
+      li.textContent = name;
+    } else {
+      if (idx > 0) li.appendChild(document.createTextNode(name.slice(0, idx)));
+      const mark = document.createElement('mark');
+      mark.textContent = name.slice(idx, idx + String(query).length);
+      li.appendChild(mark);
+      li.appendChild(document.createTextNode(name.slice(idx + String(query).length)));
+    }
+    li.addEventListener('mousedown', (e) => { e.preventDefault(); onPick(row); });
+    listEl?.appendChild(li);
+  });
+}
+async function ceLoadGovs() {
+  if (CE_GOVS.length) return;
+  try {
+    const res = await fetch('../../dat-docs/govs.json');
+    const data = await res.json();
+    CE_GOVS = data?.data?.listZonesDropdown || [];
+  } catch {
+    CE_GOVS = [];
+  }
+}
+async function ceLoadCities(govId) {
+  const cityInput = $id('ce-city');
+  const cityWrap = $id('ce-city-wrap');
+  const cityErr = $id('ce-city-error');
+  CE_CITIES = [];
+  ceCitySelected = null;
+  if (cityInput) {
+    cityInput.value = '';
+    cityInput.disabled = true;
+    cityInput.placeholder = 'جاري التحميل...';
+    cityInput.classList.remove('invalid');
+  }
+  if (cityWrap) cityWrap.classList.remove('open');
+  if (cityErr) cityErr.classList.remove('show');
+  try {
+    const res = await fetch(`../../dat-docs/cities/${govId}.json`);
+    const data = await res.json();
+    CE_CITIES = data?.data?.listZonesDropdown || [];
+    if (cityInput) {
+      cityInput.disabled = false;
+      cityInput.placeholder = 'اكتب لاختيار المدينة...';
+    }
+  } catch {
+    if (cityInput) cityInput.placeholder = 'تعذّر تحميل المدن';
+  }
+}
+async function prepareCustomerEditAddressFields(currentGov='', currentCity='') {
+  const govInput = $id('ce-governorate');
+  const cityInput = $id('ce-city');
+  if (!govInput || !cityInput) return;
+  await ceLoadGovs();
+  ceGovSelected = CE_GOVS.find(g => String(g.name || '').trim() === String(currentGov).trim()) || null;
+  if (ceGovSelected?.id) {
+    await ceLoadCities(ceGovSelected.id);
+    cityInput.value = currentCity || '';
+    ceCitySelected = CE_CITIES.find(c => String(c.name || '').trim() === String(currentCity).trim()) || null;
+  } else {
+    cityInput.value = currentCity || '';
+    cityInput.disabled = !currentCity;
+    cityInput.placeholder = currentCity ? 'اكتب لاختيار المدينة...' : 'اختر المحافظة أولاً...';
+  }
+}
+function initCustomerEditAddressFields() {
+  const govInput = $id('ce-governorate');
+  const cityInput = $id('ce-city');
+  const govWrap = $id('ce-gov-wrap');
+  const cityWrap = $id('ce-city-wrap');
+  const govList = $id('ce-gov-list');
+  const cityList = $id('ce-city-list');
+  const govErr = $id('ce-gov-error');
+  const cityErr = $id('ce-city-error');
+  if (!govInput || !cityInput || !govWrap || !cityWrap || !govList || !cityList) return;
+
+  const openGov = () => {
+    const q = ceNorm(govInput.value);
+    const rows = q ? CE_GOVS.filter(g => ceNorm(g.name).includes(q)) : CE_GOVS.slice();
+    ceRenderList(govList, rows, govInput.value, async (gov) => {
+      ceGovSelected = gov;
+      govInput.value = gov.name;
+      govInput.classList.remove('invalid');
+      govErr?.classList.remove('show');
+      govWrap.classList.remove('open');
+      await ceLoadCities(gov.id);
+      cityInput.focus();
+    });
+    govWrap.classList.add('open');
+    govInput.setAttribute('aria-expanded', 'true');
+  };
+  const closeGov = () => { govWrap.classList.remove('open'); govInput.setAttribute('aria-expanded', 'false'); };
+
+  const openCity = () => {
+    if (!CE_CITIES.length) return;
+    const q = ceNorm(cityInput.value);
+    const rows = q ? CE_CITIES.filter(c => ceNorm(c.name).includes(q)) : CE_CITIES.slice();
+    ceRenderList(cityList, rows, cityInput.value, (city) => {
+      ceCitySelected = city;
+      cityInput.value = city.name;
+      cityInput.classList.remove('invalid');
+      cityErr?.classList.remove('show');
+      cityWrap.classList.remove('open');
+    });
+    cityWrap.classList.add('open');
+    cityInput.setAttribute('aria-expanded', 'true');
+  };
+  const closeCity = () => { cityWrap.classList.remove('open'); cityInput.setAttribute('aria-expanded', 'false'); };
+
+  govInput.addEventListener('focus', openGov);
+  govInput.addEventListener('input', () => { ceGovSelected = null; openGov(); });
+  cityInput.addEventListener('focus', openCity);
+  cityInput.addEventListener('input', () => { ceCitySelected = null; openCity(); });
+  document.addEventListener('click', (e) => {
+    if (!govWrap.contains(e.target)) closeGov();
+    if (!cityWrap.contains(e.target)) closeCity();
+  });
 }
 let customerOrdersCache = [];
 function applyCustomerOrdersRangeFilter() {
@@ -2254,6 +2443,7 @@ $id('customerOrderDetailsModal')?.addEventListener('click', e => { if (e.target 
 $id('coRangeFilter')?.addEventListener('change', applyCustomerOrdersRangeFilter);
 $id('walletControlModal')?.addEventListener('click', e => { if (e.target === $id('walletControlModal')) closeWalletControlModal(); });
 $id('customerEditModal')?.addEventListener('click', e => { if (e.target === $id('customerEditModal')) closeCustomerEditModal(); });
+initCustomerEditAddressFields();
 
 // ── Search debounce ───────────────────────────────────────────────────────────
 let searchTimer;
