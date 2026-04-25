@@ -457,6 +457,93 @@
   .pf-logout:hover { background: rgba(220,50,50,0.15); border-color: rgba(220,50,50,0.32); }
   .pf-logout .material-symbols-outlined { font-size: 18px; }
 
+  /* ── Logout confirm modal ── */
+  #pf-logout-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 260;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  #pf-logout-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  #pf-logout-modal {
+    width: min(420px, 100%);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: #25060a;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+    padding: 22px 18px 18px;
+    transform: translateY(12px) scale(0.98);
+    transition: transform 0.25s ease;
+    text-align: center;
+  }
+  #pf-logout-backdrop.open #pf-logout-modal {
+    transform: translateY(0) scale(1);
+  }
+  .pf-logout-icon {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(220,60,60,0.14);
+    border: 1px solid rgba(220,60,60,0.28);
+    color: rgba(255,130,130,0.95);
+  }
+  .pf-logout-title {
+    font-family: "Amiri", serif;
+    font-size: 1.18rem;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .pf-logout-sub {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .pf-logout-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .pf-logout-confirm-btn,
+  .pf-logout-cancel-btn {
+    min-height: 46px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    font-family: "Manrope", sans-serif;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+  .pf-logout-confirm-btn {
+    background: linear-gradient(135deg, #d94c4c 0%, #a52e2e 100%);
+    color: #fff;
+    border-color: rgba(255,120,120,0.35);
+  }
+  .pf-logout-confirm-btn:hover { transform: translateY(-1px); }
+  .pf-logout-cancel-btn {
+    background: transparent;
+    color: rgba(255,255,255,0.78);
+    border-color: rgba(255,255,255,0.2);
+  }
+  .pf-logout-cancel-btn:hover { border-color: rgba(255,255,255,0.35); color: #fff; }
+
   /* ── Loading overlay ── */
   #pf-loading {
     position: fixed; inset: 0;
@@ -690,6 +777,20 @@
   </button>
 
 </div><!-- /pf-content -->
+
+<div id="pf-logout-backdrop" aria-hidden="true">
+  <div id="pf-logout-modal" role="dialog" aria-modal="true" aria-labelledby="pf-logout-title">
+    <div class="pf-logout-icon">
+      <span class="material-symbols-outlined">logout</span>
+    </div>
+    <div class="pf-logout-title" id="pf-logout-title">هل أنت متأكد من مغادرة متجرنا؟</div>
+    <div class="pf-logout-sub">سيتم تسجيل خروجك من حسابك، ويمكنك العودة في أي وقت.</div>
+    <div class="pf-logout-actions">
+      <button type="button" class="pf-logout-confirm-btn" id="pf-logout-confirm">تأكيد تسجيل الخروج</button>
+      <button type="button" class="pf-logout-cancel-btn" id="pf-logout-cancel">البقاء في المتجر</button>
+    </div>
+  </div>
+</div>
 
 <script src="js/v_id_bootstrap.js" defer></script>
 <script>
@@ -955,7 +1056,7 @@
 
   /* ── Load referral users ── */
   function loadReferralUsers() {
-    fetch('apis/users/referral.php')
+    fetch('apis/users/referral.php', { credentials: 'same-origin' })
       .then(function (r) { return r.json(); })
       .then(function (data) {
         if (data.ok && data.referral_code) {
@@ -964,7 +1065,9 @@
           setSession(Object.assign({}, s, { referral_code: data.referral_code, invitationCode: data.referral_code }));
         }
         var listEl = document.getElementById('pf-referral-users');
-        if (!data.success || !data.referred || data.referred.length === 0) {
+        var referred = Array.isArray(data.referred) ? data.referred : [];
+        var isOk = data && (data.ok === true || data.success === true);
+        if (!isOk || referred.length === 0) {
           listEl.innerHTML =
             '<div class="pf-referral-empty">' +
               '<span class="material-symbols-outlined">person_search</span>' +
@@ -973,13 +1076,17 @@
             '</div>';
           return;
         }
-        listEl.innerHTML = data.referred.map(function (user) {
+        listEl.innerHTML = referred.map(function (user) {
+          var joinedAt = user.joined_at ? new Date(user.joined_at) : null;
+          var joinedText = (joinedAt && !Number.isNaN(joinedAt.getTime()))
+            ? joinedAt.toLocaleDateString('ar-EG')
+            : '—';
           return '<div class="pf-referral-user-item">' +
             '<div class="pf-referral-user-avatar"><span class="material-symbols-outlined">person</span></div>' +
             '<div class="pf-referral-user-info">' +
               '<div class="pf-referral-user-name">' + user.name + '</div>' +
               '<div class="pf-referral-user-phone">' + user.phone + '</div>' +
-              '<div class="pf-referral-user-date">' + new Date(user.joined_at).toLocaleDateString('ar-EG') + '</div>' +
+              '<div class="pf-referral-user-date">' + joinedText + '</div>' +
             '</div></div>';
         }).join('');
       })
@@ -1203,9 +1310,35 @@
   })();
 
   /* ── Logout ── */
-  document.getElementById('pf-logout').addEventListener('click', function () {
+  var logoutBtn = document.getElementById('pf-logout');
+  var logoutBackdrop = document.getElementById('pf-logout-backdrop');
+  var logoutConfirmBtn = document.getElementById('pf-logout-confirm');
+  var logoutCancelBtn = document.getElementById('pf-logout-cancel');
+
+  function closeLogoutModal() {
+    logoutBackdrop.classList.remove('open');
+    logoutBackdrop.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+  function openLogoutModal() {
+    logoutBackdrop.classList.add('open');
+    logoutBackdrop.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+  function performLogout() {
+    closeLogoutModal();
     localStorage.removeItem('alm_session');
     window.location.href = 'index.html';
+  }
+
+  logoutBtn.addEventListener('click', openLogoutModal);
+  logoutConfirmBtn.addEventListener('click', performLogout);
+  logoutCancelBtn.addEventListener('click', closeLogoutModal);
+  logoutBackdrop.addEventListener('click', function (e) {
+    if (e.target === logoutBackdrop) closeLogoutModal();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && logoutBackdrop.classList.contains('open')) closeLogoutModal();
   });
 
   /* ── Verify session ── */
