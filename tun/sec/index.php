@@ -936,6 +936,40 @@ const ADMIN = {
           <h2 style="font-family:'Amiri',serif;font-size:1.4rem;color:var(--primary);margin:0;">آراء العملاء</h2>
           <button onclick="loadReviews()" style="padding:.5rem 1.2rem;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Amiri',serif;font-size:.9rem;">تحديث</button>
         </div>
+        <div style="padding:.9rem 1rem;border:1px solid var(--border);border-radius:12px;background:var(--surface-dim);display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.6rem;margin-bottom:1rem;">
+          <div class="search-wrap" style="max-width:100%;grid-column:span 2;">
+            <span class="ms">search</span>
+            <input class="search-input" id="reviewsSearch" placeholder="بحث بالاسم، المنتج، المحتوى..." type="search">
+          </div>
+          <select class="chart-select" id="reviewsVisibleFilter" style="width:100%;">
+            <option value="all">كل الحالات</option>
+            <option value="visible">ظاهر فقط</option>
+            <option value="hidden">مخفي فقط</option>
+          </select>
+          <select class="chart-select" id="reviewsRatingFilter" style="width:100%;">
+            <option value="all">كل التقييمات</option>
+            <option value="5">5 نجوم</option>
+            <option value="4">4 نجوم</option>
+            <option value="3">3 نجوم</option>
+            <option value="2">2 نجمتان</option>
+            <option value="1">1 نجمة</option>
+          </select>
+          <input class="form-input" id="reviewsDateFrom" type="date" placeholder="من تاريخ">
+          <input class="form-input" id="reviewsDateTo" type="date" placeholder="إلى تاريخ">
+          <select class="chart-select" id="reviewsSort" style="width:100%;">
+            <option value="manual">ترتيب يدوي (افتراضي)</option>
+            <option value="newest">الأحدث أولاً</option>
+            <option value="oldest">الأقدم أولاً</option>
+            <option value="rating_desc">التقييم: الأعلى</option>
+            <option value="rating_asc">التقييم: الأقل</option>
+          </select>
+          <button class="primary-btn" onclick="resetReviewsFilters()">
+            <span class="ms">filter_alt_off</span> مسح الفلاتر
+          </button>
+        </div>
+        <div id="reviewsSortHint" style="display:none;font-size:.78rem;color:var(--on-surface-dim);margin-bottom:.7rem;">
+          تم تعطيل السحب والإفلات لأن ترتيب العرض الحالي ليس يدويًا.
+        </div>
         <div id="reviews-admin-list" style="display:flex;flex-direction:column;gap:1rem;">
           <div style="text-align:center;padding:3rem;color:var(--on-surface-dim);">جارٍ التحميل...</div>
         </div>
@@ -1725,10 +1759,99 @@ $id('custSearch').addEventListener('input', () => {
 // ── Reviews ───────────────────────────────────────────────────────────────────
 let reviewsData = [];
 let reviewsDragSrc = null;
+let reviewSearchTimer;
+let reviewsFiltersInitialized = false;
+
+function parseReviewDate(review) {
+  const d = new Date(String(review?.created_at || '').replace(' ', 'T'));
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function getReviewsFilters() {
+  return {
+    search: ($id('reviewsSearch')?.value || '').trim().toLowerCase(),
+    visible: $id('reviewsVisibleFilter')?.value || 'all',
+    rating: $id('reviewsRatingFilter')?.value || 'all',
+    dateFrom: $id('reviewsDateFrom')?.value || '',
+    dateTo: $id('reviewsDateTo')?.value || '',
+    sort: $id('reviewsSort')?.value || 'manual'
+  };
+}
+
+function getFilteredReviews() {
+  const f = getReviewsFilters();
+  let rows = [...reviewsData];
+
+  if (f.search) {
+    rows = rows.filter((r) => {
+      const searchPool = `${r.name || ''} ${r.product || ''} ${r.content || ''}`.toLowerCase();
+      return searchPool.includes(f.search);
+    });
+  }
+
+  if (f.visible === 'visible') rows = rows.filter(r => Number(r.visible) === 1);
+  if (f.visible === 'hidden')  rows = rows.filter(r => Number(r.visible) !== 1);
+
+  if (f.rating !== 'all') {
+    const selected = Number(f.rating);
+    rows = rows.filter(r => Number(r.rating) === selected);
+  }
+
+  if (f.dateFrom) {
+    const from = new Date(`${f.dateFrom}T00:00:00`);
+    rows = rows.filter((r) => {
+      const d = parseReviewDate(r);
+      return d && d >= from;
+    });
+  }
+
+  if (f.dateTo) {
+    const to = new Date(`${f.dateTo}T23:59:59`);
+    rows = rows.filter((r) => {
+      const d = parseReviewDate(r);
+      return d && d <= to;
+    });
+  }
+
+  if (f.sort === 'newest') {
+    rows.sort((a, b) => (parseReviewDate(b)?.getTime() || 0) - (parseReviewDate(a)?.getTime() || 0));
+  } else if (f.sort === 'oldest') {
+    rows.sort((a, b) => (parseReviewDate(a)?.getTime() || 0) - (parseReviewDate(b)?.getTime() || 0));
+  } else if (f.sort === 'rating_desc') {
+    rows.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
+  } else if (f.sort === 'rating_asc') {
+    rows.sort((a, b) => Number(a.rating || 0) - Number(b.rating || 0));
+  }
+
+  return rows;
+}
+
+function resetReviewsFilters() {
+  if ($id('reviewsSearch')) $id('reviewsSearch').value = '';
+  if ($id('reviewsVisibleFilter')) $id('reviewsVisibleFilter').value = 'all';
+  if ($id('reviewsRatingFilter')) $id('reviewsRatingFilter').value = 'all';
+  if ($id('reviewsDateFrom')) $id('reviewsDateFrom').value = '';
+  if ($id('reviewsDateTo')) $id('reviewsDateTo').value = '';
+  if ($id('reviewsSort')) $id('reviewsSort').value = 'manual';
+  renderReviewsList();
+}
+
+function initReviewsFilters() {
+  if (reviewsFiltersInitialized) return;
+  reviewsFiltersInitialized = true;
+
+  $id('reviewsSearch')?.addEventListener('input', () => {
+    clearTimeout(reviewSearchTimer);
+    reviewSearchTimer = setTimeout(() => renderReviewsList(), 250);
+  });
+  ['reviewsVisibleFilter', 'reviewsRatingFilter', 'reviewsDateFrom', 'reviewsDateTo', 'reviewsSort']
+    .forEach((id) => $id(id)?.addEventListener('change', () => renderReviewsList()));
+}
 
 async function loadReviews() {
   const list = $id('reviews-admin-list');
   if (!list) return;
+  initReviewsFilters();
   list.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--on-surface-dim);">جارٍ التحميل...</div>';
   try {
     const res  = await fetch('data.php?type=reviews');
@@ -1743,20 +1866,25 @@ async function loadReviews() {
 function renderReviewsList() {
   const list = $id('reviews-admin-list');
   if (!list) return;
-  if (reviewsData.length === 0) {
+  const filteredReviews = getFilteredReviews();
+  const sortMode = getReviewsFilters().sort;
+  const canDragReorder = sortMode === 'manual';
+  const sortHint = $id('reviewsSortHint');
+  if (sortHint) sortHint.style.display = canDragReorder ? 'none' : 'block';
+  if (filteredReviews.length === 0) {
     list.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--on-surface-dim);">لا توجد آراء بعد</div>';
     return;
   }
   list.innerHTML = '';
-  reviewsData.forEach((r, idx) => {
+  filteredReviews.forEach((r, idx) => {
     const card = document.createElement('div');
     card.dataset.id  = r.id;
     card.dataset.idx = idx;
-    card.draggable   = true;
+    card.draggable   = canDragReorder;
     card.style.cssText = `
       background:var(--surface);border:1px solid var(--border);border-radius:14px;
       padding:1.1rem 1.4rem;display:flex;align-items:flex-start;gap:1rem;
-      opacity:${r.visible == 1 ? 1 : 0.45};cursor:grab;
+      opacity:${r.visible == 1 ? 1 : 0.45};cursor:${canDragReorder ? 'grab' : 'default'};
       transition:box-shadow .2s,transform .2s;
     `;
     // Stars
@@ -1791,6 +1919,7 @@ function renderReviewsList() {
 
     // Drag events
     card.addEventListener('dragstart', e => {
+      if (!canDragReorder) return;
       reviewsDragSrc = card;
       e.dataTransfer.effectAllowed = 'move';
       setTimeout(() => card.style.opacity = '0.3', 0);
@@ -1801,11 +1930,13 @@ function renderReviewsList() {
       list.querySelectorAll('[data-id]').forEach(c => c.style.background = '');
     });
     card.addEventListener('dragover', e => {
+      if (!canDragReorder) return;
       e.preventDefault();
       if (card !== reviewsDragSrc) card.style.background = '#f0eaff';
     });
     card.addEventListener('dragleave', () => { card.style.background = ''; });
     card.addEventListener('drop', async e => {
+      if (!canDragReorder) return;
       e.preventDefault();
       card.style.background = '';
       if (!reviewsDragSrc || reviewsDragSrc === card) return;
@@ -1818,6 +1949,8 @@ function renderReviewsList() {
       // Persist order
       const ids = [...list.querySelectorAll('[data-id]')].map(c => parseInt(c.dataset.id));
       await fetch('data.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'review_reorder', ids}) });
+      const map = new Map(reviewsData.map(item => [Number(item.id), item]));
+      reviewsData = ids.map(id => map.get(id)).filter(Boolean);
     });
 
     list.appendChild(card);
