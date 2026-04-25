@@ -686,13 +686,13 @@
     <!-- Search + track by number -->
     <div class="flex flex-col gap-3 mb-6">
       <!-- Search (logged in) -->
-      <div class="order-search" id="search-bar">
+      <div class="order-search hidden" id="search-bar">
         <span class="material-symbols-outlined" style="font-size:20px;color:#897270;">search</span>
         <input type="text" placeholder="ابحث برقم الطلب أو اسم المنتج…" id="search-input" oninput="filterOrders()"/>
       </div>
 
       <!-- Track by order number (guest) -->
-      <div id="track-form-wrap" class="track-form hidden">
+      <div id="track-form-wrap" class="track-form">
         <div class="flex items-center gap-2 mb-4">
           <span class="material-symbols-outlined ms-fill" style="font-size:22px;color:#3c0004;">local_shipping</span>
           <div>
@@ -1361,7 +1361,10 @@ function renderPagination(totalPages, totalItems) {
   const pg = document.getElementById('pagination');
   pg.innerHTML = '';
 
-  if (totalPages <= 1) { pg.classList.add('hidden'); return; }
+  if (totalItems <= 0) {
+    pg.classList.add('hidden');
+    return;
+  }
   pg.classList.remove('hidden');
 
   // Info text
@@ -1370,6 +1373,11 @@ function renderPagination(totalPages, totalItems) {
   const start = (currentPage - 1) * ORDERS_PER_PAGE + 1;
   const end   = Math.min(currentPage * ORDERS_PER_PAGE, totalItems);
   info.textContent = `${start}–${end} من ${totalItems}`;
+
+  if (totalPages <= 1) {
+    pg.appendChild(info);
+    return;
+  }
 
   // Prev button
   const prev = document.createElement('button');
