@@ -2,9 +2,9 @@
     "name": "لوحة التحكم — المصطفى",
     "short_name": "لوحة التحكم",
     "description": "ادارة المتجر",
-    "id": "/tun/sec/",
-    "start_url": "/tun/sec/index.php",
-    "scope": "/tun/sec/",
+    "id": "/store/tun/sec/",
+    "start_url": "/store/tun/sec/index.php",
+    "scope": "/store/tun/sec/",
     "display": "standalone",
     "orientation": "portrait-primary",
     "background_color": "#fdf9f0",
@@ -13,8 +13,8 @@
     "dir": "rtl",
     "categories": ["admin", "management"],
     "icons": [
-      { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-      { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+      { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+      { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
     ],
     "screenshots": [],
     "shortcuts": [
@@ -22,7 +22,7 @@
         "name": "لوحة التحكم",
         "short_name": "لوحة التحكم",
         "description": "ادارة المتجر",
-        "url": "/tun/sec/index.php",
+        "url": "/store/tun/sec/index.php",
         "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
       }
     ]
