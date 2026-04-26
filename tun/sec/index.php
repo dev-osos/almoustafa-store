@@ -1803,10 +1803,10 @@ async function loadUsers() {
           <span class="ms">edit</span>
         </button>
         ${!isSelf ? `
-          <button class="action-btn ${toggleCls}" onclick="toggleUser(${u.id}, ${JSON.stringify(u.username)})" style="margin-right:.4rem;">
+          <button class="action-btn ${toggleCls}" onclick='toggleUser(${u.id}, ${JSON.stringify(u.username)})' style="margin-right:.4rem;">
             <span class="ms">${toggleIco}</span>${toggleLbl}
           </button>
-          <button class="action-btn del" onclick="deleteUser(${u.id}, ${JSON.stringify(u.username)})">
+          <button class="action-btn del" onclick='deleteUser(${u.id}, ${JSON.stringify(u.username)})'>
             <span class="ms">delete</span>
           </button>
         ` : '<span style="font-size:.75rem;color:var(--on-surface-dim)">—</span>'}
