@@ -17,8 +17,14 @@ foreach (['min_wholesale_qty', 'min_corporate_qty'] as $col) {
         $pdo->exec("ALTER TABLE products ADD COLUMN {$col} INT UNSIGNED NOT NULL DEFAULT 1");
     }
 }
+foreach (['discount_consumer', 'discount_wholesale', 'discount_corporate'] as $col) {
+    $hasColStmt = $pdo->query("SHOW COLUMNS FROM products LIKE " . $pdo->quote($col));
+    if (!$hasColStmt->fetch()) {
+        $pdo->exec("ALTER TABLE products ADD COLUMN {$col} TINYINT UNSIGNED NOT NULL DEFAULT 0");
+    }
+}
 $stmt = $pdo->prepare(
-    "SELECT id, store_name, api_name, category, badge, wight, price, discount, image_url,
+    "SELECT id, store_name, api_name, category, badge, wight, price, discount, discount_consumer, discount_wholesale, discount_corporate, image_url,
             description, benefits, nutrition, extra_info, min_wholesale_qty, min_corporate_qty
      FROM products
      WHERE id = ? AND status = 'active'"

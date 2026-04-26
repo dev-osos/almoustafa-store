@@ -249,6 +249,15 @@
     if (segment === 'wholesale') return Math.max(1, parseInt(product.min_wholesale_qty, 10) || 1);
     return 1;
   }
+  function getDiscountBySegment(product) {
+    const segment = getSessionSegment();
+    let discount = 0;
+    if (segment === 'corporate') discount = parseInt(product.discount_corporate, 10);
+    else if (segment === 'wholesale') discount = parseInt(product.discount_wholesale, 10);
+    else discount = parseInt(product.discount_consumer, 10);
+    if (!Number.isFinite(discount)) discount = parseInt(product.discount, 10) || 0;
+    return Math.max(0, Math.min(99, discount || 0));
+  }
 
   // Cart
   let cart = [];
@@ -323,7 +332,7 @@
 
     // Price
     const price = parseFloat(p.price) || 0;
-    const disc  = parseFloat(p.discount) || 0;
+    const disc  = getDiscountBySegment(p);
     const final = disc > 0 && disc < 100 ? price * (1 - disc/100) : price;
     const priceWrap = document.getElementById('price-wrap');
     if (price) {

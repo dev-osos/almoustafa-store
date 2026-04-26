@@ -667,12 +667,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (segment === 'wholesale') return Math.max(1, parseInt(product.min_wholesale_qty, 10) || 1);
     return 1;
   }
+  function getDiscountBySegment(product) {
+    const segment = getSessionSegment();
+    let discount = 0;
+    if (segment === 'corporate') discount = parseInt(product.discount_corporate, 10);
+    else if (segment === 'wholesale') discount = parseInt(product.discount_wholesale, 10);
+    else discount = parseInt(product.discount_consumer, 10);
+    if (!Number.isFinite(discount)) discount = parseInt(product.discount, 10) || 0;
+    return Math.max(0, Math.min(99, discount || 0));
+  }
 
   function buildCard(p) {
     const name     = p.store_name || p.api_name || '';
     const img      = p.image_url ? p.image_url : PLACEHOLDER_IMG;
     const price    = p.price ? parseFloat(p.price) : 0;
-    const discount = p.discount ? parseInt(p.discount) : 0;
+    const discount = getDiscountBySegment(p);
     const hasDiscount = price > 0 && discount > 0 && discount < 100;
     const finalPrice  = hasDiscount ? price * (1 - discount / 100) : price;
 
@@ -907,7 +916,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const prodsHtml = prods.map(p => {
       const price = parseFloat(p.price)||0;
-      const disc  = parseFloat(p.discount)||0;
+      const disc  = getDiscountBySegment(p);
       const final = disc>0 && disc<100 ? price*(1-disc/100) : price;
       return `<div class="offer-modal-prod-row">
         <img class="offer-modal-prod-img" src="${escHtml(p.image_url||'')}" alt="" onerror="this.style.display='none'"/>
@@ -978,7 +987,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addToCart = (p, qty=1, overridePrice=null) => {
       if (!p) return;
       const price = overridePrice !== null ? overridePrice : (parseFloat(p.price)||0);
-      const disc  = parseFloat(p.discount)||0;
+      const disc  = getDiscountBySegment(p);
       const final = disc>0 && disc<100 ? price*(1-disc/100) : price;
       const ex = cart.find(i => i.name === p.store_name);
       if (ex) ex.qty += qty; else cartItems.push({ name: p.store_name, img: p.image_url||'logo.png', price: final, qty, weight: parseFloat(p.wight)||0 });

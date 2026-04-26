@@ -549,8 +549,16 @@ const ADMIN = {
             <input class="form-input" type="number" name="price" id="pf-price" placeholder="0.00" min="0" step="0.01" oninput="updateDiscountPreview()"/>
           </div>
           <div class="form-field">
-            <label class="form-label">الخصم (%)</label>
-            <input class="form-input" type="number" name="discount" id="pf-discount" placeholder="0" min="0" max="99" step="1" oninput="updateDiscountPreview()"/>
+            <label class="form-label">خصم المستهلك (%)</label>
+            <input class="form-input" type="number" name="discount_consumer" id="pf-discount_consumer" placeholder="0" min="0" max="99" step="1" oninput="updateDiscountPreview()"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">خصم شريحة الجملة (%)</label>
+            <input class="form-input" type="number" name="discount_wholesale" id="pf-discount_wholesale" placeholder="0" min="0" max="99" step="1" oninput="updateDiscountPreview()"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">خصم شريحة جملة الجملة (%)</label>
+            <input class="form-input" type="number" name="discount_corporate" id="pf-discount_corporate" placeholder="0" min="0" max="99" step="1" oninput="updateDiscountPreview()"/>
             <div id="pf-discount-preview" style="margin-top:.45rem;font-size:.82rem;font-weight:600;color:var(--primary);display:none"></div>
           </div>
           <div class="form-field">
@@ -3410,10 +3418,10 @@ function renderProdTable(page) {
         <td style="font-size:.78rem;direction:ltr;text-align:right">${escHtml(p.wight || '—')}</td>
         <td style="font-size:.82rem;font-weight:700;color:var(--primary);text-align:right;direction:ltr">
           ${p.price ? (() => {
-            const d = parseInt(p.discount) || 0;
+            const d = parseInt(p.discount_consumer ?? p.discount) || 0;
             const after = d > 0 ? (Number(p.price) * (1 - d/100)).toFixed(2) : null;
             return after
-              ? `<span style="color:#c0392b">${after} ج.م</span> <span style="font-size:.7rem;color:#888;text-decoration:line-through">${Number(p.price).toFixed(2)}</span>`
+              ? `<span style="color:#c0392b">${after} ج.م</span> <span style="font-size:.7rem;color:#888;text-decoration:line-through">${Number(p.price).toFixed(2)}</span> <span style="font-size:.68rem;color:#735c00">(مستهلك)</span>`
               : `${Number(p.price).toFixed(2)} ج.م`;
           })() : '—'}
         </td>
@@ -3486,10 +3494,13 @@ function openProductModal(jsonStr) {
   if (jsonStr) {
     const p = JSON.parse(jsonStr);
     title.textContent = 'تعديل منتج';
-    ['id','erp_id','api_name','store_name','category','status','badge','wight','price','discount','sold_q','image_url','source','min_wholesale_qty','min_corporate_qty'].forEach(f => {
+    ['id','erp_id','api_name','store_name','category','status','badge','wight','price','discount_consumer','discount_wholesale','discount_corporate','sold_q','image_url','source','min_wholesale_qty','min_corporate_qty'].forEach(f => {
       const el = $id('pf-' + f);
       if (el) el.value = p[f] ?? '';
     });
+    if ((parseInt($id('pf-discount_consumer')?.value, 10) || 0) === 0 && (parseInt(p.discount, 10) || 0) > 0) {
+      $id('pf-discount_consumer').value = String(parseInt(p.discount, 10) || 0);
+    }
     $id('pf-description').value = p.description ?? '';
     $id('pf-extra_info').value  = p.extra_info ?? '';
     // Benefits
@@ -3544,14 +3555,20 @@ function closeProductModal() {
 
 function updateDiscountPreview() {
   const price    = parseFloat($id('pf-price').value) || 0;
-  const discount = parseInt($id('pf-discount').value) || 0;
+  const dConsumer = parseInt($id('pf-discount_consumer').value) || 0;
+  const dWholesale = parseInt($id('pf-discount_wholesale').value) || 0;
+  const dCorporate = parseInt($id('pf-discount_corporate').value) || 0;
   const prev     = $id('pf-discount-preview');
-  if (price > 0 && discount > 0 && discount < 100) {
-    const after = price * (1 - discount / 100);
+  const hasAny = price > 0 && [dConsumer, dWholesale, dCorporate].some(d => d > 0 && d < 100);
+  if (hasAny) {
+    const afterConsumer = dConsumer > 0 && dConsumer < 100 ? (price * (1 - dConsumer / 100)).toFixed(2) : price.toFixed(2);
+    const afterWholesale = dWholesale > 0 && dWholesale < 100 ? (price * (1 - dWholesale / 100)).toFixed(2) : price.toFixed(2);
+    const afterCorporate = dCorporate > 0 && dCorporate < 100 ? (price * (1 - dCorporate / 100)).toFixed(2) : price.toFixed(2);
     prev.style.display = '';
-    prev.textContent   = `السعر بعد الخصم: ${after.toFixed(2)} ج.م (وفر ${(price - after).toFixed(2)} ج.م)`;
+    prev.innerHTML = `المستهلك: ${afterConsumer} ج.م<br>الجملة: ${afterWholesale} ج.م<br>جملة الجملة: ${afterCorporate} ج.م`;
   } else {
     prev.style.display = 'none';
+    prev.textContent = '';
   }
 }
 
@@ -3658,6 +3675,9 @@ async function submitProduct(e) {
   data.extra_info  = $id('pf-extra_info').value.trim();
   data.benefits    = getBenefits();
   data.nutrition   = getNutrition();
+  data.discount_consumer  = Math.max(0, Math.min(99, parseInt(data.discount_consumer, 10) || 0));
+  data.discount_wholesale = Math.max(0, Math.min(99, parseInt(data.discount_wholesale, 10) || 0));
+  data.discount_corporate = Math.max(0, Math.min(99, parseInt(data.discount_corporate, 10) || 0));
   data.min_wholesale_qty = Math.max(1, parseInt(data.min_wholesale_qty, 10) || 1);
   data.min_corporate_qty = Math.max(1, parseInt(data.min_corporate_qty, 10) || 1);
   const action = data.id ? 'update' : 'create';
