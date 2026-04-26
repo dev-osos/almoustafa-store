@@ -1100,14 +1100,20 @@
       var cartItems = readCart();
       var idx = +btn.dataset.idx;
       var action = btn.dataset.action;
+      var minQty = Math.max(1, parseInt((cartItems[idx] || {}).minQty, 10) || 1);
       if (action === 'remove') { cartItems.splice(idx,1); saveCart(cartItems); renderCart(); return; }
       if (action === 'inc') cartItems[idx].qty++;
       else if (action === 'dec') {
+        if (cartItems[idx].qty <= minQty) return;
         cartItems[idx].qty--;
-        if (cartItems[idx].qty <= 0) { cartItems.splice(idx,1); saveCart(cartItems); renderCart(); return; }
       }
       var row = btn.closest('.cart-row');
-      if (row) { var numEl = row.querySelector('.cart-qty-num'); if (numEl) numEl.textContent = toArabicNum(cartItems[idx].qty); }
+      if (row) {
+        var numEl = row.querySelector('.cart-qty-num');
+        if (numEl) numEl.textContent = toArabicNum(cartItems[idx].qty);
+        var decBtn = row.querySelector('[data-action="dec"]');
+        if (decBtn) decBtn.disabled = cartItems[idx].qty <= minQty;
+      }
       var totalQty = cartItems.reduce(function(s,i){return s+i.qty;},0);
       var countEl = document.getElementById('cart-modal-count');
       if (countEl) countEl.textContent = '(' + toArabicNum(totalQty) + ' منتج)';

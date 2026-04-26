@@ -381,7 +381,12 @@
     addBtn.addEventListener('click', () => {
       if (!price) return;
       const ex = cart.find(i => i.name === p.store_name);
-      if (ex) ex.qty += qty; else cart.push({ name: p.store_name, img: p.image_url || 'logo.png', price: final, qty });
+      if (ex) {
+        ex.minQty = Math.max(parseInt(ex.minQty, 10) || 1, minQty);
+        ex.qty += qty;
+      } else {
+        cart.push({ name: p.store_name, img: p.image_url || 'logo.png', price: final, qty, minQty });
+      }
       saveCart(); updateCartBadge();
       addBtn.classList.add('added');
       const icon = addBtn.querySelector('.material-symbols-outlined');

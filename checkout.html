@@ -850,7 +850,8 @@
 
     const minusBtn = document.createElement('button');
     minusBtn.className = 'qty-btn'; minusBtn.type = 'button';
-    minusBtn.innerHTML = '−'; minusBtn.disabled = item.qty <= 1;
+    const minQty = Math.max(1, parseInt(item.minQty, 10) || 1);
+    minusBtn.innerHTML = '−'; minusBtn.disabled = item.qty <= minQty;
 
     const numEl = document.createElement('span');
     numEl.className = 'qty-num'; numEl.textContent = toAr(item.qty);
@@ -879,11 +880,11 @@
     }
 
     minusBtn.addEventListener('click', () => {
-      if (item.qty <= 1) return;
+      if (item.qty <= minQty) return;
       item.qty--;
       numEl.textContent = toAr(item.qty);
       priceEl.textContent = fmtPrice(item.price * item.qty);
-      minusBtn.disabled = item.qty <= 1;
+      minusBtn.disabled = item.qty <= minQty;
       refreshAfterQtyChange();
     });
 
@@ -891,7 +892,7 @@
       item.qty++;
       numEl.textContent = toAr(item.qty);
       priceEl.textContent = fmtPrice(item.price * item.qty);
-      minusBtn.disabled = false;
+      minusBtn.disabled = item.qty <= minQty;
       refreshAfterQtyChange();
     });
 
