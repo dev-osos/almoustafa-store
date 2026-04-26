@@ -16,10 +16,18 @@ if ($adminKey === '' || $provided !== $adminKey) {
 $method = api_require_method(['GET', 'POST', 'DELETE']);
 $pdo    = api_pdo();
 
+// Ensure min-qty columns exist for segment-based cart defaults.
+foreach (['min_wholesale_qty', 'min_corporate_qty'] as $col) {
+    $hasColStmt = $pdo->query("SHOW COLUMNS FROM products LIKE " . $pdo->quote($col));
+    if (!$hasColStmt->fetch()) {
+        $pdo->exec("ALTER TABLE products ADD COLUMN {$col} INT UNSIGNED NOT NULL DEFAULT 1");
+    }
+}
+
 // ── GET: list all products ─────────────────────────────────────────────────
 if ($method === 'GET') {
     $stmt = $pdo->query(
-        'SELECT id, erp_id, api_name, store_name, category, status, badge, wight, price, discount, sold_q, image_url, source, description, benefits, nutrition, extra_info
+        'SELECT id, erp_id, api_name, store_name, category, status, badge, wight, price, discount, sold_q, image_url, source, description, benefits, nutrition, extra_info, min_wholesale_qty, min_corporate_qty
          FROM products
          ORDER BY id ASC'
     );
@@ -31,7 +39,7 @@ if ($method === 'POST') {
     $body = json_decode(file_get_contents('php://input'), true) ?? [];
     $action = $body['action'] ?? '';
 
-    $fields = ['erp_id','api_name','store_name','category','status','badge','wight','price','discount','sold_q','image_url','source','description','benefits','nutrition','extra_info'];
+    $fields = ['erp_id','api_name','store_name','category','status','badge','wight','price','discount','sold_q','image_url','source','description','benefits','nutrition','extra_info','min_wholesale_qty','min_corporate_qty'];
 
     // Encode JSON fields
     foreach (['benefits', 'nutrition'] as $jf) {
@@ -39,6 +47,8 @@ if ($method === 'POST') {
             $body[$jf] = json_encode($body[$jf], JSON_UNESCAPED_UNICODE);
         }
     }
+    $body['min_wholesale_qty'] = max(1, (int) ($body['min_wholesale_qty'] ?? 1));
+    $body['min_corporate_qty'] = max(1, (int) ($body['min_corporate_qty'] ?? 1));
 
     if ($action === 'create') {
         $cols = implode(', ', $fields);
@@ -49,7 +59,7 @@ if ($method === 'POST') {
         }
         $stmt->execute();
         $newId = (int) $pdo->lastInsertId();
-        $row = $pdo->prepare('SELECT id, erp_id, api_name, store_name, category, status, badge, wight, price, discount, sold_q, image_url, source, description, benefits, nutrition, extra_info FROM products WHERE id = ?');
+        $row = $pdo->prepare('SELECT id, erp_id, api_name, store_name, category, status, badge, wight, price, discount, sold_q, image_url, source, description, benefits, nutrition, extra_info, min_wholesale_qty, min_corporate_qty FROM products WHERE id = ?');
         $row->execute([$newId]);
         api_ok(['product' => $row->fetch(PDO::FETCH_ASSOC)], 201);
     }

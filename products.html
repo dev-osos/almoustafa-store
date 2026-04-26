@@ -653,6 +653,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function escAttr(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
   function escHtml(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+  function getSessionSegment() {
+    try {
+      const session = JSON.parse(localStorage.getItem('alm_session') || '{}');
+      return String(session.segment || 'consumer').toLowerCase();
+    } catch {
+      return 'consumer';
+    }
+  }
+  function getMinQtyBySegment(product) {
+    const segment = getSessionSegment();
+    if (segment === 'corporate') return Math.max(1, parseInt(product.min_corporate_qty, 10) || 1);
+    if (segment === 'wholesale') return Math.max(1, parseInt(product.min_wholesale_qty, 10) || 1);
+    return 1;
+  }
 
   function buildCard(p) {
     const name     = p.store_name || p.api_name || '';
@@ -691,6 +705,8 @@ document.addEventListener('DOMContentLoaded', () => {
     card.dataset.name     = name;
     card.dataset.price    = finalPrice.toFixed(2);
     card.dataset.id       = p.id;
+    card.dataset.minWholesaleQty = String(Math.max(1, parseInt(p.min_wholesale_qty, 10) || 1));
+    card.dataset.minCorporateQty = String(Math.max(1, parseInt(p.min_corporate_qty, 10) || 1));
     if (hasDiscount) card.dataset.discount = 'true';
     card.style.cursor = 'pointer';
     card.innerHTML = `
@@ -1226,9 +1242,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const name  = card.dataset.name;
     const img   = card.querySelector('img')?.src ?? '';
     const price = parseFloat(card.dataset.price) || parsePrice(card.querySelector('.font-headline.text-xl')?.textContent ?? '0');
+    const segment = getSessionSegment();
+    const minQty = segment === 'corporate'
+      ? Math.max(1, parseInt(card.dataset.minCorporateQty, 10) || 1)
+      : segment === 'wholesale'
+        ? Math.max(1, parseInt(card.dataset.minWholesaleQty, 10) || 1)
+        : 1;
     flyToCart(btn, () => {
       const ex = cartItems.find(i => i.name === name);
-      if (ex) ex.qty++; else cartItems.push({ name, img, price, qty: 1 });
+      if (ex) ex.qty += minQty;
+      else cartItems.push({ name, img, price, qty: minQty, minQty });
       renderCart();
       saveCart();
       showToast(name);

@@ -537,6 +537,14 @@ const ADMIN = {
             <input type="hidden" name="wight" id="pf-wight"/>
           </div>
           <div class="form-field">
+            <label class="form-label">الحد الادني لشريحة الجمله</label>
+            <input class="form-input" type="number" name="min_wholesale_qty" id="pf-min_wholesale_qty" placeholder="1" min="1" step="1" value="1"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">الحد الادني لشريحة جملة الجمله</label>
+            <input class="form-input" type="number" name="min_corporate_qty" id="pf-min_corporate_qty" placeholder="1" min="1" step="1" value="1"/>
+          </div>
+          <div class="form-field">
             <label class="form-label">السعر (ج.م)</label>
             <input class="form-input" type="number" name="price" id="pf-price" placeholder="0.00" min="0" step="0.01" oninput="updateDiscountPreview()"/>
           </div>
@@ -547,7 +555,7 @@ const ADMIN = {
           </div>
           <div class="form-field">
             <label class="form-label">الكمية المباعة</label>
-            <input class="form-input" type="number" name="sold_q" id="pf-sold_q" placeholder="0" value="0"/>
+            <input class="form-input" type="number" name="sold_q" id="pf-sold_q" placeholder="0" value="0" readonly/>
           </div>
           <div class="form-field" style="grid-column:1/-1">
             <label class="form-label">الصورة</label>
@@ -3478,7 +3486,7 @@ function openProductModal(jsonStr) {
   if (jsonStr) {
     const p = JSON.parse(jsonStr);
     title.textContent = 'تعديل منتج';
-    ['id','erp_id','api_name','store_name','category','status','badge','wight','price','discount','sold_q','image_url','source'].forEach(f => {
+    ['id','erp_id','api_name','store_name','category','status','badge','wight','price','discount','sold_q','image_url','source','min_wholesale_qty','min_corporate_qty'].forEach(f => {
       const el = $id('pf-' + f);
       if (el) el.value = p[f] ?? '';
     });
@@ -3522,6 +3530,8 @@ function openProductModal(jsonStr) {
     $id('pf-image_url').value = '';
     $id('pf-description').value = '';
     $id('pf-extra_info').value = '';
+    $id('pf-min_wholesale_qty').value = '1';
+    $id('pf-min_corporate_qty').value = '1';
     renderBenefitsList([]);
     renderNutritionList([]);
   }
@@ -3648,6 +3658,8 @@ async function submitProduct(e) {
   data.extra_info  = $id('pf-extra_info').value.trim();
   data.benefits    = getBenefits();
   data.nutrition   = getNutrition();
+  data.min_wholesale_qty = Math.max(1, parseInt(data.min_wholesale_qty, 10) || 1);
+  data.min_corporate_qty = Math.max(1, parseInt(data.min_corporate_qty, 10) || 1);
   const action = data.id ? 'update' : 'create';
   try {
     const res = await fetch(PROD_API, { method:'POST', headers: prodApiHeaders(), body: JSON.stringify({ action, ...data }) });

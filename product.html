@@ -235,6 +235,20 @@
   const arabicNums = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
   function toAr(n) { return String(n).split('').map(d => arabicNums[+d] ?? d).join(''); }
   function fmtPrice(n) { const w = n%1===0; return n.toLocaleString('ar-EG',{minimumFractionDigits:w?0:2,maximumFractionDigits:w?0:2}) + ' ج.م'; }
+  function getSessionSegment() {
+    try {
+      const session = JSON.parse(localStorage.getItem('alm_session') || '{}');
+      return String(session.segment || 'consumer').toLowerCase();
+    } catch {
+      return 'consumer';
+    }
+  }
+  function getMinQtyBySegment(product) {
+    const segment = getSessionSegment();
+    if (segment === 'corporate') return Math.max(1, parseInt(product.min_corporate_qty, 10) || 1);
+    if (segment === 'wholesale') return Math.max(1, parseInt(product.min_wholesale_qty, 10) || 1);
+    return 1;
+  }
 
   // Cart
   let cart = [];
@@ -342,16 +356,23 @@
     }
 
     // Qty stepper
-    let qty = 1;
+    const minQty = getMinQtyBySegment(p);
+    let qty = minQty;
     const minusBtn = document.getElementById('qty-minus');
     const plusBtn  = document.getElementById('qty-plus');
     const qtyNum   = document.getElementById('qty-num');
+    qtyNum.textContent = toAr(qty);
+    minusBtn.disabled = qty <= minQty;
     minusBtn.addEventListener('click', () => {
-      if (qty <= 1) return;
-      qty--; qtyNum.textContent = toAr(qty); minusBtn.disabled = qty <= 1;
+      if (qty <= minQty) return;
+      qty--;
+      qtyNum.textContent = toAr(qty);
+      minusBtn.disabled = qty <= minQty;
     });
     plusBtn.addEventListener('click', () => {
-      qty++; qtyNum.textContent = toAr(qty); minusBtn.disabled = false;
+      qty++;
+      qtyNum.textContent = toAr(qty);
+      minusBtn.disabled = qty <= minQty;
     });
 
     // Add to cart

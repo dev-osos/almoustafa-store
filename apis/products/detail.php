@@ -11,9 +11,15 @@ $id = (int) ($_GET['id'] ?? 0);
 if ($id <= 0) api_error('id required', 400);
 
 $pdo  = api_pdo();
+foreach (['min_wholesale_qty', 'min_corporate_qty'] as $col) {
+    $hasColStmt = $pdo->query("SHOW COLUMNS FROM products LIKE " . $pdo->quote($col));
+    if (!$hasColStmt->fetch()) {
+        $pdo->exec("ALTER TABLE products ADD COLUMN {$col} INT UNSIGNED NOT NULL DEFAULT 1");
+    }
+}
 $stmt = $pdo->prepare(
     "SELECT id, store_name, api_name, category, badge, wight, price, discount, image_url,
-            description, benefits, nutrition, extra_info
+            description, benefits, nutrition, extra_info, min_wholesale_qty, min_corporate_qty
      FROM products
      WHERE id = ? AND status = 'active'"
 );
