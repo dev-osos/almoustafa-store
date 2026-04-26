@@ -4565,7 +4565,7 @@ async function deletePromo(id) {
   }
 
   function ordFmtMoney(v) {
-    return (parseFloat(v)||0).toLocaleString('ar-EG',{style:'decimal',minimumFractionDigits:0,maximumFractionDigits:2}) + ' ر.ي';
+    return (parseFloat(v)||0).toLocaleString('ar-EG',{style:'decimal',minimumFractionDigits:0,maximumFractionDigits:2}) + ' ج.م';
   }
   function ordFmtDate(dt) {
     if (!dt) return '—';
