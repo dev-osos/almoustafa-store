@@ -16,6 +16,79 @@ if (!isset($_SESSION['admin_auth']) || $_SESSION['admin_auth'] !== true) {
 try {
     $pdo = api_pdo();
 
+    $codeParam = trim((string) ($_GET['code'] ?? ''));
+    if ($codeParam !== '') {
+        if (!preg_match('/^\d{6}$/', $codeParam)) {
+            api_error('كود الدعوة غير صالح', 422);
+        }
+
+        $dateFromRaw = trim((string) ($_GET['date_from'] ?? ''));
+        $dateToRaw   = trim((string) ($_GET['date_to'] ?? ''));
+        $dateFrom = null;
+        $dateTo = null;
+
+        if ($dateFromRaw !== '') {
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFromRaw)) {
+                api_error('صيغة تاريخ البداية غير صحيحة', 422);
+            }
+            $dateFrom = $dateFromRaw . ' 00:00:00';
+        }
+        if ($dateToRaw !== '') {
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateToRaw)) {
+                api_error('صيغة تاريخ النهاية غير صحيحة', 422);
+            }
+            $dateTo = $dateToRaw . ' 23:59:59';
+        }
+        if ($dateFrom !== null && $dateTo !== null && $dateFrom > $dateTo) {
+            api_error('تاريخ البداية يجب أن يكون قبل تاريخ النهاية', 422);
+        }
+
+        $sql = "
+            SELECT
+                COALESCE(SUM(o.total), 0) AS total_spent,
+                c.id AS customer_id,
+                COALESCE(SUM(o.total), 0) AS customer_spent
+            FROM customer_orders o
+            INNER JOIN customers c ON c.id = o.customer_id
+            WHERE c.referred_by = :code
+        ";
+        $params = [':code' => $codeParam];
+        if ($dateFrom !== null) {
+            $sql .= " AND o.created_at >= :date_from";
+            $params[':date_from'] = $dateFrom;
+        }
+        if ($dateTo !== null) {
+            $sql .= " AND o.created_at <= :date_to";
+            $params[':date_to'] = $dateTo;
+        }
+
+        $totalSql = $sql;
+        $perCustomerSql = $sql . " GROUP BY c.id";
+
+        $spentStmt = $pdo->prepare($totalSql);
+        $spentStmt->execute($params);
+        $totalRow = $spentStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+        $totalSpent = (float) ($totalRow['total_spent'] ?? 0);
+
+        $perStmt = $pdo->prepare($perCustomerSql);
+        $perStmt->execute($params);
+        $perRows = $perStmt->fetchAll(PDO::FETCH_ASSOC);
+        $perCustomer = [];
+        foreach ($perRows as $row) {
+            $cid = (int) ($row['customer_id'] ?? 0);
+            if ($cid <= 0) continue;
+            $perCustomer[$cid] = round((float) ($row['customer_spent'] ?? 0), 2);
+        }
+
+        api_ok([
+            'code' => $codeParam,
+            'date_from' => $dateFromRaw !== '' ? $dateFromRaw : null,
+            'date_to' => $dateToRaw !== '' ? $dateToRaw : null,
+            'total_spent' => round($totalSpent, 2),
+            'per_customer_spent' => $perCustomer,
+        ]);
+    }
+
     // ── Add columns if missing (MySQL 5.7+ compatible) ────────────────────────
     $cols = $pdo->query("SHOW COLUMNS FROM customers LIKE 'referral_code'")->fetchAll();
     if (empty($cols)) {
@@ -66,7 +139,7 @@ try {
             owner.created_at    AS created_at,
             COUNT(ref.id)       AS usage_count,
             GROUP_CONCAT(
-                CONCAT(COALESCE(ref.name,''), '|', ref.phone, '|', ref.created_at)
+                CONCAT(ref.id, '|', COALESCE(ref.name,''), '|', ref.phone, '|', ref.created_at)
                 ORDER BY ref.created_at DESC
                 SEPARATOR '||'
             ) AS customers_data
@@ -85,11 +158,12 @@ try {
         if (!empty($row['customers_data'])) {
             foreach (explode('||', $row['customers_data']) as $part) {
                 if ($part === '') continue;
-                $pieces = explode('|', $part, 3);
+                $pieces = explode('|', $part, 4);
                 $customers[] = [
-                    'name'       => ($pieces[0] ?? '') ?: 'مستخدم',
-                    'phone'      => $pieces[1] ?? '',
-                    'created_at' => $pieces[2] ?? '',
+                    'id'         => (int) ($pieces[0] ?? 0),
+                    'name'       => ($pieces[1] ?? '') ?: 'مستخدم',
+                    'phone'      => $pieces[2] ?? '',
+                    'created_at' => $pieces[3] ?? '',
                 ];
             }
         }

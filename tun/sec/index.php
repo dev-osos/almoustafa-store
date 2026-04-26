@@ -696,6 +696,9 @@ const ADMIN = {
         <span style="background:var(--green-bg);color:var(--green);padding:.35rem .65rem;border-radius:999px;font-size:.75rem;">
           مستخدمو الشهر: <strong id="modalInvMonthUsers">0</strong>
         </span>
+        <span style="background:#e8f0fe;color:#1a56d6;padding:.35rem .65rem;border-radius:999px;font-size:.75rem;">
+          إجمالي المشتريات: <strong id="modalInvSpentTotal">0.00</strong> ج.م
+        </span>
       </div>
       <div style="display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;justify-content:flex-end;">
         <span style="font-size:.78rem;color:var(--on-surface-dim);">فلترة بالشهر</span>
@@ -704,6 +707,11 @@ const ADMIN = {
         <select id="modalInvMonthFilter" class="chart-select" style="min-width:160px;">
           <option value="all">كل الشهور</option>
         </select>
+        <span style="font-size:.78rem;color:var(--on-surface-dim);margin-inline-start:.25rem;">مشتريات من</span>
+        <input id="modalInvSpentFrom" class="chart-select" type="date" style="min-width:140px;">
+        <span style="font-size:.78rem;color:var(--on-surface-dim);">إلى</span>
+        <input id="modalInvSpentTo" class="chart-select" type="date" style="min-width:140px;">
+        <button type="button" id="modalInvSpentApply" class="cancel-btn" style="padding:.25rem .55rem;font-size:.72rem;">حساب المشتريات</button>
       </div>
     </div>
     <div class="table-wrap" style="max-height:400px;overflow-y:auto;">
@@ -714,10 +722,11 @@ const ADMIN = {
             <th>الاسم</th>
             <th>رقم الهاتف</th>
             <th>تاريخ التسجيل</th>
+            <th>إجمالي المشتريات</th>
           </tr>
         </thead>
         <tbody id="modalInvUsersBody">
-          <tr><td colspan="4" style="text-align:center;padding:2rem">جارٍ التحميل...</td></tr>
+          <tr><td colspan="5" style="text-align:center;padding:2rem">جارٍ التحميل...</td></tr>
         </tbody>
       </table>
     </div>
@@ -2993,6 +3002,10 @@ async function reviewDelete(id, btn) {
 // ── Invitations ───────────────────────────────────────────────────────────────────
 let invitationsData = [];
 let currentInvitationModalData = null;
+let invitationCustomerSpentMap = {};
+function fmtMoneyEG(v) {
+  return Number(v || 0).toLocaleString('ar-EG', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
 
 function invitationMonthKey(dateStr) {
   const d = new Date(String(dateStr || '').replace(' ', 'T'));
@@ -3031,7 +3044,7 @@ function applyInvitationUsersMonthFilter(monthKey) {
 
   const invitation = currentInvitationModalData;
   if (!invitation || !Array.isArray(invitation.customers)) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--on-surface-dim);">لا يوجد مستخدمون لهذا الكود</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--on-surface-dim);">لا يوجد مستخدمون لهذا الكود</td></tr>';
     totalEl.textContent = '0';
     monthEl.textContent = '0';
     return;
@@ -3047,7 +3060,7 @@ function applyInvitationUsersMonthFilter(monthKey) {
 
   if (filtered.length === 0) {
     const monthLabel = monthKey === 'all' ? 'كل الشهور' : invitationMonthLabel(monthKey);
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--on-surface-dim);">لا يوجد مستخدمون في ${monthLabel}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--on-surface-dim);">لا يوجد مستخدمون في ${monthLabel}</td></tr>`;
     return;
   }
 
@@ -3059,9 +3072,46 @@ function applyInvitationUsersMonthFilter(monthKey) {
       <td>${customer.name}</td>
       <td><code style="background:var(--surface-dim);padding:.2rem .4rem;border-radius:3px;font-family:monospace;font-size:.8rem;">${customer.phone}</code></td>
       <td>${fmtDate(customer.created_at)}</td>
+      <td style="font-weight:700">${fmtMoneyEG(invitationCustomerSpentMap[Number(customer.id || 0)] || 0)} ج.م</td>
     `;
     tbody.appendChild(tr);
   });
+}
+
+async function loadInvitationUsersSpent() {
+  const code = String($id('modalInvCode')?.textContent || '').trim();
+  const spentEl = $id('modalInvSpentTotal');
+  const fromEl = $id('modalInvSpentFrom');
+  const toEl = $id('modalInvSpentTo');
+  if (!spentEl || !fromEl || !toEl) return;
+  if (!code) {
+    spentEl.textContent = fmtMoneyEG(0);
+    return;
+  }
+  const dateFrom = String(fromEl.value || '').trim();
+  const dateTo = String(toEl.value || '').trim();
+  if (dateFrom && dateTo && dateFrom > dateTo) {
+    notify('تاريخ البداية يجب أن يكون قبل تاريخ النهاية.', 'err');
+    return;
+  }
+
+  spentEl.textContent = '...';
+  try {
+    const params = new URLSearchParams({ code });
+    if (dateFrom) params.set('date_from', dateFrom);
+    if (dateTo) params.set('date_to', dateTo);
+    const res = await fetch(`../../apis/invitations/stats.php?${params.toString()}`);
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'تعذر تحميل إجمالي المشتريات');
+    spentEl.textContent = fmtMoneyEG(data.total_spent);
+    invitationCustomerSpentMap = data.per_customer_spent || {};
+    applyInvitationUsersMonthFilter($id('modalInvMonthFilter')?.value || 'all');
+  } catch (err) {
+    spentEl.textContent = fmtMoneyEG(0);
+    invitationCustomerSpentMap = {};
+    applyInvitationUsersMonthFilter($id('modalInvMonthFilter')?.value || 'all');
+    notify(err?.message || 'تعذر تحميل إجمالي المشتريات', 'err');
+  }
 }
 
 async function loadInvitations() {
@@ -3187,10 +3237,17 @@ function showInvitationUsers(code) {
   const codeSpan = $id('modalInvCode');
   const tbody = $id('modalInvUsersBody');
   const monthFilter = $id('modalInvMonthFilter');
+  const spentFromEl = $id('modalInvSpentFrom');
+  const spentToEl = $id('modalInvSpentTo');
+  const spentTotalEl = $id('modalInvSpentTotal');
   
   if (!modal || !codeSpan || !tbody || !monthFilter) return;
   
   codeSpan.textContent = code;
+  invitationCustomerSpentMap = {};
+  if (spentFromEl) spentFromEl.value = '';
+  if (spentToEl) spentToEl.value = '';
+  if (spentTotalEl) spentTotalEl.textContent = fmtMoneyEG(0);
   modal.classList.add('open');
   
   // Find invitation data
@@ -3199,11 +3256,12 @@ function showInvitationUsers(code) {
 
   monthFilter.innerHTML = '<option value="all">كل الشهور</option>';
   if (!invitation || !invitation.customers || invitation.customers.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--on-surface-dim);">لا يوجد مستخدمون لهذا الكود</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--on-surface-dim);">لا يوجد مستخدمون لهذا الكود</td></tr>';
     const totalEl = $id('modalInvTotalUsers');
     const monthEl = $id('modalInvMonthUsers');
     if (totalEl) totalEl.textContent = '0';
     if (monthEl) monthEl.textContent = '0';
+    if (spentTotalEl) spentTotalEl.textContent = fmtMoneyEG(0);
     return;
   }
 
@@ -3224,6 +3282,7 @@ function showInvitationUsers(code) {
   const initialMonth = monthKeys.includes(currentMonthKey) ? currentMonthKey : 'all';
   monthFilter.value = initialMonth;
   applyInvitationUsersMonthFilter(initialMonth);
+  loadInvitationUsersSpent();
 }
 
 function closeInvitationModal() {
@@ -3235,6 +3294,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const monthFilter = $id('modalInvMonthFilter');
   const quickCurrentBtn = $id('modalInvQuickCurrent');
   const quickPrevBtn = $id('modalInvQuickPrev');
+  const spentApplyBtn = $id('modalInvSpentApply');
+  const spentFromEl = $id('modalInvSpentFrom');
+  const spentToEl = $id('modalInvSpentTo');
   ['invSearchCode','invSearchOwner','invSearchPhone','invUsageMin','invUsageMax','invDateFrom','invDateTo']
     .forEach((id) => {
       const el = $id(id);
@@ -3259,6 +3321,9 @@ document.addEventListener('DOMContentLoaded', () => {
       setInvitationMonthFilterValue(monthKeyFromDate(d));
     });
   }
+  if (spentApplyBtn) spentApplyBtn.addEventListener('click', loadInvitationUsersSpent);
+  if (spentFromEl) spentFromEl.addEventListener('change', loadInvitationUsersSpent);
+  if (spentToEl) spentToEl.addEventListener('change', loadInvitationUsersSpent);
 });
 
 // ── Products ──────────────────────────────────────────────────────────────────
