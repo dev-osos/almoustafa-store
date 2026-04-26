@@ -4574,6 +4574,13 @@ async function deletePromo(id) {
   function ordEsc(s) {
     return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
+
+  // Expose functions needed by inline handlers and showSection()
+  window.loadAdminOrders = loadAdminOrders;
+  window.ordSetTab       = ordSetTab;
+  window.ordDebounce     = ordDebounce;
+  window.ordToggle       = ordToggle;
+  window.ordSaveStatus   = ordSaveStatus;
 }
 
 // ── Run after all declarations ────────────────────────────────────────────────
