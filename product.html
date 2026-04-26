@@ -245,8 +245,8 @@
   }
   function getMinQtyBySegment(product) {
     const segment = getSessionSegment();
-    if (segment === 'corporate') return Math.max(1, parseInt(product.min_corporate_qty, 10) || 1);
-    if (segment === 'wholesale') return Math.max(1, parseInt(product.min_wholesale_qty, 10) || 1);
+    if (segment === 'corporate') return Math.max(1, parseInt(product.min_corporate_qty, 10) || 60);
+    if (segment === 'wholesale') return Math.max(1, parseInt(product.min_wholesale_qty, 10) || 6);
     return 1;
   }
   function getDiscountBySegment(product) {
@@ -255,7 +255,9 @@
     if (segment === 'corporate') discount = parseInt(product.discount_corporate, 10);
     else if (segment === 'wholesale') discount = parseInt(product.discount_wholesale, 10);
     else discount = parseInt(product.discount_consumer, 10);
-    if (!Number.isFinite(discount)) discount = parseInt(product.discount, 10) || 0;
+    if (!Number.isFinite(discount)) {
+      discount = segment === 'corporate' ? 30 : (segment === 'wholesale' ? 20 : 0);
+    }
     return Math.max(0, Math.min(99, discount || 0));
   }
 

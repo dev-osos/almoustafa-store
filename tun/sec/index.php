@@ -538,11 +538,11 @@ const ADMIN = {
           </div>
           <div class="form-field">
             <label class="form-label">الحد الادني لشريحة الجمله</label>
-            <input class="form-input" type="number" name="min_wholesale_qty" id="pf-min_wholesale_qty" placeholder="1" min="1" step="1" value="1"/>
+            <input class="form-input" type="number" name="min_wholesale_qty" id="pf-min_wholesale_qty" placeholder="6" min="1" step="1" value="6"/>
           </div>
           <div class="form-field">
             <label class="form-label">الحد الادني لشريحة جملة الجمله</label>
-            <input class="form-input" type="number" name="min_corporate_qty" id="pf-min_corporate_qty" placeholder="1" min="1" step="1" value="1"/>
+            <input class="form-input" type="number" name="min_corporate_qty" id="pf-min_corporate_qty" placeholder="60" min="1" step="1" value="60"/>
           </div>
           <div class="form-field">
             <label class="form-label">السعر (ج.م)</label>
@@ -554,11 +554,11 @@ const ADMIN = {
           </div>
           <div class="form-field">
             <label class="form-label">خصم شريحة الجملة (%)</label>
-            <input class="form-input" type="number" name="discount_wholesale" id="pf-discount_wholesale" placeholder="0" min="0" max="99" step="1" oninput="updateDiscountPreview()"/>
+            <input class="form-input" type="number" name="discount_wholesale" id="pf-discount_wholesale" placeholder="20" min="0" max="99" step="1" value="20" oninput="updateDiscountPreview()"/>
           </div>
           <div class="form-field">
             <label class="form-label">خصم شريحة جملة الجملة (%)</label>
-            <input class="form-input" type="number" name="discount_corporate" id="pf-discount_corporate" placeholder="0" min="0" max="99" step="1" oninput="updateDiscountPreview()"/>
+            <input class="form-input" type="number" name="discount_corporate" id="pf-discount_corporate" placeholder="30" min="0" max="99" step="1" value="30" oninput="updateDiscountPreview()"/>
             <div id="pf-discount-preview" style="margin-top:.45rem;font-size:.82rem;font-weight:600;color:var(--primary);display:none"></div>
           </div>
           <div class="form-field">
@@ -3541,8 +3541,11 @@ function openProductModal(jsonStr) {
     $id('pf-image_url').value = '';
     $id('pf-description').value = '';
     $id('pf-extra_info').value = '';
-    $id('pf-min_wholesale_qty').value = '1';
-    $id('pf-min_corporate_qty').value = '1';
+    $id('pf-min_wholesale_qty').value = '6';
+    $id('pf-min_corporate_qty').value = '60';
+    $id('pf-discount_consumer').value = '0';
+    $id('pf-discount_wholesale').value = '20';
+    $id('pf-discount_corporate').value = '30';
     renderBenefitsList([]);
     renderNutritionList([]);
   }
@@ -3676,10 +3679,10 @@ async function submitProduct(e) {
   data.benefits    = getBenefits();
   data.nutrition   = getNutrition();
   data.discount_consumer  = Math.max(0, Math.min(99, parseInt(data.discount_consumer, 10) || 0));
-  data.discount_wholesale = Math.max(0, Math.min(99, parseInt(data.discount_wholesale, 10) || 0));
-  data.discount_corporate = Math.max(0, Math.min(99, parseInt(data.discount_corporate, 10) || 0));
-  data.min_wholesale_qty = Math.max(1, parseInt(data.min_wholesale_qty, 10) || 1);
-  data.min_corporate_qty = Math.max(1, parseInt(data.min_corporate_qty, 10) || 1);
+  data.discount_wholesale = Math.max(0, Math.min(99, parseInt(data.discount_wholesale, 10) || 20));
+  data.discount_corporate = Math.max(0, Math.min(99, parseInt(data.discount_corporate, 10) || 30));
+  data.min_wholesale_qty = Math.max(1, parseInt(data.min_wholesale_qty, 10) || 6);
+  data.min_corporate_qty = Math.max(1, parseInt(data.min_corporate_qty, 10) || 60);
   const action = data.id ? 'update' : 'create';
   try {
     const res = await fetch(PROD_API, { method:'POST', headers: prodApiHeaders(), body: JSON.stringify({ action, ...data }) });

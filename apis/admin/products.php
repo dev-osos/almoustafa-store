@@ -20,13 +20,15 @@ $pdo    = api_pdo();
 foreach (['min_wholesale_qty', 'min_corporate_qty'] as $col) {
     $hasColStmt = $pdo->query("SHOW COLUMNS FROM products LIKE " . $pdo->quote($col));
     if (!$hasColStmt->fetch()) {
-        $pdo->exec("ALTER TABLE products ADD COLUMN {$col} INT UNSIGNED NOT NULL DEFAULT 1");
+        $defaultVal = $col === 'min_corporate_qty' ? 60 : 6;
+        $pdo->exec("ALTER TABLE products ADD COLUMN {$col} INT UNSIGNED NOT NULL DEFAULT {$defaultVal}");
     }
 }
 foreach (['discount_consumer', 'discount_wholesale', 'discount_corporate'] as $col) {
     $hasColStmt = $pdo->query("SHOW COLUMNS FROM products LIKE " . $pdo->quote($col));
     if (!$hasColStmt->fetch()) {
-        $pdo->exec("ALTER TABLE products ADD COLUMN {$col} TINYINT UNSIGNED NOT NULL DEFAULT 0");
+        $defaultVal = $col === 'discount_wholesale' ? 20 : ($col === 'discount_corporate' ? 30 : 0);
+        $pdo->exec("ALTER TABLE products ADD COLUMN {$col} TINYINT UNSIGNED NOT NULL DEFAULT {$defaultVal}");
     }
 }
 
@@ -53,11 +55,11 @@ if ($method === 'POST') {
             $body[$jf] = json_encode($body[$jf], JSON_UNESCAPED_UNICODE);
         }
     }
-    $body['min_wholesale_qty'] = max(1, (int) ($body['min_wholesale_qty'] ?? 1));
-    $body['min_corporate_qty'] = max(1, (int) ($body['min_corporate_qty'] ?? 1));
+    $body['min_wholesale_qty'] = max(1, (int) ($body['min_wholesale_qty'] ?? 6));
+    $body['min_corporate_qty'] = max(1, (int) ($body['min_corporate_qty'] ?? 60));
     $body['discount_consumer'] = max(0, min(99, (int) ($body['discount_consumer'] ?? $body['discount'] ?? 0)));
-    $body['discount_wholesale'] = max(0, min(99, (int) ($body['discount_wholesale'] ?? 0)));
-    $body['discount_corporate'] = max(0, min(99, (int) ($body['discount_corporate'] ?? 0)));
+    $body['discount_wholesale'] = max(0, min(99, (int) ($body['discount_wholesale'] ?? 20)));
+    $body['discount_corporate'] = max(0, min(99, (int) ($body['discount_corporate'] ?? 30)));
 
     if ($action === 'create') {
         $cols = implode(', ', $fields);

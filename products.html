@@ -663,8 +663,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function getMinQtyBySegment(product) {
     const segment = getSessionSegment();
-    if (segment === 'corporate') return Math.max(1, parseInt(product.min_corporate_qty, 10) || 1);
-    if (segment === 'wholesale') return Math.max(1, parseInt(product.min_wholesale_qty, 10) || 1);
+    if (segment === 'corporate') return Math.max(1, parseInt(product.min_corporate_qty, 10) || 60);
+    if (segment === 'wholesale') return Math.max(1, parseInt(product.min_wholesale_qty, 10) || 6);
     return 1;
   }
   function getDiscountBySegment(product) {
@@ -673,7 +673,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (segment === 'corporate') discount = parseInt(product.discount_corporate, 10);
     else if (segment === 'wholesale') discount = parseInt(product.discount_wholesale, 10);
     else discount = parseInt(product.discount_consumer, 10);
-    if (!Number.isFinite(discount)) discount = parseInt(product.discount, 10) || 0;
+    if (!Number.isFinite(discount)) {
+      discount = segment === 'corporate' ? 30 : (segment === 'wholesale' ? 20 : 0);
+    }
     return Math.max(0, Math.min(99, discount || 0));
   }
 
@@ -714,8 +716,8 @@ document.addEventListener('DOMContentLoaded', () => {
     card.dataset.name     = name;
     card.dataset.price    = finalPrice.toFixed(2);
     card.dataset.id       = p.id;
-    card.dataset.minWholesaleQty = String(Math.max(1, parseInt(p.min_wholesale_qty, 10) || 1));
-    card.dataset.minCorporateQty = String(Math.max(1, parseInt(p.min_corporate_qty, 10) || 1));
+    card.dataset.minWholesaleQty = String(Math.max(1, parseInt(p.min_wholesale_qty, 10) || 6));
+    card.dataset.minCorporateQty = String(Math.max(1, parseInt(p.min_corporate_qty, 10) || 60));
     if (hasDiscount) card.dataset.discount = 'true';
     card.style.cursor = 'pointer';
     card.innerHTML = `
@@ -1258,9 +1260,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const price = parseFloat(card.dataset.price) || parsePrice(card.querySelector('.font-headline.text-xl')?.textContent ?? '0');
     const segment = getSessionSegment();
     const minQty = segment === 'corporate'
-      ? Math.max(1, parseInt(card.dataset.minCorporateQty, 10) || 1)
+      ? Math.max(1, parseInt(card.dataset.minCorporateQty, 10) || 60)
       : segment === 'wholesale'
-        ? Math.max(1, parseInt(card.dataset.minWholesaleQty, 10) || 1)
+        ? Math.max(1, parseInt(card.dataset.minWholesaleQty, 10) || 6)
         : 1;
     flyToCart(btn, () => {
       const ex = cartItems.find(i => i.name === name);
