@@ -47,9 +47,9 @@ function roleBadgeCss(string $role): string
 }
 
 const ROLE_PERMS = [
-    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users', 'customers', 'products', 'promotions'],
-    'admin'       => ['stats', 'chart', 'devices', 'visitors', 'customers', 'products', 'promotions'],
-    'support'     => ['visitors', 'customers'],
+    'super_admin' => ['stats', 'chart', 'devices', 'visitors', 'users', 'customers', 'orders', 'products', 'promotions'],
+    'admin'       => ['stats', 'chart', 'devices', 'visitors', 'customers', 'orders', 'products', 'promotions'],
+    'support'     => ['visitors', 'customers', 'orders'],
 ];
 function can(string $role, string $perm): bool
 {
@@ -385,6 +385,41 @@ tr:hover td { background:var(--surface-dim); }
   #productForm > div { grid-template-columns: 1fr !important; }
   #productForm .form-field { grid-column: auto !important; }
 }
+
+/* ── Orders section ── */
+.ord-tab { display:inline-flex; align-items:center; gap:.35rem; padding:.4rem .9rem; border-radius:999px; font-size:.8rem; font-weight:700; border:1.5px solid var(--border); background:var(--surface); color:var(--on-surface-dim); cursor:pointer; font-family:inherit; white-space:nowrap; transition:all .18s; }
+.ord-tab:hover { border-color:var(--primary); color:var(--primary); }
+.ord-tab.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+.ord-tab-count { background:rgba(255,255,255,.25); border-radius:999px; padding:.05rem .4rem; font-size:.72rem; }
+.ord-tab:not(.active) .ord-tab-count { background:var(--surface-dim); color:var(--on-surface-dim); }
+.ord-status-badge { display:inline-flex; align-items:center; gap:.3rem; padding:.25rem .65rem; border-radius:999px; font-size:.75rem; font-weight:700; }
+.ord-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.os-pending   { background:#fff8e1; color:#735c00; } .os-pending .ord-dot   { background:#fabd00; }
+.os-confirmed { background:#e6f4eb; color:#1a6e2e; } .os-confirmed .ord-dot { background:#43a047; }
+.os-preparing { background:#e8f0fe; color:#1a56d6; } .os-preparing .ord-dot { background:#1e88e5; animation:ordpulse 1.4s infinite; }
+.os-shipping  { background:#f3e5f5; color:#6a1b9a; } .os-shipping .ord-dot  { background:#8e24aa; animation:ordpulse 1.4s infinite; }
+.os-delivered { background:#e6f4eb; color:#1b5e20; } .os-delivered .ord-dot { background:#2e7d32; }
+.os-cancelled { background:#fdecea; color:#b71c1c; } .os-cancelled .ord-dot { background:#e53935; }
+@keyframes ordpulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+tr.ord-main:hover td { background:rgba(60,0,4,.02); cursor:pointer; }
+tr.ord-main.expanded td { background:rgba(60,0,4,.03); }
+tr.ord-detail td { padding:0; background:#fdf9f6; }
+tr.ord-detail.hidden { display:none; }
+.ord-detail-inner { padding:1.1rem 1.25rem; border-top:2px solid rgba(60,0,4,.07); display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+@media(max-width:700px) { .ord-detail-inner { grid-template-columns:1fr; } }
+.ord-prod-item { display:flex; align-items:center; gap:.6rem; background:#fff; border:1px solid var(--border); border-radius:9px; padding:.55rem .8rem; margin-bottom:.4rem; }
+.ord-prod-img { width:40px; height:40px; border-radius:7px; object-fit:cover; background:var(--surface-dim); border:1px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.ord-totals-row { display:flex; justify-content:space-between; padding:.4rem 0; font-size:.82rem; border-bottom:1px solid var(--border); }
+.ord-totals-row:last-child { border-bottom:none; font-weight:700; color:var(--primary); }
+.ord-totals-row span:first-child { color:var(--on-surface-dim); }
+.ord-addr { display:flex; align-items:flex-start; gap:.45rem; background:#fdf9f0; border-radius:9px; padding:.6rem .8rem; font-size:.81rem; color:var(--on-surface); margin-bottom:.75rem; }
+.ord-note { background:#fffde7; border-right:3px solid #fabd00; border-radius:9px; padding:.55rem .8rem; font-size:.81rem; color:#5a4e3a; margin-bottom:.75rem; }
+.ord-info-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:.7rem .85rem; margin-bottom:.75rem; }
+.ord-status-select { border:1.5px solid var(--border); border-radius:8px; background:var(--surface); padding:.35rem .55rem; font-size:.8rem; font-family:inherit; outline:none; cursor:pointer; }
+.ord-save-btn { display:inline-flex; align-items:center; gap:.3rem; background:var(--primary); color:#fff; border:none; border-radius:8px; padding:.4rem .95rem; font-size:.8rem; font-family:inherit; font-weight:700; cursor:pointer; transition:background .2s; }
+.ord-save-btn:hover { background:var(--primary-light); }
+.ord-save-btn:disabled { opacity:.5; cursor:not-allowed; }
+.ord-guest-badge { display:inline-flex; align-items:center; gap:.2rem; background:#f0f0f0; color:#666; border-radius:5px; padding:.1rem .45rem; font-size:.72rem; font-weight:700; }
 </style>
 </head>
 <body>
@@ -399,6 +434,7 @@ const ADMIN = {
   canUsers:    <?= json_encode(can($adminRole, 'users')) ?>,
   canStats:    <?= json_encode(can($adminRole, 'stats')) ?>,
   canProducts: <?= json_encode(can($adminRole, 'products')) ?>,
+  canOrders:   <?= json_encode(can($adminRole, 'orders')) ?>,
   adminKey:    <?= json_encode($adminKey) ?>,
 };
 </script>
@@ -1002,6 +1038,11 @@ const ADMIN = {
       <span class="ms">card_giftcard</span> الدعوات
     </div>
     <?php endif; ?>
+    <?php if (can($adminRole, 'orders')): ?>
+    <div class="nav-item" id="nav-orders" onclick="showSection('orders')">
+      <span class="ms">package_2</span> الطلبات
+    </div>
+    <?php endif; ?>
     <?php if (can($adminRole, 'products')): ?>
     <div class="nav-item" id="nav-products" onclick="showSection('products')">
       <span class="ms">inventory_2</span> المنتجات
@@ -1488,6 +1529,111 @@ const ADMIN = {
       </div><!-- /promotionsSection -->
       <?php endif; ?>
 
+      <!-- ── ORDERS SECTION ─────────────────────────────── -->
+      <?php if (can($adminRole, 'orders')): ?>
+      <div class="section" id="ordersSection">
+
+        <!-- Stats row -->
+        <div class="stats-grid" style="margin-bottom:1.25rem">
+          <div class="stat-card">
+            <div class="stat-label"><span class="ms">receipt_long</span>إجمالي الطلبات</div>
+            <div class="stat-value" id="ord-stat-total">—</div>
+          </div>
+          <div class="stat-card" style="--accent:#fabd00">
+            <div class="stat-label"><span class="ms" style="color:#735c00">schedule</span>بانتظار التأكيد</div>
+            <div class="stat-value" id="ord-stat-pending" style="color:#735c00">—</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label"><span class="ms" style="color:#1a56d6">inventory_2</span>جاري التجهيز</div>
+            <div class="stat-value" id="ord-stat-preparing" style="color:#1a56d6">—</div>
+          </div>
+          <div class="stat-card" style="border-top:none">
+            <div class="stat-label"><span class="ms" style="color:#6a1b9a">local_shipping</span>قيد التوصيل</div>
+            <div class="stat-value" id="ord-stat-shipping" style="color:#6a1b9a">—</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label"><span class="ms" style="color:#1a6e2e">where_to_vote</span>تم التوصيل</div>
+            <div class="stat-value" id="ord-stat-delivered">—</div>
+          </div>
+          <div class="stat-card gold">
+            <div class="stat-label"><span class="ms" style="color:#735c00">payments</span>الإيرادات</div>
+            <div class="stat-value" id="ord-stat-revenue">—</div>
+          </div>
+        </div>
+
+        <!-- Filter tabs -->
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem" id="ord-filter-tabs">
+          <button class="ord-tab active" data-status="" onclick="ordSetTab(this,'')">
+            <span class="ms" style="font-size:.95rem;vertical-align:middle">apps</span> الكل
+            <span class="ord-tab-count" id="ord-tc-all">0</span>
+          </button>
+          <button class="ord-tab" data-status="pending" onclick="ordSetTab(this,'pending')">
+            <span style="width:8px;height:8px;border-radius:50%;background:#fabd00;display:inline-block;vertical-align:middle"></span> بانتظار التأكيد
+            <span class="ord-tab-count" id="ord-tc-pending">0</span>
+          </button>
+          <button class="ord-tab" data-status="confirmed" onclick="ordSetTab(this,'confirmed')">
+            <span style="width:8px;height:8px;border-radius:50%;background:#43a047;display:inline-block;vertical-align:middle"></span> مؤكد
+            <span class="ord-tab-count" id="ord-tc-confirmed">0</span>
+          </button>
+          <button class="ord-tab" data-status="preparing" onclick="ordSetTab(this,'preparing')">
+            <span style="width:8px;height:8px;border-radius:50%;background:#1e88e5;display:inline-block;vertical-align:middle"></span> جاري التجهيز
+            <span class="ord-tab-count" id="ord-tc-preparing">0</span>
+          </button>
+          <button class="ord-tab" data-status="shipping" onclick="ordSetTab(this,'shipping')">
+            <span style="width:8px;height:8px;border-radius:50%;background:#8e24aa;display:inline-block;vertical-align:middle"></span> قيد التوصيل
+            <span class="ord-tab-count" id="ord-tc-shipping">0</span>
+          </button>
+          <button class="ord-tab" data-status="delivered" onclick="ordSetTab(this,'delivered')">
+            <span style="width:8px;height:8px;border-radius:50%;background:#2e7d32;display:inline-block;vertical-align:middle"></span> تم التوصيل
+            <span class="ord-tab-count" id="ord-tc-delivered">0</span>
+          </button>
+          <button class="ord-tab" data-status="cancelled" onclick="ordSetTab(this,'cancelled')">
+            <span style="width:8px;height:8px;border-radius:50%;background:#e53935;display:inline-block;vertical-align:middle"></span> ملغي
+            <span class="ord-tab-count" id="ord-tc-cancelled">0</span>
+          </button>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="table-header" style="border-radius:var(--radius) var(--radius) 0 0;border:1px solid var(--border);background:var(--surface);margin-bottom:0">
+          <div class="search-wrap" style="max-width:280px">
+            <span class="ms">search</span>
+            <input class="search-input" id="ord-search" type="text" placeholder="رقم الطلب، الاسم، الهاتف…" oninput="ordDebounce()">
+          </div>
+          <button class="primary-btn" onclick="loadAdminOrders()">
+            <span class="ms" id="ord-refresh-icon">refresh</span> تحديث
+          </button>
+        </div>
+
+        <!-- Table -->
+        <div class="table-card" style="border-radius:0 0 var(--radius) var(--radius)">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>رقم الطلب</th>
+                  <th>العميل</th>
+                  <th>الهاتف</th>
+                  <th>المنتجات</th>
+                  <th>الإجمالي</th>
+                  <th>الحالة</th>
+                  <th>التاريخ</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="ord-body">
+                <tr><td colspan="8" style="text-align:center;padding:2.5rem;color:#aaa">جاري التحميل…</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination" id="ord-pagination" style="display:none">
+            <div class="page-info" id="ord-page-info">—</div>
+            <div class="page-btns" id="ord-page-btns"></div>
+          </div>
+        </div>
+
+      </div><!-- /ordersSection -->
+      <?php endif; ?>
+
     </div><!-- /content -->
   </main>
 </div>
@@ -1603,7 +1749,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
 });
 
 // ── Section switching ─────────────────────────────────────────────────────────
-const SECTION_TITLES = { visitors: 'إحصائيات الزوار', customers: 'عملاؤنا', users: 'مستخدموا لوحة التحكم', reviews: 'إدارة الآراء', invitations: 'الدعوات', products: 'إدارة المنتجات', promotions: 'العروض والخصومات' };
+const SECTION_TITLES = { visitors: 'إحصائيات الزوار', customers: 'عملاؤنا', orders: 'الطلبات', users: 'مستخدموا لوحة التحكم', reviews: 'إدارة الآراء', invitations: 'الدعوات', products: 'إدارة المنتجات', promotions: 'العروض والخصومات' };
 
 function showSection(name) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1621,11 +1767,12 @@ function showSection(name) {
   if (name === 'invitations' && ADMIN.canUsers) loadInvitations();
   if (name === 'products'   && ADMIN.canProducts) loadProducts();
   if (name === 'promotions') loadPromotions();
+  if (name === 'orders'     && ADMIN.canOrders) loadAdminOrders();
 }
 
 // ── Restore last section on load — called at end of script after all vars ─────
 function restoreSection() {
-  const valid = ['visitors', 'customers', 'reviews', 'users', 'invitations', 'products', 'promotions'];
+  const valid = ['visitors', 'customers', 'orders', 'reviews', 'users', 'invitations', 'products', 'promotions'];
   let saved;
   try { saved = localStorage.getItem('alm_admin_section'); } catch {}
   const section = valid.includes(saved) ? saved : 'visitors';
@@ -4156,6 +4303,277 @@ async function deletePromo(id) {
     const d   = await res.json();
     if (d.ok) loadPromotions();
   } catch {}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ORDERS SECTION
+// ══════════════════════════════════════════════════════════════════════════════
+{
+  const ORD_API_LIST   = '../../apis/orders/admin_list.php';
+  const ORD_API_UPDATE = '../../apis/orders/admin_update.php';
+
+  const ORD_STATUS_LABELS = {
+    pending:'بانتظار التأكيد', confirmed:'مؤكد', preparing:'جاري التجهيز',
+    shipping:'قيد التوصيل', delivered:'تم التوصيل', cancelled:'ملغي',
+  };
+  const ORD_STATUS_CSS = {
+    pending:'os-pending', confirmed:'os-confirmed', preparing:'os-preparing',
+    shipping:'os-shipping', delivered:'os-delivered', cancelled:'os-cancelled',
+  };
+
+  let ordPage = 1, ordStatus = '', ordSearch = '', ordTimer = null, ordLoading = false;
+  const ordExpanded = new Set();
+
+  function ordSetTab(btn, status) {
+    document.querySelectorAll('.ord-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ordStatus = status; ordPage = 1; ordExpanded.clear();
+    loadAdminOrders();
+  }
+
+  function ordDebounce() {
+    clearTimeout(ordTimer);
+    ordTimer = setTimeout(() => {
+      ordSearch = ($id('ord-search')?.value || '').trim();
+      ordPage = 1; ordExpanded.clear();
+      loadAdminOrders();
+    }, 380);
+  }
+
+  async function loadAdminOrders() {
+    if (ordLoading) return;
+    ordLoading = true;
+    const icon = $id('ord-refresh-icon');
+    if (icon) { icon.style.animation = 'spin .7s linear infinite'; icon.style.display = 'inline-block'; }
+    const body = $id('ord-body');
+    if (body) body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#aaa">جاري التحميل…</td></tr>';
+
+    const p = new URLSearchParams({ page: ordPage, per_page: 25 });
+    if (ordStatus) p.set('status', ordStatus);
+    if (ordSearch) p.set('search', ordSearch);
+
+    try {
+      const res  = await fetch(ORD_API_LIST + '?' + p);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'خطأ');
+      ordUpdateStats(data);
+      ordRender(data.orders || []);
+      ordRenderPagination(data);
+    } catch(e) {
+      if (body) body.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:#b71c1c">تعذر التحميل — ${e.message}</td></tr>`;
+    } finally {
+      ordLoading = false;
+      if (icon) icon.style.animation = '';
+    }
+  }
+
+  function ordUpdateStats(data) {
+    const c = data.counts || {};
+    const all = Object.values(c).reduce((a,b) => a+b, 0);
+    const setText = (id, v) => { const el = $id(id); if (el) el.textContent = v; };
+    setText('ord-stat-total',     data.total ?? 0);
+    setText('ord-stat-pending',   c.pending   ?? 0);
+    setText('ord-stat-preparing', c.preparing ?? 0);
+    setText('ord-stat-shipping',  c.shipping  ?? 0);
+    setText('ord-stat-delivered', c.delivered ?? 0);
+    setText('ord-stat-revenue',   ordFmtMoney(data.revenue ?? 0));
+    setText('ord-tc-all',       all);
+    setText('ord-tc-pending',   c.pending   ?? 0);
+    setText('ord-tc-confirmed', c.confirmed ?? 0);
+    setText('ord-tc-preparing', c.preparing ?? 0);
+    setText('ord-tc-shipping',  c.shipping  ?? 0);
+    setText('ord-tc-delivered', c.delivered ?? 0);
+    setText('ord-tc-cancelled', c.cancelled ?? 0);
+  }
+
+  function ordRender(orders) {
+    const body = $id('ord-body');
+    if (!body) return;
+    if (!orders.length) {
+      body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:3rem;color:#aaa"><span class="ms" style="font-size:2.5rem;display:block;margin-bottom:.5rem">package_2</span>لا توجد طلبات</td></tr>';
+      if ($id('ord-pagination')) $id('ord-pagination').style.display = 'none';
+      return;
+    }
+    body.innerHTML = '';
+    orders.forEach(o => {
+      const sCss = ORD_STATUS_CSS[o.status] || 'os-pending';
+      const sLbl = ORD_STATUS_LABELS[o.status] || o.status;
+      const itemSumm = (o.items || []).slice(0,2)
+        .map(i => `<span style="font-size:.76rem;color:var(--on-surface-dim);display:block">${ordEsc(i.name)} ×${i.qty}</span>`).join('')
+        + ((o.items||[]).length > 2 ? `<span style="font-size:.72rem;color:#aaa">+${o.items.length-2} أخرى</span>` : '');
+      const gBadge = o.is_guest
+        ? '<span class="ord-guest-badge"><span class="ms" style="font-size:.8rem">person_off</span>زائر</span>'
+        : '';
+      const isOpen = ordExpanded.has(o.id);
+
+      const main = document.createElement('tr');
+      main.className = 'ord-main' + (isOpen ? ' expanded' : '');
+      main.dataset.id = o.id;
+      main.innerHTML = `
+        <td><div style="font-family:monospace;font-size:.78rem;font-weight:700;color:var(--primary);direction:ltr">${ordEsc(o.order_number)}</div>${gBadge}</td>
+        <td style="font-weight:600">${ordEsc(o.customer_name)}</td>
+        <td style="font-family:monospace;font-size:.8rem;direction:ltr">${ordEsc(o.customer_phone)}</td>
+        <td style="line-height:1.55">${itemSumm}</td>
+        <td style="font-weight:700;color:var(--primary)">${ordFmtMoney(o.total)}</td>
+        <td><span class="ord-status-badge ${sCss}"><span class="ord-dot"></span>${sLbl}</span></td>
+        <td style="white-space:nowrap;color:var(--on-surface-dim);font-size:.76rem">${ordFmtDate(o.created_at)}</td>
+        <td><button class="action-btn" onclick="ordToggle(${o.id},event)"><span class="ms" id="ord-xi-${o.id}">${isOpen?'expand_less':'expand_more'}</span></button></td>
+      `;
+      main.addEventListener('click', e => { if (!e.target.closest('button,select')) ordToggle(o.id, e); });
+
+      const detail = document.createElement('tr');
+      detail.className = 'ord-detail' + (isOpen ? '' : ' hidden');
+      detail.id = `ord-det-${o.id}`;
+      detail.innerHTML = `<td colspan="8"><div class="ord-detail-inner">${ordBuildDetail(o)}</div></td>`;
+
+      body.appendChild(main);
+      body.appendChild(detail);
+    });
+  }
+
+  function ordBuildDetail(o) {
+    // Left: products + totals
+    let left = `<div>
+      <p style="font-size:.73rem;font-weight:700;color:var(--on-surface-dim);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.06em">المنتجات</p>`;
+    (o.items || []).forEach(item => {
+      const img = item.img
+        ? `<img src="${ordEsc(item.img)}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">`
+        : `<span class="ms" style="font-size:1.2rem;color:#ccc;font-variation-settings:'FILL' 1,'wght' 300,'GRAD' 0,'opsz' 24">grocery</span>`;
+      left += `<div class="ord-prod-item">
+        <div class="ord-prod-img">${img}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:.83rem">${ordEsc(item.name)}</div>
+          <div style="font-size:.74rem;color:var(--on-surface-dim)">الكمية: ${item.qty}${item.weight ? ' · ' + ordEsc(item.weight) : ''}</div>
+        </div>
+        <div style="font-size:.83rem;font-weight:700;color:var(--primary)">${ordFmtMoney(item.price * item.qty)}</div>
+      </div>`;
+    });
+    left += `<div style="background:#fff;border:1px solid var(--border);border-radius:9px;padding:.65rem .8rem;margin-top:.5rem">
+      <div class="ord-totals-row"><span>المجموع الفرعي</span><span>${ordFmtMoney(o.subtotal)}</span></div>
+      <div class="ord-totals-row"><span>الشحن</span><span>${ordFmtMoney(o.shipping)}</span></div>
+      ${o.discount > 0 ? `<div class="ord-totals-row" style="color:#1a6e2e"><span>خصم المحفظة</span><span>- ${ordFmtMoney(o.discount)}</span></div>` : ''}
+      <div class="ord-totals-row"><span>الإجمالي</span><span>${ordFmtMoney(o.total)}</span></div>
+    </div></div>`;
+
+    // Right: address + customer + status
+    let right = `<div>`;
+    if (o.address) right += `<div class="ord-addr"><span class="ms" style="color:var(--primary);font-size:1.1rem;margin-top:.1rem;flex-shrink:0">location_on</span>${ordEsc(o.address)}</div>`;
+    if (o.note)    right += `<div class="ord-note"><strong>ملاحظة:</strong> ${ordEsc(o.note)}</div>`;
+    right += `<div class="ord-info-card">
+      <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.4rem">
+        <span class="ms" style="color:var(--primary);font-size:1.1rem">person</span>
+        <span style="font-weight:700;font-size:.85rem">${ordEsc(o.customer_name)}</span>
+        ${o.is_guest ? '<span class="ord-guest-badge"><span class="ms" style="font-size:.78rem">person_off</span>زائر</span>' : ''}
+      </div>
+      <a href="tel:${ordEsc(o.customer_phone)}" style="display:flex;align-items:center;gap:.4rem;text-decoration:none;color:#1a56d6;font-size:.82rem;font-weight:600;font-family:monospace;direction:ltr">
+        <span class="ms" style="font-size:1rem;color:#1a56d6">call</span>${ordEsc(o.customer_phone)}
+      </a>
+    </div>`;
+    right += `<div class="ord-info-card">
+      <p style="font-size:.73rem;font-weight:700;color:var(--on-surface-dim);margin-bottom:.55rem;text-transform:uppercase;letter-spacing:.06em">تغيير الحالة</p>
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+        <select class="ord-status-select" id="ord-sel-${o.id}">
+          ${Object.entries(ORD_STATUS_LABELS).map(([v,l]) => `<option value="${v}"${o.status===v?' selected':''}>${l}</option>`).join('')}
+        </select>
+        <button class="ord-save-btn" id="ord-savebtn-${o.id}" onclick="ordSaveStatus(${o.id})">
+          <span class="ms" style="font-size:.95rem">save</span>حفظ
+        </button>
+      </div>
+    </div></div>`;
+
+    return left + right;
+  }
+
+  function ordToggle(id, e) {
+    if (e) e.stopPropagation();
+    const det  = $id(`ord-det-${id}`);
+    const main = document.querySelector(`tr.ord-main[data-id="${id}"]`);
+    const icon = $id(`ord-xi-${id}`);
+    if (!det) return;
+    const hidden = det.classList.contains('hidden');
+    det.classList.toggle('hidden', !hidden);
+    main && main.classList.toggle('expanded', hidden);
+    if (icon) icon.textContent = hidden ? 'expand_less' : 'expand_more';
+    hidden ? ordExpanded.add(id) : ordExpanded.delete(id);
+  }
+
+  async function ordSaveStatus(id) {
+    const sel = $id(`ord-sel-${id}`);
+    const btn = $id(`ord-savebtn-${id}`);
+    if (!sel || !btn) return;
+    btn.disabled = true;
+    btn.textContent = 'جاري…';
+    try {
+      const res  = await fetch(ORD_API_UPDATE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: sel.value }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'خطأ');
+
+      // Update badge in main row
+      const main = document.querySelector(`tr.ord-main[data-id="${id}"]`);
+      if (main) {
+        const badge = main.querySelector('.ord-status-badge');
+        if (badge) {
+          Object.values(ORD_STATUS_CSS).forEach(c => badge.classList.remove(c));
+          badge.classList.add(ORD_STATUS_CSS[sel.value] || 'os-pending');
+          const lbl = badge.querySelector(':not(.ord-dot)');
+          if (lbl) lbl.textContent = ORD_STATUS_LABELS[sel.value] || sel.value;
+        }
+      }
+
+      // silent stats refresh
+      fetch(ORD_API_LIST + '?page=1&per_page=1').then(r=>r.json()).then(d => { if(d.ok) ordUpdateStats(d); }).catch(()=>{});
+
+    } catch(e) {
+      alert('تعذر الحفظ: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="ms" style="font-size:.95rem">save</span>حفظ';
+    }
+  }
+
+  function ordRenderPagination(data) {
+    const wrap = $id('ord-pagination');
+    const info = $id('ord-page-info');
+    const btns = $id('ord-page-btns');
+    if (!wrap || !info || !btns) return;
+    if (data.pages <= 1 && data.total <= 25) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'flex';
+    const from = ((data.page-1)*data.per_page)+1;
+    const to   = Math.min(data.page*data.per_page, data.total);
+    info.textContent = `عرض ${from}–${to} من ${data.total} طلب`;
+    btns.innerHTML = '';
+    const mk = (label, pg, disabled, active) => {
+      const b = document.createElement('button');
+      b.className = 'page-btn' + (active ? ' active' : '');
+      b.innerHTML = label; b.disabled = disabled;
+      b.onclick = () => { ordPage = pg; loadAdminOrders(); };
+      btns.appendChild(b);
+    };
+    mk('<span class="ms" style="font-size:1.1rem">chevron_right</span>', data.page-1, data.page<=1, false);
+    for (let p=1; p<=data.pages; p++) {
+      if (data.pages>7 && Math.abs(p-data.page)>2 && p!==1 && p!==data.pages) {
+        if (p===2||p===data.pages-1) mk('…', p, true, false);
+        continue;
+      }
+      mk(p, p, false, p===data.page);
+    }
+    mk('<span class="ms" style="font-size:1.1rem">chevron_left</span>', data.page+1, data.page>=data.pages, false);
+  }
+
+  function ordFmtMoney(v) {
+    return (parseFloat(v)||0).toLocaleString('ar-EG',{style:'decimal',minimumFractionDigits:0,maximumFractionDigits:2}) + ' ر.ي';
+  }
+  function ordFmtDate(dt) {
+    if (!dt) return '—';
+    try { return new Date(dt).toLocaleDateString('ar-EG',{year:'numeric',month:'short',day:'numeric'}); } catch { return dt.substring(0,10); }
+  }
+  function ordEsc(s) {
+    return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
 }
 
 // ── Run after all declarations ────────────────────────────────────────────────
