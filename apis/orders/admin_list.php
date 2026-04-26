@@ -35,8 +35,12 @@ try {
 } catch (Throwable) {}
 
 // Params
-$status  = trim((string) ($_GET['status']   ?? ''));
-$search  = trim((string) ($_GET['search']   ?? ''));
+$status     = trim((string) ($_GET['status']       ?? ''));
+$search     = trim((string) ($_GET['search']       ?? ''));
+$governorate= trim((string) ($_GET['governorate']  ?? ''));
+$city       = trim((string) ($_GET['city']         ?? ''));
+$dateFrom   = trim((string) ($_GET['date_from']    ?? ''));
+$dateTo     = trim((string) ($_GET['date_to']      ?? ''));
 $page    = max(1, (int) ($_GET['page']      ?? 1));
 $perPage = min(100, max(10, (int) ($_GET['per_page'] ?? 25)));
 $offset  = ($page - 1) * $perPage;
@@ -57,6 +61,28 @@ if ($search !== '') {
     $params[':s1']     = $like;
     $params[':s2']     = $like;
     $params[':s3']     = $like;
+}
+
+if ($governorate !== '') {
+    $where[]                = '(o.governorate LIKE :gov OR o.full_address LIKE :gov2)';
+    $params[':gov']         = '%' . $governorate . '%';
+    $params[':gov2']        = '%' . $governorate . '%';
+}
+
+if ($city !== '') {
+    $where[]                = '(o.city LIKE :city OR o.full_address LIKE :city2)';
+    $params[':city']        = '%' . $city . '%';
+    $params[':city2']       = '%' . $city . '%';
+}
+
+if ($dateFrom !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFrom)) {
+    $where[]                = 'DATE(o.created_at) >= :date_from';
+    $params[':date_from']   = $dateFrom;
+}
+
+if ($dateTo !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateTo)) {
+    $where[]                = 'DATE(o.created_at) <= :date_to';
+    $params[':date_to']     = $dateTo;
 }
 
 $whereClause = $where ? ('WHERE ' . implode(' AND ', $where)) : '';

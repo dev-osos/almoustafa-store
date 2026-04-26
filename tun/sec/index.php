@@ -1533,34 +1533,6 @@ const ADMIN = {
       <?php if (can($adminRole, 'orders')): ?>
       <div class="section" id="ordersSection">
 
-        <!-- Stats row -->
-        <div class="stats-grid" style="margin-bottom:1.25rem">
-          <div class="stat-card">
-            <div class="stat-label"><span class="ms">receipt_long</span>إجمالي الطلبات</div>
-            <div class="stat-value" id="ord-stat-total">—</div>
-          </div>
-          <div class="stat-card" style="--accent:#fabd00">
-            <div class="stat-label"><span class="ms" style="color:#735c00">schedule</span>بانتظار التأكيد</div>
-            <div class="stat-value" id="ord-stat-pending" style="color:#735c00">—</div>
-          </div>
-          <div class="stat-card blue">
-            <div class="stat-label"><span class="ms" style="color:#1a56d6">inventory_2</span>جاري التجهيز</div>
-            <div class="stat-value" id="ord-stat-preparing" style="color:#1a56d6">—</div>
-          </div>
-          <div class="stat-card" style="border-top:none">
-            <div class="stat-label"><span class="ms" style="color:#6a1b9a">local_shipping</span>قيد التوصيل</div>
-            <div class="stat-value" id="ord-stat-shipping" style="color:#6a1b9a">—</div>
-          </div>
-          <div class="stat-card green">
-            <div class="stat-label"><span class="ms" style="color:#1a6e2e">where_to_vote</span>تم التوصيل</div>
-            <div class="stat-value" id="ord-stat-delivered">—</div>
-          </div>
-          <div class="stat-card gold">
-            <div class="stat-label"><span class="ms" style="color:#735c00">payments</span>الإيرادات</div>
-            <div class="stat-value" id="ord-stat-revenue">—</div>
-          </div>
-        </div>
-
         <!-- Filter tabs -->
         <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem" id="ord-filter-tabs">
           <button class="ord-tab active" data-status="" onclick="ordSetTab(this,'')">
@@ -1594,14 +1566,39 @@ const ADMIN = {
         </div>
 
         <!-- Toolbar -->
-        <div class="table-header" style="border-radius:var(--radius) var(--radius) 0 0;border:1px solid var(--border);background:var(--surface);margin-bottom:0">
-          <div class="search-wrap" style="max-width:280px">
-            <span class="ms">search</span>
-            <input class="search-input" id="ord-search" type="text" placeholder="رقم الطلب، الاسم، الهاتف…" oninput="ordDebounce()">
+        <div style="border-radius:var(--radius) var(--radius) 0 0;border:1px solid var(--border);border-bottom:none;background:var(--surface);padding:.85rem 1.1rem;display:flex;flex-direction:column;gap:.65rem">
+          <!-- Row 1: search + refresh -->
+          <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+            <div class="search-wrap" style="max-width:280px">
+              <span class="ms">search</span>
+              <input class="search-input" id="ord-search" type="text" placeholder="رقم الطلب، الاسم، الهاتف…" oninput="ordDebounce()">
+            </div>
+            <button class="primary-btn" onclick="loadAdminOrders()">
+              <span class="ms" id="ord-refresh-icon">refresh</span> تحديث
+            </button>
+            <button onclick="ordResetFilters()" title="مسح الفلاتر"
+              style="display:inline-flex;align-items:center;gap:.3rem;border:1.5px solid var(--border);border-radius:9px;background:var(--surface-dim);color:var(--on-surface-dim);padding:.4rem .8rem;font-size:.8rem;font-family:inherit;cursor:pointer">
+              <span class="ms" style="font-size:1rem">filter_alt_off</span> مسح
+            </button>
           </div>
-          <button class="primary-btn" onclick="loadAdminOrders()">
-            <span class="ms" id="ord-refresh-icon">refresh</span> تحديث
-          </button>
+          <!-- Row 2: date + location -->
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+            <div style="display:inline-flex;align-items:center;gap:.35rem;background:var(--surface-dim);border:1.5px solid var(--border);border-radius:9px;padding:.35rem .7rem;font-size:.8rem;color:var(--on-surface-dim)">
+              <span class="ms" style="font-size:1rem">calendar_today</span>
+              <span>من</span>
+              <input type="date" id="ord-date-from" onchange="ordApplyFilters()"
+                style="border:none;background:transparent;font-family:inherit;font-size:.8rem;color:var(--on-surface);outline:none;cursor:pointer;max-width:130px">
+              <span>إلى</span>
+              <input type="date" id="ord-date-to" onchange="ordApplyFilters()"
+                style="border:none;background:transparent;font-family:inherit;font-size:.8rem;color:var(--on-surface);outline:none;cursor:pointer;max-width:130px">
+            </div>
+            <input type="text" id="ord-governorate" placeholder="🏙 المحافظة…" oninput="ordDebounce()"
+              style="border:1.5px solid var(--border);border-radius:9px;background:var(--surface-dim);padding:.38rem .75rem;font-size:.81rem;font-family:inherit;color:var(--on-surface);outline:none;width:135px;transition:border-color .2s"
+              onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+            <input type="text" id="ord-city" placeholder="📍 المدينة…" oninput="ordDebounce()"
+              style="border:1.5px solid var(--border);border-radius:9px;background:var(--surface-dim);padding:.38rem .75rem;font-size:.81rem;font-family:inherit;color:var(--on-surface);outline:none;width:125px;transition:border-color .2s"
+              onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
         </div>
 
         <!-- Table -->
@@ -4322,6 +4319,7 @@ async function deletePromo(id) {
   };
 
   let ordPage = 1, ordStatus = '', ordSearch = '', ordTimer = null, ordLoading = false;
+  let ordGovernorate = '', ordCity = '', ordDateFrom = '', ordDateTo = '';
   const ordExpanded = new Set();
 
   function ordSetTab(btn, status) {
@@ -4334,10 +4332,27 @@ async function deletePromo(id) {
   function ordDebounce() {
     clearTimeout(ordTimer);
     ordTimer = setTimeout(() => {
-      ordSearch = ($id('ord-search')?.value || '').trim();
+      ordSearch      = ($id('ord-search')?.value      || '').trim();
+      ordGovernorate = ($id('ord-governorate')?.value || '').trim();
+      ordCity        = ($id('ord-city')?.value        || '').trim();
       ordPage = 1; ordExpanded.clear();
       loadAdminOrders();
     }, 380);
+  }
+
+  function ordApplyFilters() {
+    ordDateFrom = ($id('ord-date-from')?.value || '').trim();
+    ordDateTo   = ($id('ord-date-to')?.value   || '').trim();
+    ordPage = 1; ordExpanded.clear();
+    loadAdminOrders();
+  }
+
+  function ordResetFilters() {
+    ['ord-search','ord-governorate','ord-city'].forEach(id => { const el=$id(id); if(el) el.value=''; });
+    ['ord-date-from','ord-date-to'].forEach(id => { const el=$id(id); if(el) el.value=''; });
+    ordSearch = ordGovernorate = ordCity = ordDateFrom = ordDateTo = '';
+    ordPage = 1; ordExpanded.clear();
+    loadAdminOrders();
   }
 
   async function loadAdminOrders() {
@@ -4349,8 +4364,12 @@ async function deletePromo(id) {
     if (body) body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:#aaa">جاري التحميل…</td></tr>';
 
     const p = new URLSearchParams({ page: ordPage, per_page: 25 });
-    if (ordStatus) p.set('status', ordStatus);
-    if (ordSearch) p.set('search', ordSearch);
+    if (ordStatus)      p.set('status',      ordStatus);
+    if (ordSearch)      p.set('search',      ordSearch);
+    if (ordGovernorate) p.set('governorate', ordGovernorate);
+    if (ordCity)        p.set('city',        ordCity);
+    if (ordDateFrom)    p.set('date_from',   ordDateFrom);
+    if (ordDateTo)      p.set('date_to',     ordDateTo);
 
     try {
       const res  = await fetch(ORD_API_LIST + '?' + p);
@@ -4576,11 +4595,13 @@ async function deletePromo(id) {
   }
 
   // Expose functions needed by inline handlers and showSection()
-  window.loadAdminOrders = loadAdminOrders;
-  window.ordSetTab       = ordSetTab;
-  window.ordDebounce     = ordDebounce;
-  window.ordToggle       = ordToggle;
-  window.ordSaveStatus   = ordSaveStatus;
+  window.loadAdminOrders  = loadAdminOrders;
+  window.ordSetTab        = ordSetTab;
+  window.ordDebounce      = ordDebounce;
+  window.ordApplyFilters  = ordApplyFilters;
+  window.ordResetFilters  = ordResetFilters;
+  window.ordToggle        = ordToggle;
+  window.ordSaveStatus    = ordSaveStatus;
 }
 
 // ── Run after all declarations ────────────────────────────────────────────────
