@@ -158,7 +158,32 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         'total'          => (float)$row['total'],
         'created_at'     => (string)$row['created_at'],
         'updated_at'     => (string)$row['updated_at'],
+        'actions'        => [],   // filled below
     ];
+}
+
+// Fetch recorded admin actions for the returned orders
+if (!empty($orders)) {
+    $ids = implode(',', array_map(fn($o) => (int)$o['id'], $orders));
+    $idxById = [];
+    foreach ($orders as $i => $o) $idxById[$o['id']] = $i;
+
+    try {
+        $actStmt = $pdo->query("
+            SELECT order_id, action, admin_name, created_at
+            FROM order_admin_actions
+            WHERE order_id IN ($ids)
+        ");
+        while ($a = $actStmt->fetch(PDO::FETCH_ASSOC)) {
+            $oi = $idxById[(int)$a['order_id']] ?? null;
+            if ($oi !== null) {
+                $orders[$oi]['actions'][(string)$a['action']] = [
+                    'admin_name' => (string)$a['admin_name'],
+                    'at'         => substr((string)$a['created_at'], 0, 16),
+                ];
+            }
+        }
+    } catch (Throwable) {}
 }
 
 // Status counts

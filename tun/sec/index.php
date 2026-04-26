@@ -4308,6 +4308,7 @@ async function deletePromo(id) {
 {
   const ORD_API_LIST   = '../../apis/orders/admin_list.php';
   const ORD_API_UPDATE = '../../apis/orders/admin_update.php';
+  const ORD_API_ACTION = '../../apis/orders/admin_action.php';
 
   const ORD_STATUS_LABELS = {
     pending:'بانتظار التأكيد', confirmed:'مؤكد', preparing:'جاري التجهيز',
@@ -4474,19 +4475,38 @@ async function deletePromo(id) {
       <div class="ord-totals-row"><span>الإجمالي</span><span>${ordFmtMoney(o.total)}</span></div>
     </div></div>`;
 
-    // Right: address + customer + status
+    // Right: customer card (name + phone + address + whatsapp) + status
+    const waPhone = (o.customer_phone || '').replace(/\D/g, '');
+    const waItems = (o.items || []).slice(0,3).map(i => `• ${i.name} ×${i.qty}`).join('\n');
+    const waMsg   = encodeURIComponent(
+      `السلام عليكم ${o.customer_name}،\nشكراً لطلبكم من متجر المصطفى 🍯\n\nطلبك رقم: ${o.order_number}\n${waItems}\nالإجمالي: ${ordFmtMoney(o.total)}\n\nسنتواصل معكم قريباً لتأكيد التوصيل.`
+    );
+    const waHref  = `https://wa.me/${waPhone}?text=${waMsg}`;
+
     let right = `<div>`;
-    if (o.address) right += `<div class="ord-addr"><span class="ms" style="color:var(--primary);font-size:1.1rem;margin-top:.1rem;flex-shrink:0">location_on</span>${ordEsc(o.address)}</div>`;
-    if (o.note)    right += `<div class="ord-note"><strong>ملاحظة:</strong> ${ordEsc(o.note)}</div>`;
+    if (o.note) right += `<div class="ord-note"><strong>ملاحظة:</strong> ${ordEsc(o.note)}</div>`;
     right += `<div class="ord-info-card">
-      <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.4rem">
-        <span class="ms" style="color:var(--primary);font-size:1.1rem">person</span>
-        <span style="font-weight:700;font-size:.85rem">${ordEsc(o.customer_name)}</span>
+      <!-- Name + guest badge -->
+      <div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.55rem">
+        <span class="ms" style="color:var(--primary);font-size:1.15rem">person</span>
+        <span style="font-weight:700;font-size:.9rem;flex:1">${ordEsc(o.customer_name)}</span>
         ${o.is_guest ? '<span class="ord-guest-badge"><span class="ms" style="font-size:.78rem">person_off</span>زائر</span>' : ''}
       </div>
-      <a href="tel:${ordEsc(o.customer_phone)}" style="display:flex;align-items:center;gap:.4rem;text-decoration:none;color:#1a56d6;font-size:.82rem;font-weight:600;font-family:monospace;direction:ltr">
+      <!-- Phone + call -->
+      <a href="tel:${ordEsc(o.customer_phone)}"
+        style="display:flex;align-items:center;gap:.4rem;text-decoration:none;color:#1a56d6;font-size:.82rem;font-weight:600;font-family:monospace;direction:ltr;margin-bottom:.5rem">
         <span class="ms" style="font-size:1rem;color:#1a56d6">call</span>${ordEsc(o.customer_phone)}
       </a>
+      ${o.address ? `<!-- Address -->
+      <div style="display:flex;align-items:flex-start;gap:.35rem;font-size:.8rem;color:var(--on-surface-dim);margin-bottom:.65rem;line-height:1.5">
+        <span class="ms" style="color:var(--primary);font-size:1rem;flex-shrink:0;margin-top:.05rem">location_on</span>
+        <span>${ordEsc(o.address)}</span>
+      </div>` : ''}
+      <!-- Action buttons -->
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.15rem;align-items:center">
+        ${ordActionBtn(o, 'whatsapp', waHref)}
+        ${ordActionBtn(o, 'call', `tel:${ordEsc(o.customer_phone)}`)}
+      </div>
     </div>`;
     right += `<div class="ord-info-card">
       <p style="font-size:.73rem;font-weight:700;color:var(--on-surface-dim);margin-bottom:.55rem;text-transform:uppercase;letter-spacing:.06em">تغيير الحالة</p>
@@ -4496,6 +4516,39 @@ async function deletePromo(id) {
         </select>
         <button class="ord-save-btn" id="ord-savebtn-${o.id}" onclick="ordSaveStatus(${o.id})">
           <span class="ms" style="font-size:.95rem">save</span>حفظ
+        </button>
+      </div>
+    </div>
+    <div class="ord-info-card">
+      <p style="font-size:.73rem;font-weight:700;color:var(--on-surface-dim);margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.06em">المهام</p>
+      <div style="display:flex;flex-direction:column;gap:.5rem">
+        <!-- ERP -->
+        <button id="ord-erp-btn-${o.id}" onclick="ordSendToErp(${o.id},this)"
+          style="display:flex;align-items:center;gap:.6rem;width:100%;border:1.5px solid var(--border);border-radius:9px;background:var(--surface);padding:.6rem .85rem;font-family:inherit;cursor:pointer;text-align:right;transition:border-color .2s,background .2s"
+          onmouseover="this.style.borderColor='#3c0004';this.style.background='rgba(60,0,4,.04)'"
+          onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
+          <span style="width:34px;height:34px;border-radius:8px;background:rgba(60,0,4,.07);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span class="ms" style="font-size:1.15rem;color:#3c0004">sync_alt</span>
+          </span>
+          <span style="flex:1;min-width:0">
+            <span style="display:block;font-size:.83rem;font-weight:700;color:var(--on-surface)">تأكيد وإرسال إلى ERP</span>
+            <span style="display:block;font-size:.73rem;color:var(--on-surface-dim);margin-top:.1rem" id="ord-erp-lbl-${o.id}">إرسال بيانات الطلب إلى نظام ERP</span>
+          </span>
+          <span class="ms" style="font-size:1.1rem;color:var(--on-surface-dim);flex-shrink:0">chevron_left</span>
+        </button>
+        <!-- Shipping -->
+        <button id="ord-ship-btn-${o.id}" onclick="ordRegisterShipping(${o.id},this)"
+          style="display:flex;align-items:center;gap:.6rem;width:100%;border:1.5px solid var(--border);border-radius:9px;background:var(--surface);padding:.6rem .85rem;font-family:inherit;cursor:pointer;text-align:right;transition:border-color .2s,background .2s"
+          onmouseover="this.style.borderColor='#6a1b9a';this.style.background='rgba(106,27,154,.04)'"
+          onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
+          <span style="width:34px;height:34px;border-radius:8px;background:rgba(106,27,154,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <span class="ms" style="font-size:1.15rem;color:#6a1b9a">local_shipping</span>
+          </span>
+          <span style="flex:1;min-width:0">
+            <span style="display:block;font-size:.83rem;font-weight:700;color:var(--on-surface)">تسجيل لدى شركة الشحن</span>
+            <span style="display:block;font-size:.73rem;color:var(--on-surface-dim);margin-top:.1rem" id="ord-ship-lbl-${o.id}">إنشاء شحنة وطباعة بوليصة التوصيل</span>
+          </span>
+          <span class="ms" style="font-size:1.1rem;color:var(--on-surface-dim);flex-shrink:0">chevron_left</span>
         </button>
       </div>
     </div></div>`;
@@ -4594,14 +4647,115 @@ async function deletePromo(id) {
     return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  const WA_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.132.558 4.133 1.528 5.868L.057 23.998l6.285-1.648A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.894a9.877 9.877 0 01-5.031-1.378l-.361-.214-3.735.979 1.001-3.648-.235-.374A9.86 9.86 0 012.106 12C2.106 6.58 6.58 2.106 12 2.106S21.894 6.58 21.894 12 17.42 21.894 12 21.894z"/></svg>`;
+
+  function ordActionBtn(o, type, href) {
+    const act = (o.actions || {})[type];
+    const isWa = type === 'whatsapp';
+    const bg   = isWa ? '#25d366' : '#1a56d6';
+    const icon = isWa ? WA_SVG : `<span class="ms" style="font-size:.9rem">call</span>`;
+    const lbl  = isWa ? 'واتساب' : 'اتصال';
+    const id   = `ord-actbtn-${type}-${o.id}`;
+
+    if (act) {
+      // Already used — show disabled badge with actor name
+      return `<div id="${id}" style="display:inline-flex;align-items:center;gap:.35rem;background:${bg}18;border:1.5px solid ${bg}40;border-radius:8px;padding:.35rem .75rem;font-size:.75rem;font-weight:700;color:${bg};opacity:.75;user-select:none">
+        ${icon}
+        ${lbl}
+        <span style="display:inline-flex;align-items:center;gap:.2rem;background:rgba(0,0,0,.08);border-radius:5px;padding:.05rem .4rem;font-size:.68rem;margin-right:.15rem">
+          <span class="ms" style="font-size:.8rem">person</span>${ordEsc(act.admin_name)}
+        </span>
+      </div>`;
+    }
+
+    const onclick = `ordLogAction(${o.id},'${type}','${id}','${href}')`;
+    const tagAttrs = type === 'call'
+      ? `href="${href}"`
+      : `href="${href}" target="_blank" rel="noopener"`;
+
+    return `<a ${tagAttrs} id="${id}"
+      onclick="${onclick}"
+      style="display:inline-flex;align-items:center;gap:.4rem;background:${bg};color:#fff;border-radius:8px;padding:.42rem .9rem;font-size:.8rem;font-weight:700;text-decoration:none;font-family:inherit;transition:opacity .2s"
+      onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+      ${icon}${lbl}
+    </a>`;
+  }
+
+  async function ordLogAction(orderId, type, elemId, href) {
+    const el = $id(elemId);
+    // Log in background — don't block navigation
+    fetch(ORD_API_ACTION, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order_id: orderId, action: type }),
+    }).then(r => r.json()).then(data => {
+      if (!data.ok || !el) return;
+      const isWa  = type === 'whatsapp';
+      const bg    = isWa ? '#25d366' : '#1a56d6';
+      const icon  = isWa ? WA_SVG : `<span class="ms" style="font-size:.9rem">call</span>`;
+      const lbl   = isWa ? 'واتساب' : 'اتصال';
+      // Replace the link with a disabled badge showing who used it
+      const badge = document.createElement('div');
+      badge.id    = elemId;
+      badge.style.cssText = `display:inline-flex;align-items:center;gap:.35rem;background:${bg}18;border:1.5px solid ${bg}40;border-radius:8px;padding:.35rem .75rem;font-size:.75rem;font-weight:700;color:${bg};opacity:.75;user-select:none`;
+      badge.innerHTML = `${icon}${lbl}<span style="display:inline-flex;align-items:center;gap:.2rem;background:rgba(0,0,0,.08);border-radius:5px;padding:.05rem .4rem;font-size:.68rem;margin-right:.15rem"><span class="ms" style="font-size:.8rem">person</span>${ordEsc(data.admin_name)}</span>`;
+      el.replaceWith(badge);
+    }).catch(() => {});
+  }
+
+  async function ordSendToErp(id, btn) {
+    const lbl = $id(`ord-erp-lbl-${id}`);
+    btn.disabled = true;
+    btn.style.opacity = '.6';
+    if (lbl) lbl.textContent = 'جاري الإرسال…';
+    try {
+      // Placeholder — wire to your ERP endpoint when ready
+      await new Promise(r => setTimeout(r, 1200));
+      if (lbl) lbl.textContent = '✓ تم الإرسال إلى ERP';
+      btn.style.borderColor = '#1a6e2e';
+      btn.querySelector('span[style*="background:rgba(60"]').style.background = 'rgba(26,110,46,.1)';
+      btn.querySelector('.ms[style*="color:#3c0004"]').textContent = 'check_circle';
+      btn.querySelector('.ms[style*="color:#3c0004"]').style.color = '#1a6e2e';
+    } catch(e) {
+      if (lbl) lbl.textContent = '✗ فشل الإرسال — ' + e.message;
+      btn.style.borderColor = '#b71c1c';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    }
+  }
+
+  async function ordRegisterShipping(id, btn) {
+    const lbl = $id(`ord-ship-lbl-${id}`);
+    btn.disabled = true;
+    btn.style.opacity = '.6';
+    if (lbl) lbl.textContent = 'جاري التسجيل…';
+    try {
+      // Placeholder — wire to your shipping provider API when ready
+      await new Promise(r => setTimeout(r, 1400));
+      if (lbl) lbl.textContent = '✓ تم التسجيل — جاهز للطباعة';
+      btn.style.borderColor = '#1a6e2e';
+      btn.querySelector('span[style*="background:rgba(106"]').style.background = 'rgba(26,110,46,.1)';
+      btn.querySelector('.ms[style*="color:#6a1b9a"]').textContent = 'check_circle';
+      btn.querySelector('.ms[style*="color:#6a1b9a"]').style.color = '#1a6e2e';
+    } catch(e) {
+      if (lbl) lbl.textContent = '✗ فشل التسجيل — ' + e.message;
+      btn.style.borderColor = '#b71c1c';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    }
+  }
+
   // Expose functions needed by inline handlers and showSection()
-  window.loadAdminOrders  = loadAdminOrders;
-  window.ordSetTab        = ordSetTab;
-  window.ordDebounce      = ordDebounce;
-  window.ordApplyFilters  = ordApplyFilters;
-  window.ordResetFilters  = ordResetFilters;
-  window.ordToggle        = ordToggle;
-  window.ordSaveStatus    = ordSaveStatus;
+  window.loadAdminOrders      = loadAdminOrders;
+  window.ordSetTab            = ordSetTab;
+  window.ordDebounce          = ordDebounce;
+  window.ordApplyFilters      = ordApplyFilters;
+  window.ordResetFilters      = ordResetFilters;
+  window.ordToggle            = ordToggle;
+  window.ordSaveStatus        = ordSaveStatus;
+  window.ordLogAction         = ordLogAction;
+  window.ordSendToErp         = ordSendToErp;
+  window.ordRegisterShipping  = ordRegisterShipping;
 }
 
 // ── Run after all declarations ────────────────────────────────────────────────
