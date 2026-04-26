@@ -260,6 +260,12 @@
     }
     return Math.max(0, Math.min(99, discount || 0));
   }
+  function getStepQtyBySegment(product) {
+    const segment = getSessionSegment();
+    if (segment === 'corporate') return Math.max(1, parseInt(product.step_corporate_qty, 10) || 6);
+    if (segment === 'wholesale') return Math.max(1, parseInt(product.step_wholesale_qty, 10) || 6);
+    return 1;
+  }
 
   // Cart
   let cart = [];
@@ -368,6 +374,7 @@
 
     // Qty stepper
     const minQty = getMinQtyBySegment(p);
+    const stepQty = getStepQtyBySegment(p);
     let qty = minQty;
     const minusBtn = document.getElementById('qty-minus');
     const plusBtn  = document.getElementById('qty-plus');
@@ -376,12 +383,12 @@
     minusBtn.disabled = qty <= minQty;
     minusBtn.addEventListener('click', () => {
       if (qty <= minQty) return;
-      qty--;
+      qty = Math.max(minQty, qty - stepQty);
       qtyNum.textContent = toAr(qty);
       minusBtn.disabled = qty <= minQty;
     });
     plusBtn.addEventListener('click', () => {
-      qty++;
+      qty += stepQty;
       qtyNum.textContent = toAr(qty);
       minusBtn.disabled = qty <= minQty;
     });
@@ -394,9 +401,10 @@
       const ex = cart.find(i => i.name === p.store_name);
       if (ex) {
         ex.minQty = Math.max(parseInt(ex.minQty, 10) || 1, minQty);
+        ex.stepQty = Math.max(parseInt(ex.stepQty, 10) || 1, stepQty);
         ex.qty += qty;
       } else {
-        cart.push({ name: p.store_name, img: p.image_url || 'logo.png', price: final, qty, minQty });
+        cart.push({ name: p.store_name, img: p.image_url || 'logo.png', price: final, qty, minQty, stepQty });
       }
       saveCart(); updateCartBadge();
       addBtn.classList.add('added');

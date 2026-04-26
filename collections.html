@@ -977,11 +977,15 @@
       var idx = +btn.dataset.idx;
       var action = btn.dataset.action;
       var minQty = Math.max(1, parseInt((cartItems[idx] || {}).minQty, 10) || 1);
+      var seg = '';
+      try { seg = String((JSON.parse(localStorage.getItem('alm_session') || '{}').segment || '')).toLowerCase(); } catch (_) {}
+      var defaultStep = (seg === 'wholesale' || seg === 'corporate' || seg === 'جملة') ? 6 : 1;
+      var stepQty = Math.max(1, parseInt((cartItems[idx] || {}).stepQty, 10) || defaultStep);
       if (action === 'remove') { cartItems.splice(idx,1); saveCart(cartItems); renderCart(); return; }
-      if (action === 'inc') cartItems[idx].qty++;
+      if (action === 'inc') cartItems[idx].qty += stepQty;
       else if (action === 'dec') {
         if (cartItems[idx].qty <= minQty) return;
-        cartItems[idx].qty--;
+        cartItems[idx].qty = Math.max(minQty, cartItems[idx].qty - stepQty);
       }
       var row = btn.closest('.cart-row');
       if (row) {

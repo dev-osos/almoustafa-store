@@ -20,8 +20,14 @@ foreach (['discount_consumer', 'discount_wholesale', 'discount_corporate'] as $c
         $pdo->exec("ALTER TABLE products ADD COLUMN {$col} TINYINT UNSIGNED NOT NULL DEFAULT 0");
     }
 }
+foreach (['step_wholesale_qty', 'step_corporate_qty'] as $col) {
+    $hasColStmt = $pdo->query("SHOW COLUMNS FROM products LIKE " . $pdo->quote($col));
+    if (!$hasColStmt->fetch()) {
+        $pdo->exec("ALTER TABLE products ADD COLUMN {$col} INT UNSIGNED NOT NULL DEFAULT 6");
+    }
+}
 $stmt = $pdo->query(
-    "SELECT id, store_name, api_name, category, badge, wight, price, discount, discount_consumer, discount_wholesale, discount_corporate, image_url, min_wholesale_qty, min_corporate_qty
+    "SELECT id, store_name, api_name, category, badge, wight, price, discount, discount_consumer, discount_wholesale, discount_corporate, image_url, min_wholesale_qty, min_corporate_qty, step_wholesale_qty, step_corporate_qty
      FROM products
      WHERE status = 'active' AND category != ''
      ORDER BY category ASC, id ASC"

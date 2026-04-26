@@ -545,6 +545,14 @@ const ADMIN = {
             <input class="form-input" type="number" name="min_corporate_qty" id="pf-min_corporate_qty" placeholder="60" min="1" step="1" value="60"/>
           </div>
           <div class="form-field">
+            <label class="form-label">خطوة الزيادة/النقصان للجملة (السلة/الدفع)</label>
+            <input class="form-input" type="number" name="step_wholesale_qty" id="pf-step_wholesale_qty" placeholder="6" min="1" step="1" value="6"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">خطوة الزيادة/النقصان لجملة الجملة (السلة/الدفع)</label>
+            <input class="form-input" type="number" name="step_corporate_qty" id="pf-step_corporate_qty" placeholder="6" min="1" step="1" value="6"/>
+          </div>
+          <div class="form-field">
             <label class="form-label">السعر (ج.م)</label>
             <input class="form-input" type="number" name="price" id="pf-price" placeholder="0.00" min="0" step="0.01" oninput="updateDiscountPreview()"/>
           </div>
@@ -3494,7 +3502,7 @@ function openProductModal(jsonStr) {
   if (jsonStr) {
     const p = JSON.parse(jsonStr);
     title.textContent = 'تعديل منتج';
-    ['id','erp_id','api_name','store_name','category','status','badge','wight','price','discount_consumer','discount_wholesale','discount_corporate','sold_q','image_url','source','min_wholesale_qty','min_corporate_qty'].forEach(f => {
+    ['id','erp_id','api_name','store_name','category','status','badge','wight','price','discount_consumer','discount_wholesale','discount_corporate','sold_q','image_url','source','min_wholesale_qty','min_corporate_qty','step_wholesale_qty','step_corporate_qty'].forEach(f => {
       const el = $id('pf-' + f);
       if (el) el.value = p[f] ?? '';
     });
@@ -3543,6 +3551,8 @@ function openProductModal(jsonStr) {
     $id('pf-extra_info').value = '';
     $id('pf-min_wholesale_qty').value = '6';
     $id('pf-min_corporate_qty').value = '60';
+    $id('pf-step_wholesale_qty').value = '6';
+    $id('pf-step_corporate_qty').value = '6';
     $id('pf-discount_consumer').value = '0';
     $id('pf-discount_wholesale').value = '20';
     $id('pf-discount_corporate').value = '30';
@@ -3683,6 +3693,8 @@ async function submitProduct(e) {
   data.discount_corporate = Math.max(0, Math.min(99, parseInt(data.discount_corporate, 10) || 30));
   data.min_wholesale_qty = Math.max(1, parseInt(data.min_wholesale_qty, 10) || 6);
   data.min_corporate_qty = Math.max(1, parseInt(data.min_corporate_qty, 10) || 60);
+  data.step_wholesale_qty = Math.max(1, parseInt(data.step_wholesale_qty, 10) || 6);
+  data.step_corporate_qty = Math.max(1, parseInt(data.step_corporate_qty, 10) || 6);
   const action = data.id ? 'update' : 'create';
   try {
     const res = await fetch(PROD_API, { method:'POST', headers: prodApiHeaders(), body: JSON.stringify({ action, ...data }) });

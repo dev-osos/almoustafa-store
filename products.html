@@ -678,6 +678,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     return Math.max(0, Math.min(99, discount || 0));
   }
+  function getStepQtyBySegment(product) {
+    const segment = getSessionSegment();
+    if (segment === 'corporate') return Math.max(1, parseInt(product.step_corporate_qty, 10) || 6);
+    if (segment === 'wholesale') return Math.max(1, parseInt(product.step_wholesale_qty, 10) || 6);
+    return 1;
+  }
 
   function buildCard(p) {
     const name     = p.store_name || p.api_name || '';
@@ -718,6 +724,8 @@ document.addEventListener('DOMContentLoaded', () => {
     card.dataset.id       = p.id;
     card.dataset.minWholesaleQty = String(Math.max(1, parseInt(p.min_wholesale_qty, 10) || 6));
     card.dataset.minCorporateQty = String(Math.max(1, parseInt(p.min_corporate_qty, 10) || 60));
+    card.dataset.stepWholesaleQty = String(Math.max(1, parseInt(p.step_wholesale_qty, 10) || 6));
+    card.dataset.stepCorporateQty = String(Math.max(1, parseInt(p.step_corporate_qty, 10) || 6));
     if (hasDiscount) card.dataset.discount = 'true';
     card.style.cursor = 'pointer';
     card.innerHTML = `
@@ -991,8 +999,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const price = overridePrice !== null ? overridePrice : (parseFloat(p.price)||0);
       const disc  = getDiscountBySegment(p);
       const final = disc>0 && disc<100 ? price*(1-disc/100) : price;
-      const ex = cart.find(i => i.name === p.store_name);
-      if (ex) ex.qty += qty; else cartItems.push({ name: p.store_name, img: p.image_url||'logo.png', price: final, qty, weight: parseFloat(p.wight)||0 });
+      const minQty = getMinQtyBySegment(p);
+      const stepQty = getStepQtyBySegment(p);
+      const ex = cartItems.find(i => i.name === p.store_name);
+      if (ex) {
+        ex.minQty = Math.max(getItemMinQty(ex), minQty);
+        ex.stepQty = Math.max(getItemStepQty(ex), stepQty);
+        ex.qty += qty;
+      } else {
+        cartItems.push({ name: p.store_name, img: p.image_url||'logo.png', price: final, qty, weight: parseFloat(p.wight)||0, minQty, stepQty });
+      }
       added++;
     };
 
@@ -1117,6 +1133,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function parsePrice(str) { return parseFloat(str.replace(/[^\d.]/g, '')) || 0; }
   function formatPrice(n) { const isWhole = n % 1 === 0; return n.toLocaleString('ar-EG', { minimumFractionDigits: isWhole ? 0 : 2, maximumFractionDigits: isWhole ? 0 : 2 }) + ' ج.م'; }
   function getItemMinQty(item) { return Math.max(1, parseInt(item?.minQty, 10) || 1); }
+  function getItemStepQty(item) {
+    const seg = getSessionSegment();
+    const defaultStep = (seg === 'wholesale' || seg === 'corporate') ? 6 : 1;
+    return Math.max(1, parseInt(item?.stepQty, 10) || defaultStep);
+  }
 
   // --- Toast ---
   let toastTimer;
@@ -1196,11 +1217,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (action === 'remove') { cartItems.splice(idx, 1); renderCart(); saveCart(); return; }
 
-    if (action === 'inc') cartItems[idx].qty++;
+    if (action === 'inc') {
+      cartItems[idx].qty += getItemStepQty(cartItems[idx]);
+    }
     else if (action === 'dec') {
       const minQty = getItemMinQty(cartItems[idx]);
+      const stepQty = getItemStepQty(cartItems[idx]);
       if (cartItems[idx].qty <= minQty) return;
-      cartItems[idx].qty--;
+      cartItems[idx].qty = Math.max(minQty, cartItems[idx].qty - stepQty);
     }
 
     // Partial update: only update qty input + totals, no DOM rebuild
@@ -1264,13 +1288,19 @@ document.addEventListener('DOMContentLoaded', () => {
       : segment === 'wholesale'
         ? Math.max(1, parseInt(card.dataset.minWholesaleQty, 10) || 6)
         : 1;
+    const stepQty = segment === 'corporate'
+      ? Math.max(1, parseInt(card.dataset.stepCorporateQty, 10) || 6)
+      : segment === 'wholesale'
+        ? Math.max(1, parseInt(card.dataset.stepWholesaleQty, 10) || 6)
+        : 1;
     flyToCart(btn, () => {
       const ex = cartItems.find(i => i.name === name);
       if (ex) {
         ex.minQty = Math.max(getItemMinQty(ex), minQty);
+        ex.stepQty = Math.max(getItemStepQty(ex), stepQty);
         ex.qty += minQty;
       } else {
-        cartItems.push({ name, img, price, qty: minQty, minQty });
+        cartItems.push({ name, img, price, qty: minQty, minQty, stepQty });
       }
       renderCart();
       saveCart();

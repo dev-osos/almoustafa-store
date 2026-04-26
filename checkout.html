@@ -850,7 +850,9 @@
 
     const minusBtn = document.createElement('button');
     minusBtn.className = 'qty-btn'; minusBtn.type = 'button';
+    const defaultStepQty = ['wholesale', 'corporate', 'جملة'].includes(session.segment) ? 6 : 1;
     const minQty = Math.max(1, parseInt(item.minQty, 10) || 1);
+    const stepQty = Math.max(1, parseInt(item.stepQty, 10) || defaultStepQty);
     minusBtn.innerHTML = '−'; minusBtn.disabled = item.qty <= minQty;
 
     const numEl = document.createElement('span');
@@ -881,7 +883,7 @@
 
     minusBtn.addEventListener('click', () => {
       if (item.qty <= minQty) return;
-      item.qty--;
+      item.qty = Math.max(minQty, item.qty - stepQty);
       numEl.textContent = toAr(item.qty);
       priceEl.textContent = fmtPrice(item.price * item.qty);
       minusBtn.disabled = item.qty <= minQty;
@@ -889,7 +891,7 @@
     });
 
     plusBtn.addEventListener('click', () => {
-      item.qty++;
+      item.qty += stepQty;
       numEl.textContent = toAr(item.qty);
       priceEl.textContent = fmtPrice(item.price * item.qty);
       minusBtn.disabled = item.qty <= minQty;
