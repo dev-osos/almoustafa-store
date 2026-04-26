@@ -740,14 +740,12 @@ const ADMIN = {
       <span style="background:#e8f0fe;color:#1a56d6;padding:.35rem .65rem;border-radius:999px;font-size:.75rem;">إجمالي القطع: <strong id="coStatItems">0</strong></span>
       <span style="background:#fdf6e0;color:#735c00;padding:.35rem .65rem;border-radius:999px;font-size:.75rem;">آخر طلب: <strong id="coStatLast">—</strong></span>
     </div>
-    <div style="display:flex;justify-content:flex-end;align-items:center;gap:.5rem;margin-bottom:.8rem;">
-      <label for="coRangeFilter" style="font-size:.8rem;color:var(--on-surface-dim);font-weight:700;">المدة الزمنية</label>
-      <select class="chart-select" id="coRangeFilter">
-        <option value="all">كل الوقت</option>
-        <option value="7">آخر 7 أيام</option>
-        <option value="30" selected>آخر 30 يوم</option>
-        <option value="90">آخر 90 يوم</option>
-      </select>
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.8rem;">
+      <label for="coDateFrom" style="font-size:.8rem;color:var(--on-surface-dim);font-weight:700;">من تاريخ</label>
+      <input class="chart-select" id="coDateFrom" type="date" style="min-width:155px;">
+      <label for="coDateTo" style="font-size:.8rem;color:var(--on-surface-dim);font-weight:700;">إلى تاريخ</label>
+      <input class="chart-select" id="coDateTo" type="date" style="min-width:155px;">
+      <button type="button" class="cancel-btn" id="coApplyDateFilter" style="padding:.4rem .75rem;">تطبيق</button>
     </div>
     <div class="table-wrap" style="max-height:420px;overflow-y:auto;">
       <table>
@@ -1461,6 +1459,48 @@ const ADMIN = {
 <script>
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const $id = id => document.getElementById(id);
+let __notifyTimer = null;
+
+function notify(message, type = 'ok') {
+  const text = String(message || '').trim();
+  if (!text) return;
+  let box = $id('globalNotify');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'globalNotify';
+    box.setAttribute('role', 'status');
+    box.style.cssText = [
+      'position:fixed',
+      'top:16px',
+      'left:50%',
+      'transform:translateX(-50%)',
+      'z-index:10000',
+      'padding:.65rem .95rem',
+      'border-radius:10px',
+      'font-size:.85rem',
+      'font-weight:700',
+      'box-shadow:0 8px 20px rgba(0,0,0,.18)',
+      'opacity:0',
+      'pointer-events:none',
+      'transition:opacity .2s ease',
+      'max-width:min(92vw,620px)',
+      'text-align:center',
+      'line-height:1.45'
+    ].join(';');
+    document.body.appendChild(box);
+  }
+  const isError = String(type || '').toLowerCase() === 'err';
+  box.style.background = isError ? '#fdecea' : '#e8f5e9';
+  box.style.color = isError ? '#7a1212' : '#1f5e2b';
+  box.style.border = isError ? '1px solid #f5b8b8' : '1px solid #b6d9be';
+  box.textContent = text;
+  box.style.opacity = '1';
+
+  if (__notifyTimer) clearTimeout(__notifyTimer);
+  __notifyTimer = setTimeout(() => {
+    box.style.opacity = '0';
+  }, 2600);
+}
 
 function fmt(n) {
   return (n === null || n === undefined) ? '—' : Number(n).toLocaleString('ar-EG');
@@ -2323,19 +2363,28 @@ function initCustomerEditAddressFields() {
 let customerOrdersCache = [];
 function applyCustomerOrdersRangeFilter() {
   const body = $id('custOrdersBody');
-  const rangeEl = $id('coRangeFilter');
+  const dateFromEl = $id('coDateFrom');
+  const dateToEl = $id('coDateTo');
   const setText = (id, val) => { const el = $id(id); if (el) el.textContent = val; };
-  if (!body || !rangeEl) return;
+  if (!body || !dateFromEl || !dateToEl) return;
 
-  const rangeValue = rangeEl.value || 'all';
-  const now = Date.now();
-  const days = rangeValue === 'all' ? null : Number(rangeValue);
-  const minTs = Number.isFinite(days) && days !== null ? now - (days * 24 * 60 * 60 * 1000) : null;
+  const dateFromRaw = String(dateFromEl.value || '').trim();
+  const dateToRaw = String(dateToEl.value || '').trim();
+  const minTs = dateFromRaw ? Date.parse(`${dateFromRaw}T00:00:00`) : null;
+  const maxTs = dateToRaw ? Date.parse(`${dateToRaw}T23:59:59`) : null;
+  if (minTs !== null && Number.isNaN(minTs)) return;
+  if (maxTs !== null && Number.isNaN(maxTs)) return;
+  if (minTs !== null && maxTs !== null && minTs > maxTs) {
+    notify('تاريخ البداية يجب أن يكون قبل تاريخ النهاية.', 'err');
+    return;
+  }
+
   const orders = customerOrdersCache.filter((o) => {
-    if (minTs === null) return true;
     const ts = Date.parse(String(o.created_at || ''));
     if (Number.isNaN(ts)) return false;
-    return ts >= minTs;
+    if (minTs !== null && ts < minTs) return false;
+    if (maxTs !== null && ts > maxTs) return false;
+    return true;
   });
 
   const ordersCount = orders.length;
@@ -2414,7 +2463,8 @@ async function viewCustomerOrders(btn) {
   if (!customerId) return notify('لا يمكن فتح سجل الطلبات لهذا العميل.', 'err');
   const modal = $id('customerOrdersModal');
   const body = $id('custOrdersBody');
-  const rangeEl = $id('coRangeFilter');
+  const dateFromEl = $id('coDateFrom');
+  const dateToEl = $id('coDateTo');
   const setText = (id, val) => { const el = $id(id); if (el) el.textContent = val; };
 
   setText('custOrdersModalName', customerName);
@@ -2423,7 +2473,13 @@ async function viewCustomerOrders(btn) {
   setText('coStatSpent', '0.00');
   setText('coStatItems', '0');
   setText('coStatLast', '—');
-  if (rangeEl) rangeEl.value = '30';
+  if (dateFromEl && dateToEl) {
+    const today = new Date();
+    const from = new Date(today);
+    from.setDate(from.getDate() - 29);
+    dateToEl.value = today.toISOString().slice(0, 10);
+    dateFromEl.value = from.toISOString().slice(0, 10);
+  }
   modal?.classList.add('open');
 
   try {
@@ -2483,7 +2539,9 @@ window.addEventListener('resize', closeCustomerActionMenus);
 document.addEventListener('scroll', closeCustomerActionMenus, true);
 $id('customerOrdersModal')?.addEventListener('click', e => { if (e.target === $id('customerOrdersModal')) closeCustomerOrdersModal(); });
 $id('customerOrderDetailsModal')?.addEventListener('click', e => { if (e.target === $id('customerOrderDetailsModal')) closeCustomerOrderDetailsModal(); });
-$id('coRangeFilter')?.addEventListener('change', applyCustomerOrdersRangeFilter);
+$id('coApplyDateFilter')?.addEventListener('click', applyCustomerOrdersRangeFilter);
+$id('coDateFrom')?.addEventListener('change', applyCustomerOrdersRangeFilter);
+$id('coDateTo')?.addEventListener('change', applyCustomerOrdersRangeFilter);
 $id('walletControlModal')?.addEventListener('click', e => { if (e.target === $id('walletControlModal')) closeWalletControlModal(); });
 $id('customerEditModal')?.addEventListener('click', e => { if (e.target === $id('customerEditModal')) closeCustomerEditModal(); });
 initCustomerEditAddressFields();
