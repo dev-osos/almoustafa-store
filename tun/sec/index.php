@@ -1416,6 +1416,9 @@ const ADMIN = {
               <button class="primary-btn" style="background:var(--gold);color:var(--primary)" onclick="loadProducts()">
                 <span class="ms">refresh</span>
               </button>
+              <button class="primary-btn" style="background:#1e5d3a" onclick="runProductsDefaultsMigration()">
+                <span class="ms">published_with_changes</span> ترحيل القيم الافتراضية
+              </button>
             </div>
           </div>
           <div class="table-wrap">
@@ -3373,6 +3376,40 @@ async function loadProducts() {
     renderProdTable(1);
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:2rem;color:#c00;">فشل التحميل: ${e.message}</td></tr>`;
+  }
+}
+
+async function runProductsDefaultsMigration() {
+  if (!ADMIN.canProducts) return;
+  try {
+    const dryRes = await fetch(PROD_API, {
+      method: 'POST',
+      headers: prodApiHeaders(),
+      body: JSON.stringify({ action: 'migrate_segment_defaults', dry_run: true })
+    });
+    const dry = await dryRes.json();
+    if (!dry.ok) {
+      alert(dry.error || 'تعذر فحص بيانات الترحيل');
+      return;
+    }
+    const msg = `سيتم تحديث ${dry.will_update ?? 0} منتج بالقيم الافتراضية الجديدة (إن كانت القيم قديمة/فارغة).\n\n` +
+      `- خصم الجملة: 20%\n- خصم جملة الجملة: 30%\n- حد أدنى الجملة: 6\n- حد أدنى جملة الجملة: 60\n- خطوة الجملة: 6\n- خطوة جملة الجملة: 6\n\n` +
+      `هل تريد المتابعة؟`;
+    if (!confirm(msg)) return;
+    const res = await fetch(PROD_API, {
+      method: 'POST',
+      headers: prodApiHeaders(),
+      body: JSON.stringify({ action: 'migrate_segment_defaults' })
+    });
+    const d = await res.json();
+    if (!d.ok) {
+      alert(d.error || 'فشل تنفيذ الترحيل');
+      return;
+    }
+    alert(`تم الترحيل بنجاح. عدد المنتجات المحدّثة: ${d.updated ?? 0}`);
+    await loadProducts();
+  } catch {
+    alert('فشل الاتصال أثناء تنفيذ الترحيل');
   }
 }
 

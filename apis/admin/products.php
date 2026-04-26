@@ -53,6 +53,43 @@ if ($method === 'POST') {
     $body = json_decode(file_get_contents('php://input'), true) ?? [];
     $action = $body['action'] ?? '';
 
+    if ($action === 'migrate_segment_defaults') {
+        $previewStmt = $pdo->query("
+            SELECT COUNT(*) FROM products
+            WHERE
+                COALESCE(discount_wholesale, 0) = 0
+                OR COALESCE(discount_corporate, 0) = 0
+                OR COALESCE(min_wholesale_qty, 0) <= 1
+                OR COALESCE(min_corporate_qty, 0) <= 1
+                OR COALESCE(step_wholesale_qty, 0) <= 0
+                OR COALESCE(step_corporate_qty, 0) <= 0
+        ");
+        $willUpdate = (int) $previewStmt->fetchColumn();
+        if (!empty($body['dry_run'])) {
+            api_ok(['will_update' => $willUpdate]);
+        }
+
+        $stmt = $pdo->prepare("
+            UPDATE products
+            SET
+                discount_wholesale = CASE WHEN COALESCE(discount_wholesale, 0) = 0 THEN 20 ELSE discount_wholesale END,
+                discount_corporate = CASE WHEN COALESCE(discount_corporate, 0) = 0 THEN 30 ELSE discount_corporate END,
+                min_wholesale_qty  = CASE WHEN COALESCE(min_wholesale_qty, 0) <= 1 THEN 6 ELSE min_wholesale_qty END,
+                min_corporate_qty  = CASE WHEN COALESCE(min_corporate_qty, 0) <= 1 THEN 60 ELSE min_corporate_qty END,
+                step_wholesale_qty = CASE WHEN COALESCE(step_wholesale_qty, 0) <= 0 THEN 6 ELSE step_wholesale_qty END,
+                step_corporate_qty = CASE WHEN COALESCE(step_corporate_qty, 0) <= 0 THEN 6 ELSE step_corporate_qty END
+            WHERE
+                COALESCE(discount_wholesale, 0) = 0
+                OR COALESCE(discount_corporate, 0) = 0
+                OR COALESCE(min_wholesale_qty, 0) <= 1
+                OR COALESCE(min_corporate_qty, 0) <= 1
+                OR COALESCE(step_wholesale_qty, 0) <= 0
+                OR COALESCE(step_corporate_qty, 0) <= 0
+        ");
+        $stmt->execute();
+        api_ok(['updated' => (int) $stmt->rowCount(), 'will_update' => $willUpdate]);
+    }
+
     $fields = ['erp_id','api_name','store_name','category','status','badge','wight','price','discount_consumer','discount_wholesale','discount_corporate','sold_q','image_url','source','description','benefits','nutrition','extra_info','min_wholesale_qty','min_corporate_qty','step_wholesale_qty','step_corporate_qty'];
 
     // Encode JSON fields
